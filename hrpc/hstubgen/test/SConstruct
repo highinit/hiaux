@@ -1,0 +1,15 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('hstubgen_test', 
+['../../hcomm/src/common.cpp',
+'../../hcomm/src/hcomm.cpp',
+'../src/stubgen.cpp',
+'../src/extract_class.cpp',
+'../src/commonstub.cpp',
+'../src/method.cpp',
+'../src/objreprgen.cpp',
+'../src/typet.cpp',
+'../../hcomm/src/sendchannel.cpp',
+'../../hcomm/src/objrepr.cpp',
+'../../hcomm/src/hcomms.cpp',
+'../../hcomm/src/hlog.cpp',
+'stubgen_test.cpp'], LIBS=['pthread'], LIBPATH='.')

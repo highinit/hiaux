@@ -1,0 +1,35 @@
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode watcher_process
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection addobj
+hcomm_srv_t::call addobj
+hcomm_srv_t::addobj start
+hcomm_srv_t::addobj watcher on watcher_process
+hcomm_srv_t::addobj OK
+hcomm_srv_t::addobj watcher on watcher_process OK
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode worker0
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs watcher
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode worker1
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs watcher
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode worker2
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs watcher
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode worker3
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs watcher
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode worker4
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs watcher
+hcomm_srv_t::closing NS server 

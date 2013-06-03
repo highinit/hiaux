@@ -1,0 +1,2 @@
+env = Environment(CCFLAGS='-std=gnu++11')
+Program('hdivider', Glob('src/*.cpp'), LIBS=['bson', 'mongoc'], LIBPATH='.')

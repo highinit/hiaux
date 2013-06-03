@@ -1,0 +1,32 @@
+import installer
+
+env = Environment()
+
+#hdivider = StaticLibrary('hdivider', 
+#['hdivider_core/src/hdivider_watcher.cpp',
+#'hdivider_core/src/hdivider_worker.cpp'])
+
+hdivider_launcher = Program('hdivider', 
+['hdivider_core/src/hdivider_watcher.cpp',
+'hdivider_core/src/hdivider_worker.cpp',
+'hdivider_main.cpp',
+'../meroving/hcomm/src/sendchannel.cpp',
+'../meroving/hcomm/src/objrepr.cpp',
+'../meroving/hcomm/src/hcomm.cpp',
+'../meroving/hcomm/src/hcomms.cpp',
+'../meroving/hcomm/src/hlog.cpp',
+'../meroving/hcomm/src/common.cpp'], 
+LIBS=['mongoc', 'pthread'])
+
+# create the installer
+#install = installer.Installer( env )
+
+
+# adds a library to the installer
+##lib = env.Library( your_library_options )
+#install.AddLibrary( hdivider )
+
+# adds headers to the installer
+#install.AddHeaders( "hdivider_dist", "*.h", "hdivider")
+#install.AddHeaders( "hdivider_core/include", "*.h", "hdivider")
+#install.AddHeaders( ".", "*.h", "hdivider")

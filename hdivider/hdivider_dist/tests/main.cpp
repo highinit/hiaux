@@ -1,0 +1,50 @@
+/* Generated file, do not edit */
+
+#ifndef CXXTEST_RUNNING
+#define CXXTEST_RUNNING
+#endif
+
+#define _CXXTEST_HAVE_STD
+#define _CXXTEST_HAVE_EH
+#include <cxxtest/TestListener.h>
+#include <cxxtest/TestTracker.h>
+#include <cxxtest/TestRunner.h>
+#include <cxxtest/RealDescriptions.h>
+#include <cxxtest/TestMain.h>
+#include <cxxtest/ErrorPrinter.h>
+
+int main( int argc, char *argv[] ) {
+ int status;
+    CxxTest::ErrorPrinter tmp;
+    CxxTest::RealWorldDescription::_worldName = "cxxtest";
+    status = CxxTest::Main< CxxTest::ErrorPrinter >( tmp, argc, argv );
+    return status;
+}
+bool suite_HdividerDistTests_init = false;
+#include "/Users/phrk/Projects/highinit_repos/hdivider/hdivider_dist/tests/hdivider_dist_tests.h"
+
+static HdividerDistTests suite_HdividerDistTests;
+
+static CxxTest::List Tests_HdividerDistTests = { 0, 0 };
+CxxTest::StaticSuiteDescription suiteDescription_HdividerDistTests( "hdivider_dist_tests.h", 34, "HdividerDistTests", suite_HdividerDistTests, Tests_HdividerDistTests );
+
+static class TestDescription_suite_HdividerDistTests_testConcurrentWriteResultusingDb : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_HdividerDistTests_testConcurrentWriteResultusingDb() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 217, "testConcurrentWriteResultusingDb" ) {}
+ void runTest() { suite_HdividerDistTests.testConcurrentWriteResultusingDb(); }
+} testDescription_suite_HdividerDistTests_testConcurrentWriteResultusingDb;
+
+static class TestDescription_suite_HdividerDistTests_testMongoIdAccessor : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_HdividerDistTests_testMongoIdAccessor() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 336, "testMongoIdAccessor" ) {}
+ void runTest() { suite_HdividerDistTests.testMongoIdAccessor(); }
+} testDescription_suite_HdividerDistTests_testMongoIdAccessor;
+
+static class TestDescription_suite_HdividerDistTests_testMongoStateAccessor : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_HdividerDistTests_testMongoStateAccessor() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 376, "testMongoStateAccessor" ) {}
+ void runTest() { suite_HdividerDistTests.testMongoStateAccessor(); }
+} testDescription_suite_HdividerDistTests_testMongoStateAccessor;
+
+#include <cxxtest/Root.cpp>
+const char* CxxTest::RealWorldDescription::_worldName = "cxxtest";

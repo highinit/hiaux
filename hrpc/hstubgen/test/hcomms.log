@@ -1,0 +1,15 @@
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode node1
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection addobj
+hcomm_srv_t::call addobj
+hcomm_srv_t::addobj start
+hcomm_srv_t::addobj RpcServer on node1
+hcomm_srv_t::addobj OK
+hcomm_srv_t::addobj RpcServer on node1 OK
+hcomm_srv_t::new connection addnode
+hcomm_srv_t::addnode node2
+hcomm_srv_t::addnode OK
+hcomm_srv_t::new connection ifs
+hcomm_srv_t::ifs RpcServer
+hcomm_srv_t::closing NS server 

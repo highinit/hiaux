@@ -1,0 +1,6 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('tests', 
+['tests.cpp'], LIBS=['bson', 'mongoc', 'pthread'], LIBPATH='.', CCFLAGS='')
+
+Program('hlogviewer', 
+['hlogviewer.cpp'], LIBS=['bson', 'mongoc', 'pthread', 'ncurses'], LIBPATH='.', CCFLAGS='')

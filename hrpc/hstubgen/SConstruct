@@ -1,0 +1,2 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('hstubgen', Glob('src/*.cpp'), LIBS=['bson', 'mongoc', 'thrift'], LIBPATH='.')

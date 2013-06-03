@@ -1,0 +1,10 @@
+
+env = Environment(CCFLAGS='-g')
+Program('hnameserver', 
+['ns_main.cpp',
+'../meroving/hcomm/src/common.cpp',
+'../meroving/hcomm/src/hcomm.cpp',
+'../meroving/hcomm/src/hcomms.cpp',
+'../meroving/hcomm/src/objrepr.cpp',
+'../meroving/hcomm/src/hlog.cpp',
+'../meroving/hcomm/src/sendchannel.cpp'], LIBS=['pthread', 'mongoc', 'bson'], LIBPATH='.', CCFLAGS='-g')

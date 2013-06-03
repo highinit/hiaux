@@ -1,0 +1,5 @@
+hrpc/hstubgen/bin
+hrpc/hstubgen/bin_test
+libmeroving.a
+out.txt
+*.pyc

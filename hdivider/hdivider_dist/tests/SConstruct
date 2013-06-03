@@ -1,0 +1,13 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('hdivider_dist_tests', 
+['../../hdivider_core/src/hdivider_watcher.cpp', 
+'../../hdivider_core/src/hdivider_worker.cpp',
+'../../hdivider_core/tests/one_worker_test.cpp',
+'../../hdivider_core/tests/concurrent_write_test.cpp',
+#'../../../meroving/hcomm/src/common.cpp',
+#'../../../meroving/hcomm/src/hcomm.cpp',
+#'../../../meroving/hcomm/src/hcomms.cpp',
+#'../../../meroving/hcomm/src/hlog.cpp',
+#'../../../meroving/hcomm/src/objrepr.cpp',
+#'../../../meroving/hcomm/src/sendchannel.cpp',
+'main.cpp'], LIBS=['bson', 'mongoc', 'pthread', 'meroving'], LIBPATH='.')
