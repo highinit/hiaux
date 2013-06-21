@@ -91,9 +91,10 @@ int main(int argc, char** argv)
     {
         HdividerLauncher hdivider_launcher;
         ///divider_launcher.launch(HconfigParser::load("htext_ider_hdivider.conf"));
-        hdivider_launcher.launch(HconfigParser::load("hcrawler_hdivider.conf"));
+        //hdivider_launcher.launch(HconfigParser::load("hcrawler_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hindexer_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hindex_reducer_hdivider.conf"));
+        hdivider_launcher.launch(HconfigParser::load(argv[1]));
         hdivider_launcher.join();
     }
     catch (string *s)
