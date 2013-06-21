@@ -1,6 +1,7 @@
 #ifndef HWORD_NODE
 #define HWORD_NODE
 
+#include <tr1/unordered_map>
 #include <string>
 
 #include "../master/hword_master.h"
@@ -10,7 +11,7 @@ using namespace std;
 class HwordNode
 {
     HwordDbAccessor *db_int;
-    map<string, int64_t> *local_cache;
+    tr1::unordered_map<string, int64_t> *local_cache;
     HwordMasterIfs *master;
     int reqs;
     int hits;
@@ -34,7 +35,7 @@ public:
     int64_t getId(string word)
     {
         reqs++;
-        map<string, int64_t>::iterator it = local_cache->find(word);
+        tr1::unordered_map<string, int64_t>::iterator it = local_cache->find(word);
         if (it!=local_cache->end())
         {
             hits++;

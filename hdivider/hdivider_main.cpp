@@ -50,9 +50,11 @@ public:
 
         HdividerWatcher* watcher = new HdividerWatcher(input_it, state_accessor);
         
+        Hlogger *logger = new Hlogger((*vars)["db_ip"], db_port, (*vars)["db_name"], "logs", (*vars)["hdivider_job_id"], (*vars)["db_user"], (*vars)["db_pass"]);
+        
         try
         {
-                comm_sharing = new hcomm_t((*vars)["ns_ip"], ns_port, "watcher");
+                comm_sharing = new hcomm_t((*vars)["ns_ip"], ns_port, (*vars)["hdivider_job_id"], logger);
                 comm_sharing->connect();
         }
         catch (string *s)
@@ -88,9 +90,10 @@ int main(int argc, char** argv)
     try
     {
         HdividerLauncher hdivider_launcher;
-        //hdivider_launcher.launch(HconfigParser::load("hcrawler_hdivider.conf"));
+        ///divider_launcher.launch(HconfigParser::load("htext_ider_hdivider.conf"));
+        hdivider_launcher.launch(HconfigParser::load("hcrawler_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hindexer_hdivider.conf"));
-        hdivider_launcher.launch(HconfigParser::load("hindex_reducer_hdivider.conf"));
+        //hdivider_launcher.launch(HconfigParser::load("hindex_reducer_hdivider.conf"));
         hdivider_launcher.join();
     }
     catch (string *s)

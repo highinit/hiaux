@@ -14,7 +14,7 @@
 #include "../master/hword_master.h"
 #include "../node/hword_node.h"
 
-#include "meroving/meroving.h"
+#include "../../hrpc/hcomm/include/hcomm.h"
 #include "../hword_master_skel.h"
 #include "../hword_db_accessor.h"
 
@@ -169,8 +169,7 @@ public:
     void testDistributedWithDb()
     {
         control_result.clear();
-        hlog_clear("hcomm.log");
-        hlog_clear("hcomms.log");
+
         hcomm_srv_t ns;
         ns.start_server(NS_PORT, BPORT, EPORT);
 

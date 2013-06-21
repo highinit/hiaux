@@ -4,9 +4,9 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>hword_id_handler_tests</name>
-            <c-extensions>c</c-extensions>
-            <cpp-extensions>cc,cpp</cpp-extensions>
-            <header-extensions>h,hh,hpp</header-extensions>
+            <c-extensions/>
+            <cpp-extensions/>
+            <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>

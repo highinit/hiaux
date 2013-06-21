@@ -34,10 +34,14 @@ void hcomm_t::serve_ifs(send_channel_t *ch)
                         logger->log(EVENT0, name + "::hcomm_t::serve_ifs:: stopping ifs for " + obj_name);
                         return;
 		}
+#ifdef HRPC_LOG_CALLS
                 logger->log(EVENT0, name + "::hcomm_t::serve_ifs:: calling method "+command + " for " + obj_name);
-		it->second->call(ch, command);
+#endif                
+                it->second->call(ch, command);               
                 ch->csend("call finished");
-                logger->log(EVENT0, name + "::hcomm_t::serve_ifs:: call finished");
+#ifdef HRPC_LOG_CALLS
+                logger->log(EVENT0, name + "::hcomm_t::serve_ifs:: call finished");         
+#endif
 	}
 }
 

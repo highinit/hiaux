@@ -1,7 +1,7 @@
 #include "../include/sendchannel.h"
 //#include "../include/sendchman.h"
-#include "../include/hlog.h" 
-#define LOG(str) hlog_log(str, "HdividerWatcher.log")
+//#include "../include/hlog.h" 
+//#define LOG(str) hlog_log(str, "HdividerWatcher.log")
 
 hsock_t send_channel_t::hsock;
 /*
@@ -159,7 +159,7 @@ string send_channel_t::crecv()
 
         if (ret == "send_channel_t::confirm_close")
         {
-            LOG("crecv:: otherside requested close protocol initiation");
+            //LOG("crecv:: otherside requested close protocol initiation");
             otherside_close_confirm_waiting = 1;
             if (!thisside_waiting_close)
                 return crecv();
@@ -209,14 +209,14 @@ void send_channel_t::close()
     thisside_waiting_close = 1;
     if (otherside_close_confirm_waiting)
     {
-        LOG("confirming close to other side ");
+        //LOG("confirming close to other side ");
         csend("send_channel_t::close_confirmed");
         shutdown(*sock, 2);
         //delete sock;
     }
     else
     {
-        LOG("send_channel_t::close initiating confirm close protocol ");
+        //LOG("send_channel_t::close initiating confirm close protocol ");
         csend("send_channel_t::confirm_close");
         //cout << "send_channel_t::close waiting for esponse\n";
         string ret = crecv();

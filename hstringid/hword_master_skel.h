@@ -1,9 +1,10 @@
 
 #pragma once
 
-#include "../meroving/hcomm/include/common.h"
-#include "../meroving/hcomm/include/hcomm.h"
-#include "../meroving/hcomm/include/hcomms.h"
+#include "../hrpc/hcomm/include/common.h"
+#include "../hrpc/hcomm/include/hcomm.h"
+#include "../hrpc/hcomm/include/hcomms.h"
+#include "../hrpc/hcomm/include/objrepr.h"
 #include "master/hword_master.h"
 
 class Hword_fg

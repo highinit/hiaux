@@ -2,7 +2,7 @@
 #ifndef HWORD_MASTER
 #define HWORD_MASTER
 
-#include <map>
+#include <tr1/unordered_map>
 #include <string>
 
 using namespace std;
@@ -10,7 +10,7 @@ using namespace std;
 class HwordDbAccessor
 {
 public:
-    virtual map<string, int64_t> *getIds() = 0;
+    virtual tr1::unordered_map<string, int64_t> *getIds() = 0;
     virtual void savePair(string word, int64_t id) = 0;
 };
 
@@ -18,9 +18,9 @@ class HwordDbInteractorStub : public HwordDbAccessor
 {
 public:
     
-    map<string, int64_t> *getIds()
+    tr1::unordered_map<string, int64_t> *getIds()
     {
-        return new map<string, int64_t>;
+        return new tr1::unordered_map<string, int64_t>;
     }
     void savePair(string word, int64_t id)
     {
@@ -31,7 +31,7 @@ public:
 class HwordMaster
 {
     HwordDbAccessor *db_int;
-    map<string, int64_t> *global_cache;
+    tr1::unordered_map<string, int64_t> *global_cache;
     pthread_mutex_t lock;
     int reqs;
     int hits;
@@ -60,7 +60,7 @@ public:
         reqs++;
         int64_t id;
         pthread_mutex_lock(&lock);
-        map<string, int64_t>::iterator it = global_cache->find(word);
+        tr1::unordered_map<string, int64_t>::iterator it = global_cache->find(word);
         if (it!=global_cache->end())
         {
             hits++;

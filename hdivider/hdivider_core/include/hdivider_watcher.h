@@ -16,10 +16,10 @@
 #include <tr1/unordered_map>
 
 //#include "meroving/meroving.h"
-#include "../../../meroving/hcomm/include/common.h"
-#include "../../../meroving/hcomm/include/hcomm.h"
-#include "../../../meroving/hcomm/include/hcomms.h"
-#include "../../../meroving/hcomm/include/objrepr.h"
+#include "../../../hrpc/hcomm/include/common.h"
+#include "../../../hrpc/hcomm/include/hcomm.h"
+#include "../../../hrpc/hcomm/include/hcomms.h"
+#include "../../../hrpc/hcomm/include/objrepr.h"
 using namespace std;
 
 #define InputId int64_t

@@ -36,9 +36,9 @@ public:
           }
     }
     
-    virtual map<string, int64_t> *getIds()
+    virtual tr1::unordered_map<string, int64_t> *getIds()
     {
-        map<string, int64_t> *ids = new map<string, int64_t>;
+        tr1::unordered_map<string, int64_t> *ids = new tr1::unordered_map<string, int64_t>;
         mongo_cursor cursor[1];
         mongo_cursor_init( cursor, conn, (db_name+"."+coll_name).c_str() );
         while ( mongo_cursor_next( cursor ) == MONGO_OK )

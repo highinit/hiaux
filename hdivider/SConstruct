@@ -10,12 +10,12 @@ hdivider_launcher = Program('hdivider',
 ['hdivider_core/src/hdivider_watcher.cpp',
 'hdivider_core/src/hdivider_worker.cpp',
 'hdivider_main.cpp',
-'../meroving/hcomm/src/sendchannel.cpp',
-'../meroving/hcomm/src/objrepr.cpp',
-'../meroving/hcomm/src/hcomm.cpp',
-'../meroving/hcomm/src/hcomms.cpp',
-'../meroving/hcomm/src/hlog.cpp',
-'../meroving/hcomm/src/common.cpp'], 
+'../hrpc/hcomm/src/sendchannel.cpp',
+'../hrpc/hcomm/src/objrepr.cpp',
+'../hrpc/hcomm/src/hcomm.cpp',
+'../hrpc/hcomm/src/hcomms.cpp',
+'../hrpc/hcomm/src/hlog.cpp',
+'../hrpc/hcomm/src/common.cpp'], 
 LIBS=['mongoc', 'pthread'])
 
 # create the installer
