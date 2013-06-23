@@ -16,7 +16,7 @@ hdivider_launcher = Program('hdivider',
 '../hrpc/hcomm/src/objrepr.cpp',
 '../hrpc/hcomm/src/hcomm.cpp',
 '../hrpc/hcomm/src/hcomms.cpp',
-'../hrpc/hcomm/src/hlog.cpp',
+#'../hrpc/hcomm/src/hlog.cpp',
 '../hrpc/hcomm/src/common.cpp'], 
 LIBS=['mongoc', 'pthread'])
 
