@@ -1,5 +1,5 @@
 #include "hdivider_test.h"
-#include "meroving/meroving.h"
+#include "../../../hrpc/hcomm/include/hcomm.h"
 
 void *worker_func3(void *a)
 {
@@ -87,7 +87,8 @@ void *worker_func3(void *a)
     }
     catch (string *s)
     {
-        LOG(string("EXCEPTION") + *s);
+//        LOG(string("EXCEPTION") + *s);
+        cout << s->c_str();
         exit(0);
     }
 }

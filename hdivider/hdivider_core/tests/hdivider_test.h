@@ -111,7 +111,7 @@ public:
         }
     }
     
-    virtual void saveState(InputState *state)
+    virtual void saveState(const InputState *state)
     {
         //pthread_mutex_lock(&mutex);
         map<InputId, InputState*>::iterator it = states->find(state->id);

@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #include "hdivider.h"
+#include "hdivider_dist/hdivider_state_accessor_cache.h"
 #include "../hconfig_parser/hconfig_parser.h"
 
 using namespace std;
@@ -48,7 +49,7 @@ public:
         HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt((*vars)["db_ip"], db_port, (*vars)["db_name"],\
             (*vars)["in_coll"], (*vars)["db_user"], (*vars)["db_pass"]);
 
-        HdividerWatcher* watcher = new HdividerWatcher(input_it, state_accessor);
+        HdividerWatcher* watcher = new HdividerWatcher(input_it, new HdividerStatesCache(state_accessor));
         
         Hlogger *logger = new Hlogger((*vars)["db_ip"], db_port, (*vars)["db_name"], "logs", (*vars)["hdivider_job_id"], (*vars)["db_user"], (*vars)["db_pass"]);
         

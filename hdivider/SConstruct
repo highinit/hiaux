@@ -9,6 +9,8 @@ env = Environment()
 hdivider_launcher = Program('hdivider', 
 ['hdivider_core/src/hdivider_watcher.cpp',
 'hdivider_core/src/hdivider_worker.cpp',
+'hdivider_dist/hdivider_mongo_accessors.cpp',
+'hdivider_dist/hdivider_state_accessor_cache.cpp',
 'hdivider_main.cpp',
 '../hrpc/hcomm/src/sendchannel.cpp',
 '../hrpc/hcomm/src/objrepr.cpp',

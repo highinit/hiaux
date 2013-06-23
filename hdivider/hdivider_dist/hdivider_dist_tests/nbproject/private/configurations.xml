@@ -31,6 +31,7 @@
               </df>
               <df name="globbing_edmundo">
                 <in>hello.cc</in>
+                <in>hello.hh</in>
                 <in>hellotest.t.h</in>
                 <in>main.cpp</in>
               </df>

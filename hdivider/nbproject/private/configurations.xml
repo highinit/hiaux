@@ -29,13 +29,23 @@
         </df>
         <df name="tests">
           <df name="cxxtest-4.2">
+            <df name="admin">
+            </df>
+            <df name="bin">
+            </df>
             <df name="build_tools">
+              <df name="cmake">
+              </df>
               <df name="SCons">
                 <df name="test">
+                  <df name="default_env">
+                  </df>
                   <df name="empty_source_list">
                     <in>requirement.hpp</in>
                     <in>test_bar.t.h</in>
                     <in>test_foo.t.h</in>
+                  </df>
+                  <df name="expanding_#">
                   </df>
                   <df name="globbing">
                     <df name="src">
@@ -77,6 +87,8 @@
                       </df>
                       <in>cpppath.t.h</in>
                     </df>
+                  </df>
+                  <df name="nonstandard_cxxtest_dir">
                   </df>
                   <df name="printer_propagation">
                     <df name="cxxtest">
@@ -158,6 +170,14 @@
               <in>unix.h</in>
             </df>
             <df name="doc">
+              <df name="epub">
+                <df name="bin">
+                  <df name="lib">
+                  </df>
+                  <df name="xslt">
+                  </df>
+                </df>
+              </df>
               <df name="examples">
                 <in>Assertions.h</in>
                 <in>BadTestSuite1.h</in>
@@ -182,6 +202,26 @@
                 <in>time_mock.h</in>
                 <in>time_real.cpp</in>
               </df>
+              <df name="images">
+                <df name="icons">
+                  <df name="callouts">
+                  </df>
+                </df>
+              </df>
+              <df name="man">
+              </df>
+            </df>
+            <df name="python">
+              <df name="cxxtest">
+              </df>
+              <df name="python3">
+                <df name="cxxtest">
+                </df>
+                <df name="scripts">
+                </df>
+              </df>
+              <df name="scripts">
+              </df>
             </df>
             <df name="sample">
               <df name="gui">
@@ -199,6 +239,10 @@
                 <in>real_stdlib.cpp</in>
                 <in>roll.cpp</in>
               </df>
+              <df name="msvc">
+              </df>
+              <df name="parts">
+              </df>
               <df name="SCons">
                 <df name="include">
                   <in>stack.h</in>
@@ -209,6 +253,8 @@
                 <df name="tests">
                   <in>stack_test.h</in>
                 </df>
+              </df>
+              <df name="winddk">
               </df>
               <in>CreatedTest.h</in>
               <in>DeltaTest.h</in>
@@ -316,7 +362,10 @@
           <in>hdivider_dist_tests.h</in>
           <in>main.cpp</in>
         </df>
+        <in>hdivider_mongo_accessors.cpp</in>
         <in>hdivider_mongo_accessors.h</in>
+        <in>hdivider_state_accessor_cache.cpp</in>
+        <in>hdivider_state_accessor_cache.h</in>
         <in>hdivider_watcher_skel.h</in>
       </df>
       <in>hdivider.h</in>

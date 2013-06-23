@@ -1,6 +1,6 @@
 #include "../include/hdivider_watcher.h"
 
-#define LOG(str) hlog_log(str, "HdividerWatcher.log")
+//#define LOG(str) hlog_log(str, "HdividerWatcher.log")
 
 
 InputState::InputState()
@@ -8,6 +8,13 @@ InputState::InputState()
     handled = 0;
     locked_by = "";
 
+}
+
+InputState::InputState(const InputState &state)
+{
+    id = state.id;
+    locked_by = state.locked_by;
+    handled = state.handled;
 }
 
 InputState::InputState(InputId id, string locked_by, bool handled)

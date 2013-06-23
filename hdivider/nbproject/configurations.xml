@@ -312,7 +312,10 @@
           <in>hdivider_dist_tests.h</in>
           <in>main.cpp</in>
         </df>
+        <in>hdivider_mongo_accessors.cpp</in>
         <in>hdivider_mongo_accessors.h</in>
+        <in>hdivider_state_accessor_cache.cpp</in>
+        <in>hdivider_state_accessor_cache.h</in>
         <in>hdivider_watcher_skel.h</in>
       </df>
       <in>hdivider.h</in>
@@ -420,7 +423,22 @@
         <ccTool>
         </ccTool>
       </item>
+      <item path="hdivider_dist/hdivider_mongo_accessors.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
       <item path="hdivider_dist/hdivider_mongo_accessors.h"
+            ex="false"
+            tool="3"
+            flavor2="0">
+      </item>
+      <item path="hdivider_dist/hdivider_state_accessor_cache.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="hdivider_dist/hdivider_state_accessor_cache.h"
             ex="false"
             tool="3"
             flavor2="0">

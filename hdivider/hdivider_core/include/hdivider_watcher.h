@@ -37,6 +37,7 @@ public:
     bool handled;
     
     InputState();
+    InputState(const InputState &state);
     InputState(InputId id, string locked_by, bool handled);
 };
 
@@ -55,7 +56,7 @@ class HdividerStateAccessor
 public:
    // virtual bool notLocked(InputId input_id) = 0;
     virtual InputState *getState(InputId input_id) = 0;
-    virtual void saveState(InputState *state) = 0;
+    virtual void saveState(const InputState *state) = 0;
     virtual void resetState() = 0;
 };
 
