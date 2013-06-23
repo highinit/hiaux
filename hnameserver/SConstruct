@@ -6,5 +6,5 @@ Program('hnameserver',
 '../hrpc/hcomm/src/hcomm.cpp',
 '../hrpc/hcomm/src/hcomms.cpp',
 '../hrpc/hcomm/src/objrepr.cpp',
-'../hrpc/hcomm/src/hlog.cpp',
+#'../hrpc/hcomm/src/hlog.cpp',
 '../hrpc/hcomm/src/sendchannel.cpp'], LIBS=['pthread', 'mongoc', 'bson'], LIBPATH='.', CCFLAGS='-g')
