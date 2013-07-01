@@ -35,16 +35,21 @@ class HwordMaster
     pthread_mutex_t lock;
     int reqs;
     int hits;
+    bool cache_enabled;
 public:
     
-    HwordMaster(HwordDbAccessor *db_int)
+    HwordMaster(HwordDbAccessor *db_int, bool cache_enabled)
     {
         pthread_mutex_init(&lock, 0);
         pthread_mutex_lock(&lock);
+        this->cache_enabled = cache_enabled;
         hits = 0;
         reqs = 0;
         this->db_int = db_int;
-        global_cache = db_int->getIds();
+        if (cache_enabled)
+        {
+                global_cache = db_int->getIds();
+        }
         pthread_mutex_unlock(&lock);
     }
     
@@ -69,8 +74,11 @@ public:
         else
         {
             id = global_cache->size();
-            global_cache->insert(pair<string, int64_t>(word, id));
             db_int->savePair(word, id);
+            if (cache_enabled)
+            {
+                global_cache->insert(pair<string, int64_t>(word, id));
+            } 
         }
         pthread_mutex_unlock(&lock);
         return id;

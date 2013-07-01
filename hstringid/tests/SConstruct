@@ -1,3 +1,8 @@
 env = Environment(CCFLAGS='-std=gnu++11 ')
 Program('hword_tests', 
-['main.cpp'], LIBS=['bson', 'mongoc', 'pthread', 'meroving'], LIBPATH='.')
+['main.cpp',
+'../../hrpc/hcomm/src/common.cpp',
+'../../hrpc/hcomm/src/hcomm.cpp',
+'../../hrpc/hcomm/src/hcomms.cpp',
+'../../hrpc/hcomm/src/objrepr.cpp',
+'../../hrpc/hcomm/src/sendchannel.cpp'], LIBS=['bson', 'mongoc', 'pthread'], LIBPATH='.', CCFLAGS='-g')

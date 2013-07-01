@@ -23,7 +23,8 @@ public:
         reqs = 0;
         hits = 0;
         this->db_int = db_int;
-        local_cache = db_int->getIds();
+        local_cache = new  tr1::unordered_map<string, int64_t>;
+        //local_cache = db_int->getIds();
     }
     
     ~HwordNode()

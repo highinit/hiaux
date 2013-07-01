@@ -10,6 +10,7 @@
 
 #include "hdivider.h"
 #include "hdivider_dist/hdivider_state_accessor_cache.h"
+#include "hdivider_dist/hdivider_input_accessor_cache.h"
 #include "../hconfig_parser/hconfig_parser.h"
 
 using namespace std;
@@ -46,9 +47,12 @@ public:
                 new HdividerMongoStateAccessor((*vars)["db_ip"], db_port, (*vars)["db_name"],\
             (*vars)["hdivider_job_id"], (*vars)["db_user"], (*vars)["db_pass"]); 
 
-        HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt((*vars)["db_ip"], db_port, (*vars)["db_name"],\
+        //HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt((*vars)["db_ip"], db_port, (*vars)["db_name"],\
             (*vars)["in_coll"], (*vars)["db_user"], (*vars)["db_pass"]);
-
+        
+        HdividerInputIdCache *input_it =  new HdividerInputIdCache((*vars)["db_ip"], db_port, (*vars)["db_name"],\
+            (*vars)["in_coll"], (*vars)["db_user"], (*vars)["db_pass"], 1000);
+        
         HdividerWatcher* watcher = new HdividerWatcher(input_it, new HdividerStatesCache(state_accessor));
         
         Hlogger *logger = new Hlogger((*vars)["db_ip"], db_port, (*vars)["db_name"], "logs", (*vars)["hdivider_job_id"], (*vars)["db_user"], (*vars)["db_pass"]);

@@ -22,7 +22,7 @@
 
 class HwordTests : public CxxTest::TestSuite
 {    
-    map<string, int64_t> control_result;
+    tr1::unordered_map<string, int64_t> control_result;
 public:
     
     void doSimpleCalls(HwordNode *node, HwordNode *node2)
@@ -89,12 +89,13 @@ public:
     void testDistributed()
     {
         control_result.clear();
-        hlog_clear("hcomm.log");
-        hlog_clear("hcomms.log");
-        hcomm_srv_t ns;
+ //       hlog_clear("hcomm.log");
+ //       hlog_clear("hcomms.log");
+        
+        hcomm_srv_t ns( new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         ns.start_server(NS_PORT, BPORT, EPORT);
 
-        hcomm_t share_comm(string("127.0.0.1"), NS_PORT, string("master_node"));
+        hcomm_t share_comm(string("127.0.0.1"), NS_PORT, string("master_node"),  new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         
         HwordMaster *master = new HwordMaster(new HwordDbInteractorStub);
         share_comm.connect();
@@ -102,7 +103,7 @@ public:
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
         share_comm.start_server();
 
-        hcomm_t client_comm(string("127.0.0.1"), NS_PORT, string("client_node"));
+        hcomm_t client_comm(string("127.0.0.1"), NS_PORT, string("client_node"),  new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         client_comm.connect();
         
         HwordMasterStub *master_stub = new HwordMasterStub(&client_comm, "hword_master");
@@ -145,9 +146,9 @@ public:
                 control_result[word] = i;
             }
 
-            map<string, int64_t> *db_content = db.getIds();
+            tr1::unordered_map<string, int64_t> *db_content = db.getIds();
 
-            map<string, int64_t>::iterator it = control_result.begin();
+            tr1::unordered_map<string, int64_t>::iterator it = control_result.begin();
             while (it!=control_result.end())
             {
                 TS_ASSERT(it->second == (*db_content)[it->first]);
@@ -170,10 +171,10 @@ public:
     {
         control_result.clear();
 
-        hcomm_srv_t ns;
+        hcomm_srv_t ns(new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         ns.start_server(NS_PORT, BPORT, EPORT);
 
-        hcomm_t share_comm(string("127.0.0.1"), NS_PORT, string("master_node"));
+        hcomm_t share_comm(string("127.0.0.1"), NS_PORT, string("master_node"), new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         
         HwordMongoDbAccessor *db = new HwordMongoDbAccessor("127.0.0.1", 27017, "highinit_test", "HwordTest", "dbuser", "dbuser");
         db->clearAll();
@@ -184,7 +185,7 @@ public:
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
         share_comm.start_server();
 
-        hcomm_t client_comm(string("127.0.0.1"), NS_PORT, string("client_node"));
+        hcomm_t client_comm(string("127.0.0.1"), NS_PORT, string("client_node"), new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
         client_comm.connect();
         
         HwordMasterStub *master_stub = new HwordMasterStub(&client_comm, "hword_master");

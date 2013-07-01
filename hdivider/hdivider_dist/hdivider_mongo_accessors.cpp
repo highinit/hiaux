@@ -87,6 +87,8 @@ bool HdividerMongoInputIdIt::end()
     return isend;
 }
 
+////////////////////// HdividerMongoStateAccessor //////////////////////
+
 HdividerMongoStateAccessor::HdividerMongoStateAccessor(string ip, int port, string db_name, string job_name, string login, string pass)
 {
     this->db_name = db_name;

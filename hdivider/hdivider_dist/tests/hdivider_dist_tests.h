@@ -25,6 +25,7 @@
 #include "../hdivider_watcher_skel.h"
 #include "../hdivider_mongo_accessors.h"
 #include "../hdivider_state_accessor_cache.h"
+#include "../hdivider_input_accessor_cache.h"
 
 //#include "db_mocks.h"
 
@@ -33,19 +34,154 @@
 
 using namespace std;
 
+class HdividerTestEnv
+{
+    map<InputId, int> *input_data;
+    map<int, int> *result;
+    int first_summ;
+    int first_elem_summ;
+    int NSPORT;
+    hcomm_srv_t *ns;
+    hcomm_t *comm_sharing;
+    
+    vector<HdividerWatcherStub*> watcher_stubs;
+    
+    void performMultipleWorkersTestWithRpc()
+    {
+        int nthreads = watcher_stubs.size();
+        vector<pthread_t> ths;
+        
+        for (int i = 0; i<nthreads; i++)
+        {
+            pthread_t th;
+            char bf[255];
+            strcpy(bf, "");
+            sprintf(bf, "%d", i);
+            bf[254] = '\0';
+            string worker_id("worker" + string(bf));
+            
+            worker_args2 *args1 = new worker_args2(watcher_stubs[i], input_data, result, worker_id, 0);
+            pthread_create(&th, NULL, worker_func3, (void*)args1);
+            ths.push_back(th);
+        }
+     
+        for (int i = 0; i<nthreads; i++)
+        {
+                pthread_join(ths[i], NULL);
+        }
+        
+         for (int i = 0; i<nthreads; i++)
+        {
+                pthread_detach(ths[i]);
+        }
+        
+        int summ = 0;
+        
+        summ += (*result)[2] + (*result)[3] + (*result)[5] +(*result)[7];
+        
+        TS_ASSERT(first_summ == summ); 
+        TS_ASSERT((*result)[9] == first_elem_summ);
+    }
+    
+public:
+    
+    map<InputId, int> *getInputData()
+    {
+        return input_data;
+    }
+    
+    void prepareControlResultAndDistributedEnv(int NSPORT, int SPORT, int EPORT, string dbip, int dbport, string dbname, string dbuser, string dbpass, int TEST_SIZE)
+    {
+        this->NSPORT = NSPORT;
+        ns = new hcomm_srv_t(new Hlogger(dbip, dbport, dbname, "logs", "ns", dbuser, dbpass));
+        ns->start_server(NSPORT, SPORT, EPORT);
+        sleep(1);
+                
+        comm_sharing = new hcomm_t("127.0.0.1", NSPORT, "watcher_process", new Hlogger(dbip, 27017, dbname, "logs", "ns", dbuser, dbpass));
+        comm_sharing->connect();
+        
+        input_data = new map<InputId, int>;
+        result = new map<int, int>;
+        
+        first_summ = 0;
+        first_elem_summ = 0;
+        for (int i = 0; i<TEST_SIZE; i++)
+        {
+                input_data->insert(pair<InputId, int>(i , i));
+                
+                if (i%2==0)
+                {
+                    first_summ +=2;
+                }
+                if (i%3==0)
+                {
+                    first_summ +=3;
+                }
+                if (i%5==0)
+                {
+                    first_summ += 5;
+                }
+                if (i%7==0)
+                {
+                    first_summ += 7;
+                }
+                first_elem_summ += i;
+        }
+        
+        (*result)[2] = (*result)[3] = (*result)[5] = (*result)[7] = (*result)[9] = 0;
+    }
+    
+    void performTest(HdividerWatcher* watcher, int nthreads)
+    {
+        comm_sharing->share_obj<HdividerWatcher, HdividerWatcherSkel>(watcher, "watcher");
+        comm_sharing->start_server();
+                
+        sleep(1);
+        
+        for (int i = 0; i<nthreads; i++)
+        {
+            char bf[255];
+            strcpy(bf, "");
+            sprintf(bf, "%d", i);
+            bf[254] = '\0';
+            string worker_id("worker" + string(bf));
+            
+            hcomm_t *comm_client = new hcomm_t("127.0.0.1", NSPORT, worker_id, new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
+            comm_client->connect();
+            
+            watcher_stubs.push_back(new HdividerWatcherStub(comm_client, "watcher"));
+        }
+        
+        
+        performMultipleWorkersTestWithRpc();
+        
+    }
+    
+    ~HdividerTestEnv()
+    {
+        ns->kill_server();
+        comm_sharing->kill_server();
+        delete ns;
+        delete comm_sharing;
+        delete result;
+        delete input_data;
+        watcher_stubs.clear();
+    }
+    
+};
 
 class HdividerDistTests : public CxxTest::TestSuite
 {    
 
 public:
     
-    #define NSPORT 6002
-    #define SPORT 7100
-    #define EPORT 7110
-
     void testOneWorker()
     {
-       
+        const int NSPORT = 5002;
+        const int SPORT = 6100;
+        const int EPORT = 6200;
+        
+        
         const int SIZE = 100;
      // multiply on 2 all inputs and write to result. 1 worker   new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser");
 
@@ -96,370 +232,95 @@ public:
         }
         ns->kill_server();
     }
-    
-    #define NSPORT 6012
-    #define SPORT 7110
-    #define EPORT 7120
-    
+        
     void testConcurrentWriteResult()
-    {
+    {       
+        const int NSPORT = 6002;
+        const int SPORT = 7100;
+        const int EPORT = 7200;
+        
         const int SIZE = 100;
+        
+        HdividerTestEnv *env = new HdividerTestEnv;
+        
         try
         {
-        hcomm_srv_t *ns = new hcomm_srv_t(new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        ns->start_server(NSPORT, SPORT, EPORT);
-        sleep(1);
-        
-            
-        hcomm_t *comm_sharing = new hcomm_t("127.0.0.1", NSPORT, "watcher_process", new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        comm_sharing->connect();
-        
-        map<InputId, int > *input_data = new map<InputId, int >;
-        map<int, int> *result = new map<int, int>;
-        
-        int first_summ = 0;
-        int first_elem_summ = 0;
-        for (int i = 0; i<SIZE; i++)
-        {
-                input_data->insert(pair<InputId, int>(i , i));
-                
-                if (i%2==0)
-                {
-                    first_summ +=2;
-                }
-                if (i%3==0)
-                {
-                    first_summ +=3;
-                }
-                if (i%5==0)
-                {
-                    first_summ += 5;
-                }
-                if (i%7==0)
-                {
-                    first_summ += 7;
-                }
-                first_elem_summ += i;
-        }
-        
-        (*result)[2] = (*result)[3] = (*result)[5] = (*result)[7] = (*result)[9] = 0;
-        
-        HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (input_data), \
+                env->prepareControlResultAndDistributedEnv(NSPORT, SPORT, EPORT, "127.0.0.1",  27017, "highinit_test", "dbuser", "dbuser", SIZE);
+                HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (env->getInputData()), \
                 new HdividerTestStateAccessor());
-        
-        comm_sharing->share_obj<HdividerWatcher, HdividerWatcherSkel>(watcher, "watcher");
-        comm_sharing->start_server();
+                env->performTest(watcher, 2);
                 
-        sleep(1);
-                
-        int nthreads = 2;
-        vector<pthread_t> ths;
-        
-        for (int i = 0; i<nthreads; i++)
-        {
-            pthread_t th;
-            char bf[255];
-            strcpy(bf, "");
-            sprintf(bf, "%d", i);
-            bf[254] = '\0';
-            string worker_id("worker" + string(bf));
-            
-            hcomm_t *comm_client = new hcomm_t("127.0.0.1", NSPORT, worker_id, new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-            comm_client->connect();
-            
-            HdividerWatcherStub *stub = new HdividerWatcherStub(comm_client, "watcher");
-            
-            worker_args2 *args1 = new worker_args2(stub, input_data, result, worker_id, 0);
-            pthread_create(&th, NULL, worker_func3, (void*)args1);
-            ths.push_back(th);
+                delete watcher;
         }
-     
-        for (int i = 0; i<nthreads; i++)
-        {
-                pthread_join(ths[i], NULL);
-        }
-        
-         for (int i = 0; i<nthreads; i++)
-        {
-                pthread_detach(ths[i]);
-        }
-        
-        int summ = 0;
-        
-        summ += (*result)[2] + (*result)[3] + (*result)[5] +(*result)[7];
-        
-        delete watcher;
-        ns->kill_server();
-        comm_sharing->kill_server();
-        delete comm_sharing;
-        
-        TS_ASSERT(first_summ == summ);
-        //cout << "first_summ: " << first_summ << endl;
-        //cout << "summ: " << summ << endl;
-        
-        // read test
-        TS_ASSERT((*result)[9] == first_elem_summ);
-        //cout << "first_summ: " << first_elem_summ << endl;
-        //cout << "summ: " << (*result)[9] << endl;
-        
-        delete result;
-        delete input_data;
-        } 
         catch (string *s)
         {
-            //LOG(string("EXCEPTION") + *s);
-            cout << "EXCEPTION" << s->c_str();
-         //   exit(0);
+            cout << s->c_str();
         }
         
+        delete env;       
     }
-
-    #define NSPORT 6022
-    #define SPORT 7120
-    #define EPORT 7130
     
-    void testConcurrentWriteResultusingDb()
-    {
+    void testConcurrentWriteStoringHdividerStateInDb()
+    {       
+        const int NSPORT = 6022;
+        const int SPORT = 7120;
+        const int EPORT = 7130;
+        
+        const int SIZE = 50;
+        
+        HdividerTestEnv *env = new HdividerTestEnv;
+        
         try
         {
-        const int SIZE = 50;
-        hcomm_srv_t *ns = new hcomm_srv_t(new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        ns->start_server(NSPORT, SPORT, EPORT);
-            
-        sleep(1);
-            
-        hcomm_t *comm_sharing = new hcomm_t("127.0.0.1", NSPORT, "watcher_process", new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        comm_sharing->connect();
-        
-        map<InputId, int > *input_data = new map<InputId, int >;
-        map<int, int> *result = new map<int, int>;
-        
-        int first_summ = 0;
-        int first_elem_summ = 0;
-        for (int i = 0; i<SIZE; i++)
-        {
-                input_data->insert(pair<InputId, int>(i , i));
+                env->prepareControlResultAndDistributedEnv(NSPORT, SPORT, EPORT, "127.0.0.1",  27017, "highinit_test", "dbuser", "dbuser", SIZE);
                 
-                if (i%2==0)
-                {
-                    first_summ +=2;
-                }
-                if (i%3==0)
-                {
-                    first_summ +=3;
-                }
-                if (i%5==0)
-                {
-                    first_summ += 5;
-                }
-                if (i%7==0)
-                {
-                    first_summ += 7;
-                }
-                first_elem_summ += i;
-        }
-        
-        (*result)[2] = (*result)[3] = (*result)[5] = (*result)[7] = (*result)[9] = 0;
-        
-        HdividerMongoStateAccessor *state_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultusingDb", "dbuser", "dbuser"); 
-        state_accessor->resetState();
-        
-        HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (input_data), 
-                state_accessor);
-        
-        comm_sharing->share_obj<HdividerWatcher, HdividerWatcherSkel>(watcher, "watcher");
-        comm_sharing->start_server();
+                HdividerMongoStateAccessor *state_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultusingDb", "dbuser", "dbuser"); 
+                state_accessor->resetState();
                 
-        sleep(1);
+                HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (env->getInputData()), state_accessor);
+                env->performTest(watcher, 2);
                 
-        int nthreads = 2;
-        vector<pthread_t> ths;
-        
-        
-        
-        for (int i = 0; i<nthreads; i++)
-        {
-            pthread_t th;
-            char bf[255];
-            strcpy(bf, "");
-            sprintf(bf, "%d", i);
-            bf[254] = '\0';
-            string worker_id("worker" + string(bf));
-            
-            hcomm_t *comm_client = new hcomm_t("127.0.0.1", NSPORT, worker_id, new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-            comm_client->connect();
-            
-            HdividerWatcherStub *stub = new HdividerWatcherStub(comm_client, "watcher");
-            
-            worker_args2 *args1 = new worker_args2(stub, input_data, result, worker_id, 0);
-            pthread_create(&th, NULL, worker_func3, (void*)args1);
-            ths.push_back(th);
-        }
-     
-        for (int i = 0; i<nthreads; i++)
-        {
-                pthread_join(ths[i], NULL);
-        }
-        
-         for (int i = 0; i<nthreads; i++)
-        {
-                pthread_detach(ths[i]);
-        }
-        
-        int summ = 0;
-        
-        summ += (*result)[2] + (*result)[3] + (*result)[5] +(*result)[7];
-        
-        delete watcher;
-        ns->kill_server();
-        delete ns;
-        comm_sharing->kill_server();
-        delete comm_sharing;
-        
-        TS_ASSERT(first_summ == summ);
-        //cout << "first_summ: " << first_summ << endl;
-        //cout << "summ: " << summ << endl;
-        
-        // read test
-        TS_ASSERT((*result)[9] == first_elem_summ);
-        //cout << "first_summ: " << first_elem_summ << endl;
-        //cout << "summ: " << (*result)[9] << endl;
-        
-        delete result;
-        delete input_data;
+                delete watcher;
         }
         catch (string *s)
         {
-//            LOG(string("EXCEPTION") + *s);
             cout << s->c_str();
-            exit(0);
         }
         
+        delete env;       
     }
-    
-    #define NSPORT 6032
-    #define SPORT 7130
-    #define EPORT 7140
     
     void testConcurrentWriteResultUsingDbUsingHdividerCache()
     {
+        const int NSPORT = 6122;
+        const int SPORT = 7220;
+        const int EPORT = 7230;
+        
+        const int SIZE = 50;
+        
+        HdividerTestEnv *env = new HdividerTestEnv;
+        
         try
         {
-        const int SIZE = 50;
-        hcomm_srv_t *ns = new hcomm_srv_t(new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        ns->start_server(NSPORT, SPORT, EPORT);
-            
-        sleep(1);
-            
-        hcomm_t *comm_sharing = new hcomm_t("127.0.0.1", NSPORT, "watcher_process", new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-        comm_sharing->connect();
-        
-        map<InputId, int > *input_data = new map<InputId, int >;
-        map<int, int> *result = new map<int, int>;
-        
-        int first_summ = 0;
-        int first_elem_summ = 0;
-        for (int i = 0; i<SIZE; i++)
-        {
-                input_data->insert(pair<InputId, int>(i , i));
+                env->prepareControlResultAndDistributedEnv(NSPORT, SPORT, EPORT, "127.0.0.1",  27017, "highinit_test", "dbuser", "dbuser", SIZE);
                 
-                if (i%2==0)
-                {
-                    first_summ +=2;
-                }
-                if (i%3==0)
-                {
-                    first_summ +=3;
-                }
-                if (i%5==0)
-                {
-                    first_summ += 5;
-                }
-                if (i%7==0)
-                {
-                    first_summ += 7;
-                }
-                first_elem_summ += i;
-        }
-        
-        (*result)[2] = (*result)[3] = (*result)[5] = (*result)[7] = (*result)[9] = 0;
-        
-        HdividerMongoStateAccessor *state_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultusingDb", "dbuser", "dbuser"); 
-        state_accessor->resetState();
-        
-        HdividerStatesCache *states_cache = new HdividerStatesCache(state_accessor);
-        
-        HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (input_data), 
-                states_cache);
-        
-        comm_sharing->share_obj<HdividerWatcher, HdividerWatcherSkel>(watcher, "watcher");
-        comm_sharing->start_server();
+                HdividerMongoStateAccessor *state_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultusingDb", "dbuser", "dbuser"); 
+                state_accessor->resetState();
                 
-        sleep(1);
+                HdividerStatesCache *states_cache = new HdividerStatesCache(state_accessor);
                 
-        int nthreads = 2;
-        vector<pthread_t> ths;
-        
-        
-        
-        for (int i = 0; i<nthreads; i++)
-        {
-            pthread_t th;
-            char bf[255];
-            strcpy(bf, "");
-            sprintf(bf, "%d", i);
-            bf[254] = '\0';
-            string worker_id("worker" + string(bf));
-            
-            hcomm_t *comm_client = new hcomm_t("127.0.0.1", NSPORT, worker_id, new Hlogger("127.0.0.1", 27017, "highinit_test", "logs", "ns", "dbuser", "dbuser"));
-            comm_client->connect();
-            
-            HdividerWatcherStub *stub = new HdividerWatcherStub(comm_client, "watcher");
-            
-            worker_args2 *args1 = new worker_args2(stub, input_data, result, worker_id, 0);
-            pthread_create(&th, NULL, worker_func3, (void*)args1);
-            ths.push_back(th);
-        }
-     
-        for (int i = 0; i<nthreads; i++)
-        {
-                pthread_join(ths[i], NULL);
-        }
-        
-         for (int i = 0; i<nthreads; i++)
-        {
-                pthread_detach(ths[i]);
-        }
-        
-        int summ = 0;
-        
-        summ += (*result)[2] + (*result)[3] + (*result)[5] +(*result)[7];
-        
-        delete watcher;
-        ns->kill_server();
-        delete ns;
-        comm_sharing->kill_server();
-        delete comm_sharing;
-        
-        TS_ASSERT(first_summ == summ);
-        //cout << "first_summ: " << first_summ << endl;
-        //cout << "summ: " << summ << endl;
-        
-        // read test
-        TS_ASSERT((*result)[9] == first_elem_summ);
-        //cout << "first_summ: " << first_elem_summ << endl;
-        //cout << "summ: " << (*result)[9] << endl;
-        
-        delete result;
-        delete input_data;
+                HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (env->getInputData()), states_cache);
+                env->performTest(watcher, 2);
+                
+                delete states_cache;
+                delete state_accessor;
         }
         catch (string *s)
         {
-//            LOG(string("EXCEPTION") + *s);
             cout << s->c_str();
-            exit(0);
         }
         
+        delete env;       
     }
     
     void testMongoIdAccessor()
@@ -501,6 +362,85 @@ public:
         {
             cout << *s;
         }
+    }
+    
+    void fill_db_testMongoIdCache(string ip, int port, string db_name, string coll_name, string login, string pass, int count)
+    {
+        mongo conn[1];
+        int status = mongo_connect(conn, ip.c_str(), port);
+
+        if( status != MONGO_OK )
+        {
+          switch ( conn->err )
+          {
+            case MONGO_CONN_SUCCESS:    {  break; }
+            case MONGO_CONN_NO_SOCKET:  { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NO_SOCKET" ); return; }
+            case MONGO_CONN_FAIL:       { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_FAIL" ); return; }
+            case MONGO_CONN_NOT_MASTER: { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NOT_MASTER" ); return; }
+          }
+        }
+        if ( mongo_cmd_authenticate(conn, db_name.c_str(), login.c_str(), pass.c_str()) == MONGO_ERROR )
+        {
+             throw new string ("HdividerMongoInputIdIt:: MONGO_ERROR error AUTH");
+             return;
+        }
+        
+        bson b[1];
+        bson_init(b);
+        bson_finish(b);
+        mongo_remove(conn, (db_name+"."+coll_name).c_str(), b, NULL);
+        bson_destroy(b);
+        
+        for (int i = 0; i<count; i++)
+        {
+            bson b[1];
+            bson_init(b);
+            bson_append_long(b, "id", i+(i%5)*2);
+            bson_finish(b);
+            mongo_insert( conn, (db_name+"."+coll_name).c_str(), b, NULL );
+        }
+        
+        mongo_destroy(conn);
+    }
+    
+    void testMongoIdCache()
+    {
+        const int SIZE = 15000;
+        string ip = "127.0.0.1";
+        int port = 27017;
+        string db_name = "hdivider_dist_test";
+        string coll_name  = "testMongoIdCache_input";      
+        string login = "dbuser";
+        string pass = "dbuser";
+     
+        fill_db_testMongoIdCache(ip, port, db_name, coll_name, login, pass, SIZE);
+        sleep(2);
+        HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt(ip, port, db_name, coll_name, login, pass);
+        HdividerInputIdCache *id_cache = new HdividerInputIdCache(ip, port, db_name, coll_name, login, pass, 100);
+        
+        input_it->setFirst();
+        id_cache->setFirst();
+        
+        int same = 0;
+        
+        for (int i = 0; i<SIZE; i++)
+        {
+            //cout << input_it->value() << " " << id_cache->value() << " ";
+            if (input_it->value() != id_cache->value())
+            {
+                //cout << "NOTSAME\n";
+            }
+            else 
+            {
+                //cout << "SAME\n";
+                same++;
+            }
+            input_it->getNext();
+            id_cache->getNext();
+        }
+        //cout << "SAME: " << same << endl;
+        TS_ASSERT(same == SIZE);
+        
     }
     
     void testMongoStateAccessor()
