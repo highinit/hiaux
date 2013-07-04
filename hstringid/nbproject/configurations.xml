@@ -7,14 +7,17 @@
       </df>
       <df name="node">
         <in>hword_node.h</in>
+        <in>hword_node_morphology.h</in>
       </df>
       <df name="tests">
         <in>hword_tests.h</in>
       </df>
+      <in>english_stemmer.h</in>
       <in>hstringid_main.cpp</in>
       <in>hstringid_worker.h</in>
       <in>hword_db_accessor.h</in>
       <in>hword_master_skel.h</in>
+      <in>porter_stemmer.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -44,6 +47,8 @@
           <executablePath></executablePath>
         </makeTool>
       </makefileType>
+      <item path="english_stemmer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="hstringid_main.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="hstringid_worker.h" ex="false" tool="3" flavor2="0">
@@ -55,6 +60,10 @@
       <item path="master/hword_master.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="node/hword_node.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="node/hword_node_morphology.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="porter_stemmer.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="tests/hword_tests.h" ex="false" tool="3" flavor2="0">
       </item>

@@ -96,6 +96,42 @@ public:
         return word;
     }
     
+    virtual int64_t getId(string word)
+    {
+        int64_t id;
+        bson query[1];
+        bson_init(query);
+        bson_append_string(query, "word", word.c_str());
+        bson_finish(query);
+        
+        mongo_cursor cursor[1];
+        
+        mongo_cursor_init( cursor, conn, (db_name+"."+coll_name).c_str() );
+        mongo_cursor_set_query( cursor, query );
+        
+        if (mongo_cursor_next( cursor ) == MONGO_OK )
+        {
+                bson_iterator iterator[1];
+                if ( bson_find( iterator, mongo_cursor_bson( cursor ), "id" ))
+                {
+                        id = int64_t (bson_iterator_long( iterator ));            
+                }
+                else
+                {
+                    throw "id not found";
+                }
+        }
+        else
+        {
+            bson_destroy(query);
+            mongo_cursor_destroy(cursor);
+            throw new string ("HwordMongoDbAccessor::getId word " + word + " not found in db");
+        }
+        bson_destroy(query);
+        mongo_cursor_destroy(cursor);
+        return id;
+    }
+    
     void clearAll()
     {
         bson b[1];

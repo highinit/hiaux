@@ -334,28 +334,28 @@ public:
         
         try
         {  
-                HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt(ip, port, db_name, coll_name, login, pass);
-                
-                
-                TS_ASSERT(input_it->size()==2);
-        
-                int i = 1;
-                while (!input_it->end())
-                {
-                        TS_ASSERT(input_it->value() == i);        
-                        input_it->getNext();
-                        i++;
-                }
-                
-                input_it->setFirst();
-                i = 1;
-                while (!input_it->end())
-                {
-                        TS_ASSERT(input_it->value() == i);        
-                        input_it->getNext();
-                        i++;
-                }
-                delete input_it;
+            HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt(ip, port, db_name, coll_name, login, pass);
+
+
+            TS_ASSERT(input_it->size()==2);
+
+            int i = 1;
+            while (!input_it->end())
+            {
+                    TS_ASSERT(input_it->value() == i);        
+                    input_it->getNext();
+                    i++;
+            }
+
+            input_it->setFirst();
+            i = 1;
+            while (!input_it->end())
+            {
+                    TS_ASSERT(input_it->value() == i);        
+                    input_it->getNext();
+                    i++;
+            }
+            delete input_it;
                 
         }
         catch (string  *s)

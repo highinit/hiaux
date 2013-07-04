@@ -7,6 +7,7 @@
       </df>
       <df name="node">
         <in>hword_node.h</in>
+        <in>hword_node_morphology.h</in>
       </df>
       <df name="tests">
         <df name="cxxtest-4.2">
@@ -345,10 +346,12 @@
         <in>hword_tests.h</in>
         <in>main.cpp</in>
       </df>
+      <in>english_stemmer.h</in>
       <in>hstringid_main.cpp</in>
       <in>hstringid_worker.h</in>
       <in>hword_db_accessor.h</in>
       <in>hword_master_skel.h</in>
+      <in>porter_stemmer.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

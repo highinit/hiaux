@@ -34,6 +34,7 @@ public:
         keys.push_back("worker_id");	
         keys.push_back("ns_ip");
         keys.push_back("ns_port");
+        keys.push_back("cache_enabled");
 
         if (!HconfigParser::existVars(vars, keys))
         {
@@ -48,6 +49,9 @@ public:
         
         int ns_port;
         sscanf((*vars)["ns_port"].c_str(), "%d", &ns_port);
+        
+        int cache_enabled;
+        sscanf((*vars)["cache_enabled"].c_str(), "%d", &cache_enabled);
         
         Hlogger *logger = new Hlogger((*vars)["db_ip"], \
                                         db_port, \
@@ -64,7 +68,7 @@ public:
                                                                 (*vars)["out_ids_coll"], \
                                                                 (*vars)["db_user"], \
                                                                 (*vars)["db_pass"]); 
-        HwordMaster *master = new HwordMaster(db);
+        HwordMaster *master = new HwordMaster(db, cache_enabled);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hstringid_"+(*vars)["out_ids_coll"]);
