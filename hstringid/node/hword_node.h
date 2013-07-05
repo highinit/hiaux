@@ -16,12 +16,15 @@ class HwordNode
     HwordMasterIfs *master;
     int reqs;
     int hits;
-public:
     
     HwordNode()
     {
         cache_state = CACHE_DISABLED;
     }
+    
+public:
+    
+    
     
     HwordNode(HwordMasterIfs *master, bool cache_state)
     {
