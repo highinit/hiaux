@@ -16,6 +16,8 @@ class HwordNode
     HwordMasterIfs *master;
     int reqs;
     int hits;
+
+protected:
     
     HwordNode()
     {

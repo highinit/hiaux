@@ -23,20 +23,11 @@ class HwordDbInteractorStub : public HwordDbAccessor
 {
 public:
     
-    tr1::unordered_map<string, int64_t> *getIds()
-    {
-        return new tr1::unordered_map<string, int64_t>;
-    }
+    tr1::unordered_map<string, int64_t> *getIds();
     
-    void savePair(string word, int64_t id)
-    {
-
-    }
+    void savePair(string word, int64_t id);
     
-    int64_t getId(string word)
-    {
-        throw new string ("HwordDbInteractorStub::getId undefined ");
-    }
+    int64_t getId(string word);
 };
 
 void *start_write_thread(void *a);
@@ -81,16 +72,11 @@ public:
 class HwordMasterIfsSimpleCaller: public HwordMasterIfs
 {
     HwordMaster *master;
-    public:
-    HwordMasterIfsSimpleCaller (HwordMaster *master)
-    {
-        this->master = master;
-    }
+public:
     
-    virtual int64_t getId(string word)
-    {
-        return master->getId(word);
-    }
+    HwordMasterIfsSimpleCaller (HwordMaster *master);
+    
+    virtual int64_t getId(string word);
 };
 
 #endif
