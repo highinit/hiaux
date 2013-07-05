@@ -1,6 +1,7 @@
 env = Environment(CCFLAGS='-std=gnu++11 ')
 Program('hword_tests', 
 ['main.cpp',
+'../master/hword_master.cpp',
 '../../hrpc/hcomm/src/common.cpp',
 '../../hrpc/hcomm/src/hcomm.cpp',
 '../../hrpc/hcomm/src/hcomms.cpp',

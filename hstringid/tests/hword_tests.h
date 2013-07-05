@@ -63,7 +63,7 @@ public:
     
     void testSimple()
     {
-        HwordMaster *master = new HwordMaster(new HwordDbInteractorStub, CACHE_ENABLED);
+        HwordMaster *master = new HwordMaster(new HwordDbInteractorStub, new HwordDbInteractorStub, CACHE_ENABLED);
         HwordNode *node = new HwordNode(new HwordMasterIfsSimpleCaller(master), new HwordDbInteractorStub);
         
         HwordNode *node2 = new HwordNode(new HwordMasterIfsSimpleCaller(master), new HwordDbInteractorStub);
@@ -100,7 +100,7 @@ public:
 
         hcomm_t share_comm(string("127.0.0.1"), NS_PORT, string("master_node"),  new Hlogger("127.0.0.1", 27017, "hstringid_test", "logs", "ns", "dbuser", "dbuser"));
         
-        HwordMaster *master = new HwordMaster(new HwordDbInteractorStub, CACHE_ENABLED);
+        HwordMaster *master = new HwordMaster(new HwordDbInteractorStub, new HwordDbInteractorStub, CACHE_ENABLED);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
@@ -182,7 +182,9 @@ public:
         HwordMongoDbAccessor *db = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testDistributedWithDb", "dbuser", "dbuser");
         db->clearAll();
         
-        HwordMaster *master = new HwordMaster(db, CACHE_ENABLED);
+        HwordMongoDbAccessor *db_write = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testDistributedWithDb", "dbuser", "dbuser");
+        
+        HwordMaster *master = new HwordMaster(db, db_write, CACHE_ENABLED);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
@@ -232,7 +234,7 @@ public:
 #define EPORT 14800
     
     
-    void testServerCacheDisabled()
+    void testServerCacheDisabledOneWorkerWithCacheEnabled()
     {
         control_result.clear();
 
@@ -244,7 +246,9 @@ public:
         HwordMongoDbAccessor *db = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testServerCacheDisabled", "dbuser", "dbuser");
         db->clearAll();
         
-        HwordMaster *master = new HwordMaster(db, CACHE_DISABLED);
+        HwordMongoDbAccessor *db_write = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testServerCacheDisabled", "dbuser", "dbuser");
+        
+        HwordMaster *master = new HwordMaster(db, db_write, CACHE_DISABLED);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
@@ -256,8 +260,8 @@ public:
         HwordMasterStub *master_stub = new HwordMasterStub(&client_comm, "hword_master");
         
         HwordNode *node = new HwordNode(master_stub, CACHE_ENABLED);//new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testServerCacheDisabled", "dbuser", "dbuser"));
-        HwordNode *node2 = new HwordNode(master_stub, CACHE_ENABLED);//new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testServerCacheDisabled", "dbuser", "dbuser"));
-        doSimpleCalls(node, node2);
+        //HwordNode *node2 = new HwordNode(master_stub, CACHE_ENABLED);//new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testServerCacheDisabled", "dbuser", "dbuser"));
+        doSimpleCalls(node, node);
         
       //  doSimpleCalls(node, node2);
         
@@ -265,7 +269,7 @@ public:
         share_comm.kill_server();
 
         delete node;
-        delete node2;
+//        delete node2;
         delete master;
         delete master_stub;
     }
@@ -286,7 +290,9 @@ public:
         HwordMongoDbAccessor *db = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testLocalCacheDisabled", "dbuser", "dbuser");
         db->clearAll();
         
-        HwordMaster *master = new HwordMaster(db, CACHE_DISABLED);
+        HwordMongoDbAccessor *db_write = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testLocalCacheDisabled", "dbuser", "dbuser");
+        
+        HwordMaster *master = new HwordMaster(db, db_write, CACHE_ENABLED);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");
@@ -334,7 +340,9 @@ public:
         HwordMongoDbAccessor *db = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testDistributedWithStemmer", "dbuser", "dbuser");
         db->clearAll();
         
-        HwordMaster *master = new HwordMaster(db, CACHE_DISABLED);
+        HwordMongoDbAccessor *db_write = new HwordMongoDbAccessor("127.0.0.1", 27017, "hstringid_test", "testDistributedWithStemmer", "dbuser", "dbuser");
+        
+        HwordMaster *master = new HwordMaster(db, db_write, CACHE_ENABLED);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hword_master");

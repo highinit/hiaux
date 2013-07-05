@@ -3,6 +3,7 @@
 #define HWORD_MASTER
 
 #include <tr1/unordered_map>
+#include <queue>
 #include <string>
 
 using namespace std;
@@ -38,25 +39,35 @@ public:
     }
 };
 
+void *start_write_thread(void *a);
+
 class HwordMaster
 {
     HwordDbAccessor *db_int;
+    HwordDbAccessor *db_write;
     int64_t max_id;
     tr1::unordered_map<string, int64_t> *global_cache;
     pthread_mutex_t lock;
     int reqs;
     int hits;
     bool cache_state;
+    
+    pthread_t write_th;
+    pthread_mutex_t write_lock;
+    queue<pair<string, int64_t> > write_queue;
+    
 public:
     
-    HwordMaster(HwordDbAccessor *db_int, bool cache_state)
+    HwordMaster(HwordDbAccessor *db_int, HwordDbAccessor *db_write, bool cache_state)
     {
         pthread_mutex_init(&lock, 0);
+        pthread_mutex_init(&write_lock, 0);
         pthread_mutex_lock(&lock);
         this->cache_state = cache_state;
         hits = 0;
         reqs = 0;
         this->db_int = db_int;
+        this->db_write = db_write;
         max_id = 0;
         global_cache = db_int->getIds();
         
@@ -67,16 +78,58 @@ public:
             delete global_cache;
         }
         
+        pthread_create(&write_th, NULL, start_write_thread, this);
+        
         pthread_mutex_unlock(&lock);
     }
     
     ~HwordMaster()
     {
         delete db_int;
+        delete db_write;
         if (cache_state == CACHE_ENABLED)
         {
                 delete global_cache;
         }
+    }
+    
+    
+    void writeAsyncThread()
+    {
+        bool wait = 0;
+        while (1)
+        {
+            if (wait)
+            {
+                sleep(1);
+            }
+            
+            pthread_mutex_lock(&write_lock);
+            
+            if (write_queue.size()==0)
+            {
+                wait = 1;
+                pthread_mutex_unlock(&write_lock);
+                continue;
+            }
+            else 
+            {
+                wait = 0;
+            }
+            
+            pair<string, int64_t> hstringid =  write_queue.front();
+            db_write->savePair(hstringid.first, hstringid.second);
+            write_queue.pop();
+            pthread_mutex_unlock(&write_lock);
+
+        }
+    }
+    
+    void pushWrite(string word, int64_t id)
+    {
+        pthread_mutex_lock(&write_lock);
+        write_queue.push(pair<string, int64_t> (word, id));
+        pthread_mutex_unlock(&write_lock);
     }
     
     //#remote
@@ -96,7 +149,8 @@ public:
             else
             {
                 id = global_cache->size();
-                db_int->savePair(word, id);
+                //db_int->savePair(word, id);
+                pushWrite(word, id);
                 global_cache->insert(pair<string, int64_t>(word, id));
             }
         }
@@ -110,7 +164,8 @@ public:
             {
                 delete s;
                 id = max_id;
-                db_int->savePair(word, id);
+                //db_int->savePair(word, id);
+                pushWrite(word, id);
                 max_id++;
             }
         }

@@ -53,6 +53,15 @@ public:
         int cache_enabled;
         sscanf((*vars)["cache_enabled"].c_str(), "%d", &cache_enabled);
         
+        if (cache_enabled==CACHE_ENABLED)
+        {
+            cout << "cache enabled" << endl;
+        }
+        else
+        {
+            cout << "cache disabled" << endl;
+        }
+        
         Hlogger *logger = new Hlogger((*vars)["db_ip"], \
                                         db_port, \
                                         (*vars)["db_name"], \
@@ -62,13 +71,21 @@ public:
                                         (*vars)["db_pass"]);
         
         hcomm_t share_comm((*vars)["db_ip"], ns_port, "hstringid_master_"+(*vars)["out_ids_coll"], logger);
-        HwordMongoDbAccessor *db = new HwordMongoDbAccessor((*vars)["db_ip"], \
+        HwordMongoDbAccessor *db_read = new HwordMongoDbAccessor((*vars)["db_ip"], \
                                                                 db_port, \
                                                                 (*vars)["db_name"], \
                                                                 (*vars)["out_ids_coll"], \
                                                                 (*vars)["db_user"], \
                                                                 (*vars)["db_pass"]); 
-        HwordMaster *master = new HwordMaster(db, cache_enabled);
+        
+        HwordMongoDbAccessor *db_write = new HwordMongoDbAccessor((*vars)["db_ip"], \
+                                                                db_port, \
+                                                                (*vars)["db_name"], \
+                                                                (*vars)["out_ids_coll"], \
+                                                                (*vars)["db_user"], \
+                                                                (*vars)["db_pass"]); 
+        
+        HwordMaster *master = new HwordMaster(db_read, db_write, cache_enabled);
         share_comm.connect();
         
         share_comm.share_obj<HwordMaster, HwordMasterSkel>(master, "hstringid_"+(*vars)["out_ids_coll"]);

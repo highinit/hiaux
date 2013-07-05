@@ -155,18 +155,20 @@ vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
         }
 
         pthread_mutex_lock(&put_mutex);
+        //cout << "getting state\n";
         InputState *state = state_accessor->getState(input_id_it->value());
         if (state->locked_by=="")
         {
             input_ids.push_back(state->id);
             state->locked_by = worker_id;
             state->handled = 0;
+            //cout << "saving state\n";
             state_accessor->saveState(state);
         }
         pthread_mutex_unlock(&put_mutex);
         
         delete state;  
-      
+        //cout << "input next\n";
         input_id_it->getNext();
     }
     
