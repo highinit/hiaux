@@ -1,4 +1,5 @@
 #include "hword_master.h"
+#include <unistd.h>
 
 tr1::unordered_map<string, int64_t>* HwordDbInteractorStub::getIds()
 {
