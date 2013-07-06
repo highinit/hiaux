@@ -5,6 +5,7 @@
 #include <tr1/unordered_map>
 #include <queue>
 #include <string>
+#include <stdint.h>
 
 using namespace std;
 
@@ -24,9 +25,7 @@ class HwordDbInteractorStub : public HwordDbAccessor
 public:
     
     tr1::unordered_map<string, int64_t> *getIds();
-    
     void savePair(string word, int64_t id);
-    
     int64_t getId(string word);
 };
 
