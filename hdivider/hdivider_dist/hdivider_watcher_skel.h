@@ -256,7 +256,7 @@ class HdividerWatcherSkel : public skel_t
 			string worker_id = RpcServer_fg::string_neg(objrepr_recv(ch, 1));
 			vector<int64_t> *ret = new vector<int64_t>;
 			*ret = obj->getInput( count, worker_id);
-                        
+                           
 			objrepr_send(RpcServer_fg::vec_int_gen(ret), ch, 1);
 
 		return 0;

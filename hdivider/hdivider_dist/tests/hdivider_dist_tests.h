@@ -304,16 +304,19 @@ public:
         {
                 env->prepareControlResultAndDistributedEnv(NSPORT, SPORT, EPORT, "127.0.0.1",  27017, "highinit_test", "dbuser", "dbuser", SIZE);
                 
-                HdividerMongoStateAccessor *state_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultusingDb", "dbuser", "dbuser"); 
-                state_accessor->resetState();
+                HdividerMongoStateAccessor *mongo_accessor = new HdividerMongoStateAccessor("127.0.0.1", 27017, "hdivider_dist_test", "testConcurrentWriteResultUsingDbUsingHdividerCache", "dbuser", "dbuser"); 
                 
-                HdividerStatesCache *states_cache = new HdividerStatesCache(state_accessor);
+                mongo_accessor->resetState();
+                
+                HdividerStatesCache *states_cache = new HdividerStatesCache(mongo_accessor);
                 
                 HdividerWatcher* watcher = new HdividerWatcher(new HdividerTestInputIdIt (env->getInputData()), states_cache);
                 env->performTest(watcher, 2);
-                
+
+                states_cache->setNoMore();
+                states_cache->join();
                 delete states_cache;
-                delete state_accessor;
+                delete mongo_accessor;
         }
         catch (string *s)
         {
@@ -405,7 +408,7 @@ public:
     
     void testMongoIdCache()
     {
-        const int SIZE = 15000;
+        const int SIZE = 10000;
         string ip = "127.0.0.1";
         int port = 27017;
         string db_name = "hdivider_dist_test";
@@ -416,10 +419,10 @@ public:
         fill_db_testMongoIdCache(ip, port, db_name, coll_name, login, pass, SIZE);
         sleep(2);
         HdividerMongoInputIdIt *input_it = new HdividerMongoInputIdIt(ip, port, db_name, coll_name, login, pass);
-        HdividerInputIdCache *id_cache = new HdividerInputIdCache(ip, port, db_name, coll_name, login, pass, 100);
+        HdividerInputIdCache *id_cache = new HdividerInputIdCache(ip, port, db_name, coll_name, login, pass, 1000);
         
-        input_it->setFirst();
-        id_cache->setFirst();
+       // input_it->setFirst();
+       // id_cache->setFirst();
         
         int same = 0;
         

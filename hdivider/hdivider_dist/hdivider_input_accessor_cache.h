@@ -29,6 +29,8 @@ class HdividerInputIdCache: public  HdividerInputIdIt
     
     void cache_became_smaller();
     
+    HdividerInputIdCache()  { }
+    
     public:
         
     HdividerInputIdCache(string ip, int port, string db_name, string coll_name, string login, string pass, int cache_size);

@@ -13,6 +13,13 @@ InputState::InputState(const InputState &state)
     handled = state.handled;
 }
 
+InputState::InputState(const InputState *state)
+{
+    id = state->id;
+    locked_by = state->locked_by;
+    handled = state->handled;
+}
+
 InputState::InputState(InputId id, string locked_by, bool handled)
 {
     this->id = id;
@@ -68,6 +75,7 @@ HdividerWatcher::~HdividerWatcher()
 
 void HdividerWatcher::start(int port)
 {
+    /*
     state_accessor->resetState();
     input_id_it->setFirst();
     while(!input_id_it->end())
@@ -77,7 +85,7 @@ void HdividerWatcher::start(int port)
         delete state;
         
         input_id_it->getNext();
-    }   
+    }   */
     // rpc server shit
 }
 
@@ -156,7 +164,8 @@ vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
 
         pthread_mutex_lock(&put_mutex);
         //cout << "getting state\n";
-        InputState *state = state_accessor->getState(input_id_it->value());
+        int64_t id = input_id_it->value(); 
+        InputState *state = state_accessor->getState(id);
         if (state->locked_by=="")
         {
             input_ids.push_back(state->id);

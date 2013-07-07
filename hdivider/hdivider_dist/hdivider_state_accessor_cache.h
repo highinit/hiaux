@@ -13,12 +13,25 @@
 class HdividerStatesCache : public HdividerStateAccessor
 {
     tr1::unordered_map<int64_t, InputState*>* cache;
-    HdividerMongoStateAccessor *mongo_accessor;
+    HdividerMongoStateAccessor *db;
     pthread_mutex_t mutex;
+    
+    pthread_t write_th;
+    pthread_mutex_t queue_lock;
+    queue<InputState*> *write_queue;
+    bool nomore;
+    int queue_size;
+    void pushWrite(const InputState *state);
+    
 public:
         
-    HdividerStatesCache (HdividerMongoStateAccessor *mongo_accessor);
+    HdividerStatesCache (HdividerMongoStateAccessor *db);
     ~HdividerStatesCache();
+    
+    void startWriteThread();
+    
+    void join();
+    void setNoMore();
     
     virtual InputState*                                 getState(int64_t input_id);
     tr1::unordered_map<int64_t, InputState*>*           getAllStates();

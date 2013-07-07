@@ -8,7 +8,7 @@ void* hdivider_input_cache_thread(void *a)
 
 void HdividerInputIdCache::start_caching()
 {
-    //cout << "caching thread started\n";
+   // cout << "caching thread started\n";
     while (1)
     { 
         pthread_mutex_lock(&cacher_lock);
@@ -21,10 +21,6 @@ void HdividerInputIdCache::start_caching()
             //cout << "cacher waiting to unlock cacher_wait=" << cacher_wait << endl;
             pthread_cond_wait(&cacher_cond, &cacher_lock);
         }
-        
-        
-        
-        //cout << "RENEWING CACHE\n";
         
         if (!mongo_it->end())
         {
@@ -52,6 +48,7 @@ void HdividerInputIdCache::start_caching()
         else
         {
             //cout << "mongo_it END\n";
+            cacher_wait = 1;
             pthread_mutex_unlock(&cacher_lock);
             break;
         }
@@ -63,18 +60,23 @@ void HdividerInputIdCache::start_caching()
 
 void HdividerInputIdCache::cache_became_smaller()
 {
-    if (cached_ids.size() == 0)
+    pthread_mutex_lock(&cacher_lock);
+    pthread_mutex_lock(&ids_lock);
+    if (cached_ids.size()< cache_size /2)
     {
         //cout << "unlocking cacher \n";
-        pthread_mutex_lock(&cacher_lock);
+
         cacher_wait = 0;
         pthread_cond_signal(&cacher_cond);
-        pthread_mutex_unlock(&cacher_lock);
+        
     }
+    pthread_mutex_unlock(&ids_lock);
+    pthread_mutex_unlock(&cacher_lock);
 }
 
 HdividerInputIdCache::HdividerInputIdCache(string ip, int port, string db_name, string coll_name, string login, string pass, int cache_size)
 {
+   // cout << "HdividerInputIdCache::HdividerInputIdCache " << endl;
     isend = 0;
     pthread_mutex_init(&ids_lock, 0);
     pthread_mutex_init(&cacher_lock, 0);
@@ -83,6 +85,8 @@ HdividerInputIdCache::HdividerInputIdCache(string ip, int port, string db_name, 
     this->cache_size = cache_size;
     cacher_wait = 1;
     pthread_create(th, NULL, hdivider_input_cache_thread, (void*)this);
+    setFirst();
+    
 }
 
 int HdividerInputIdCache::size()
@@ -119,7 +123,7 @@ void HdividerInputIdCache::getNext()
             
             cache_became_smaller();
             
-            //sleep(1);
+            sleep(1);
             
             pthread_mutex_lock(&ids_lock);
             if (cached_ids.size()!=0)
@@ -142,6 +146,7 @@ void HdividerInputIdCache::getNext()
         cached_ids.pop();
         //cout << "pop \n";
         pthread_mutex_unlock(&ids_lock);
+        cache_became_smaller();
     }
 }
 

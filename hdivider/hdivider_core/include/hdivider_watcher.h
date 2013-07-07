@@ -37,6 +37,7 @@ public:
     bool handled;
     
     InputState();
+    InputState(const InputState *state);
     InputState(const InputState &state);
     InputState(InputId id, string locked_by, bool handled);
 };
