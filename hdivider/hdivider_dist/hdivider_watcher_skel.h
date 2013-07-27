@@ -193,6 +193,17 @@ class HdividerWatcherStub: public HdividerWorker
                 }
                 //End remote function 
                 
+                virtual int setHandledIfNot(int64_t input_id)
+                {
+                    pthread_mutex_lock(&mutex);
+                    ch->csend("setHandledIfNot");
+                    objrepr_send(RpcServer_fg::int_gen(input_id), ch, 1);
+                    int ret = RpcServer_fg::int_neg(objrepr_recv(ch, 1));
+                    ch->crecv();
+                    pthread_mutex_unlock(&mutex);
+                    return ret;
+                }
+                
 		//remote function (#remote) 
 		virtual void lockResult(InputId result_id, string worker_id) 
 		{ 
@@ -282,7 +293,15 @@ class HdividerWatcherSkel : public skel_t
                 return 0;
                 }
                 //End remote function 
-                        
+                
+                if (command == "setHandledIfNot")
+                {
+                    int64_t input_id = RpcServer_fg::int_neg(objrepr_recv(ch, 1));
+                    int ret = obj->setHandledIfNot(input_id);
+                    objrepr_send(RpcServer_fg::int_gen(ret), ch, 1);
+                    return 0;
+                }
+                
 		//remote function (#remote) 
 		if (command == "lockResult") 
 		{ 

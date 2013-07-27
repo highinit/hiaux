@@ -17,23 +17,41 @@ public:
         this->coll_name = coll_name;
         conn = new mongo;
         
-        int status = mongo_client(conn, ip.c_str(), port);
+        for (int i = 0; i<6; i++)
+        {
+            try
+            {
+                int status = mongo_client(conn, ip.c_str(), port);
 
-          if( status != MONGO_OK )
-          {
-              switch ( conn->err )
-              {
-                case MONGO_CONN_SUCCESS:    {  break; }
-                case MONGO_CONN_NO_SOCKET:  { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_NO_SOCKET" ); return; }
-                case MONGO_CONN_FAIL:       { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_FAIL" ); return; }
-                case MONGO_CONN_NOT_MASTER: { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_NOT_MASTER" ); return; }
-              }
-          }
-          if ( mongo_cmd_authenticate(conn, db_name.c_str(), login.c_str(), pass.c_str()) == MONGO_ERROR )
-          {
-                 throw new string ("HwordMongoDbAccessor:: MONGO_ERROR error AUTH");
-                 return;
-          }
+                if( status != MONGO_OK )
+                {
+                  switch ( conn->err )
+                  {
+                    case MONGO_CONN_SUCCESS:    {  break; }
+                    case MONGO_CONN_NO_SOCKET:  { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_NO_SOCKET" ); return; }
+                    case MONGO_CONN_FAIL:       { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_FAIL" ); return; }
+                    case MONGO_CONN_NOT_MASTER: { throw new string ("HwordMongoDbAccessor:: MONGO_CONN_NOT_MASTER" ); return; }
+                  }
+                }
+                if ( mongo_cmd_authenticate(conn, db_name.c_str(), login.c_str(), pass.c_str()) == MONGO_ERROR )
+                {
+                     throw new string ("HwordMongoDbAccessor:: MONGO_ERROR error AUTH");
+                     return;
+                }
+                break;
+            }
+            catch(string *s)
+            {
+                cout << s->c_str();
+                cout << ".. reconnecting\n";
+                
+                if (i==5)
+                    throw s;
+                sleep(2);
+                continue;
+            }
+                
+        }
     }
     
     virtual tr1::unordered_map<string, int64_t> *getIds()

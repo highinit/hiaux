@@ -129,6 +129,7 @@ void HdividerWatcher::handleFault(string worker_id)
 
 vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
 {
+    //cout << "_____getInput start " << endl;
     pthread_mutex_lock(&get_mutex);
     vector<int64_t> input_ids;
 
@@ -143,12 +144,15 @@ vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
         
         if (input_id_it->end())
         {
+            cout << "input_id_it end " << endl;
             times_end++;
             if (input_ids.size()+nhandled==input_id_it->size())
             {
+                cout << "no more. exiting" << endl;
                 break;
                 //finished = 1;
             }
+            cout << "input_id_it setting first" << endl;
             input_id_it->setFirst();
         }
         
@@ -164,14 +168,17 @@ vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
 
         pthread_mutex_lock(&put_mutex);
         //cout << "getting state\n";
+        //cout << "get input" << endl;
         int64_t id = input_id_it->value(); 
+        //cout << "get state" << endl;
         InputState *state = state_accessor->getState(id);
-        if (state->locked_by=="")
+        if (!state->handled)
         {
             input_ids.push_back(state->id);
             state->locked_by = worker_id;
             state->handled = 0;
             //cout << "saving state\n";
+           // cout << "save state" << endl;
             state_accessor->saveState(state);
         }
         pthread_mutex_unlock(&put_mutex);
@@ -183,6 +190,7 @@ vector<int64_t> HdividerWatcher::getInput(int count, string worker_id)
     
     pthread_mutex_unlock(&get_mutex);
     
+    //cout << "_____getInput finish " << endl;
     return input_ids;
 }
 
@@ -193,10 +201,13 @@ bool HdividerWatcher::isFinished()
 
 void HdividerWatcher::setHandled(InputId input_id)
 {
+    //cout << "_____setHandled start " << input_id << endl;
     pthread_mutex_lock(&put_mutex);
+    //cout << "getState \n";
     InputState *state = state_accessor->getState(input_id);
     state->handled = 1;
     nhandled++;
+   // cout << "saveState  \n";
     state_accessor->saveState(state);
     
     if (nhandled==input_id_it->size())
@@ -206,10 +217,12 @@ void HdividerWatcher::setHandled(InputId input_id)
     
     delete state;
     pthread_mutex_unlock(&put_mutex);
+     //cout << "_____setHandled finish\n";  
 }
 
 int HdividerWatcher::isHandled(InputId input_id)
 {
+   // cout << "_____isHandled start " << input_id << endl;
     pthread_mutex_lock(&put_mutex);
     InputState *state = state_accessor->getState(input_id);
     
@@ -217,7 +230,23 @@ int HdividerWatcher::isHandled(InputId input_id)
     
     delete state;
     pthread_mutex_unlock(&put_mutex);
+    // cout << "_____isHandled finish " << input_id << endl;
     return handled;
+}
+
+int HdividerWatcher::setHandledIfNot(int64_t input_id)
+{
+    pthread_mutex_lock(&put_mutex);
+    InputState *state = state_accessor->getState(input_id);
+    int not_handled = !state->handled;
+    
+    state->handled = 1;
+    nhandled++;
+    state_accessor->saveState(state);
+    delete state;
+    
+    pthread_mutex_unlock(&put_mutex);
+    return not_handled;   
 }
 
 void HdividerWatcher::lockResult(ResultId result_id, string worker_id)

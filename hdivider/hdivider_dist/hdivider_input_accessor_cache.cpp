@@ -22,18 +22,20 @@ void HdividerInputIdCache::start_caching()
             pthread_cond_wait(&cacher_cond, &cacher_lock);
         }
         
+        out << "input cacher unlocked\n";
+        
         if (!mongo_it->end())
         {
            vector<int64_t> new_ids;
            
-           //cout << "reading from db\n";
+           out << "input cacher reading from db\n";
            while (new_ids.size() < cache_size && !mongo_it->end())
            {
                new_ids.push_back(mongo_it->value());
                mongo_it->getNext();
            }
            
-           //cout << "got from ids db. waiting to write to cached_ids\n";
+           out << "input cacher got from ids db. waiting to write to cached_ids\n";
            
            pthread_mutex_lock(&ids_lock);
            vector<int64_t>::iterator it = new_ids.begin();
@@ -47,12 +49,14 @@ void HdividerInputIdCache::start_caching()
         }
         else
         {
-            //cout << "mongo_it END\n";
+            out << "mongo_it END\n";
+            isend = 1;
             cacher_wait = 1;
             pthread_mutex_unlock(&cacher_lock);
             break;
         }
         
+        out << "input cacher finished" << endl;
         cacher_wait = 1;
         pthread_mutex_unlock(&cacher_lock);
     }
@@ -62,13 +66,16 @@ void HdividerInputIdCache::cache_became_smaller()
 {
     pthread_mutex_lock(&cacher_lock);
     pthread_mutex_lock(&ids_lock);
-    if (cached_ids.size()< cache_size /2)
+    if (cacher_wait==1)
     {
-        //cout << "unlocking cacher \n";
+        if (cached_ids.size()< cache_size /2)
+        {
+            out << "unlocking input cacher \n";
 
-        cacher_wait = 0;
-        pthread_cond_signal(&cacher_cond);
-        
+            cacher_wait = 0;
+            pthread_cond_signal(&cacher_cond);
+
+        }
     }
     pthread_mutex_unlock(&ids_lock);
     pthread_mutex_unlock(&cacher_lock);
@@ -76,6 +83,7 @@ void HdividerInputIdCache::cache_became_smaller()
 
 HdividerInputIdCache::HdividerInputIdCache(string ip, int port, string db_name, string coll_name, string login, string pass, int cache_size)
 {
+    out.open("HdividerInputIdCache.log", std::ofstream::out);
    // cout << "HdividerInputIdCache::HdividerInputIdCache " << endl;
     isend = 0;
     pthread_mutex_init(&ids_lock, 0);
@@ -112,14 +120,16 @@ void HdividerInputIdCache::getNext()
         pthread_mutex_unlock(&ids_lock);
         
        // cache_became_smaller();
-        
         while (1)
         {      
             if (mongo_it->end())
             {
+                out << "getNext mongo end" << endl;
                 isend = 1;
                 return;
             }
+            
+            out << "cache is empty" << endl; 
             
             cache_became_smaller();
             
@@ -128,6 +138,8 @@ void HdividerInputIdCache::getNext()
             pthread_mutex_lock(&ids_lock);
             if (cached_ids.size()!=0)
             {
+                out << "cache size " << cached_ids.size() << " continue reading from cache" << endl;
+                isend = 0;
                 pthread_mutex_unlock(&ids_lock);
                 break;
             }
@@ -135,6 +147,8 @@ void HdividerInputIdCache::getNext()
         }
         
         pthread_mutex_lock(&ids_lock);
+        out << "pop. cache size " << cached_ids.size() << endl;
+        
         id_value = cached_ids.front();
         cached_ids.pop();
         //cout << "pop \n";

@@ -83,12 +83,12 @@ InputState* HdividerStatesCache::getState(int64_t input_id)
     tr1::unordered_map<int64_t, InputState*>::iterator it = cache->find(input_id);
     if (it!=cache->end())
     {
-      /*  if (it->second->handled)
+         /*if (it->second->handled)
         {
     //        cout << "1 (it->second->handled" << endl;
             InputState *state = new InputState(*it->second);
-            //delete it->second;
-            //cache->erase(it);
+            delete it->second;
+            cache->erase(it);
             
             pthread_mutex_unlock(&mutex);
             return state;
@@ -133,12 +133,12 @@ void HdividerStatesCache::saveState(const InputState *state)
     tr1::unordered_map<int64_t, InputState*>::iterator it = cache->find(state->id);
     if (it!=cache->end())
     {
-      //  if (state->handled)
+     /*   if (state->handled)
         {
-            //delete it->second;
-            //cache->erase(it);
+            delete it->second;
+            cache->erase(it);
         }
-       // else
+        else*/
         {
             delete it->second;
             it->second = new InputState(*state);

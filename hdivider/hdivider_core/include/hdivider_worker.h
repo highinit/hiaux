@@ -26,6 +26,7 @@ public:
 
     virtual void setHandled(InputId input_id) = 0;
     virtual int isHandled(InputId input_id) = 0;
+    virtual int setHandledIfNot(int64_t input_id) = 0;
     virtual void lockResult(InputId result_id, string worker_id) = 0;
     virtual void unlockResult(InputId result_id, string worker_id) = 0;
     

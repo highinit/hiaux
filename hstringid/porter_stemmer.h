@@ -48,12 +48,17 @@
    header file.
 */
 
-struct stemmer;
 
-extern struct stemmer * create_stemmer(void);
-extern void free_stemmer(struct stemmer * z);
+struct stemmer {
+   char * b;       /* buffer for word to be stemmed */
+   int k;          /* offset to the end of the string */
+   int j;          /* a general offset into the string */
+};
 
-extern int stem(struct stemmer * z, char * b, int k);
+stemmer * create_stemmer(void);
+void free_stemmer(struct stemmer * z);
+
+int stem(struct stemmer * z, char * b, int k);
 
 
 
@@ -66,11 +71,7 @@ extern int stem(struct stemmer * z, char * b, int k);
 /* stemmer is a structure for a few local bits of data,
 */
 
-struct stemmer {
-   char * b;       /* buffer for word to be stemmed */
-   int k;          /* offset to the end of the string */
-   int j;          /* a general offset into the string */
-};
+
 
 
 /* Member b is a buffer holding a word to be stemmed. The letters are in
@@ -93,16 +94,7 @@ struct stemmer {
 */
 
 
-extern struct stemmer * create_stemmer(void)
-{
-    return (struct stemmer *) malloc(sizeof(struct stemmer));
-    /* assume malloc succeeds */
-}
 
-extern void free_stemmer(struct stemmer * z)
-{
-    free(z);
-}
 
 
 /* cons(z, i) is TRUE <=> b[i] is a consonant. ('b' means 'z->b', but here
@@ -381,19 +373,7 @@ static void step5(struct stemmer * z)
    length, so 0 <= k' <= k.
 */
 
-extern int stem(struct stemmer * z, char * b, int k)
-{
-   if (k <= 1) return k; /*-DEPARTURE-*/
-   z->b = b; z->k = k; /* copy the parameters into z */
 
-   /* With this line, strings of length 1 or 2 don't go through the
-      stemming process, although no mention is made of this in the
-      published algorithm. Remove the line to match the published
-      algorithm. */
-
-   step1ab(z); step1c(z); step2(z); step3(z); step4(z); step5(z);
-   return z->k;
-}
 
 /*--------------------stemmer definition ends here------------------------*/
 /*

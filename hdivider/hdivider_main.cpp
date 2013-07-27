@@ -54,6 +54,7 @@ public:
             (*vars)["in_coll"], (*vars)["db_user"], (*vars)["db_pass"], 1000);
         
         HdividerWatcher* watcher = new HdividerWatcher(input_it, new HdividerStatesCache(state_accessor));
+        //HdividerWatcher* watcher = new HdividerWatcher(input_it, state_accessor);
         
         Hlogger *logger = new Hlogger((*vars)["db_ip"], db_port, (*vars)["db_name"], "logs", (*vars)["hdivider_job_id"], (*vars)["db_user"], (*vars)["db_pass"]);
         
@@ -95,11 +96,11 @@ int main(int argc, char** argv)
     try
     {
         HdividerLauncher hdivider_launcher;
-        hdivider_launcher.launch(HconfigParser::load("htext_ider_hdivider.conf"));
+        //hdivider_launcher.launch(HconfigParser::load("htext_ider_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hcrawler_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hindexer_hdivider.conf"));
         //hdivider_launcher.launch(HconfigParser::load("hindex_reducer_hdivider.conf"));
-        //hdivider_launcher.launch(HconfigParser::load(argv[1]));
+        hdivider_launcher.launch(HconfigParser::load(argv[1]));
         hdivider_launcher.join();
     }
     catch (string *s)

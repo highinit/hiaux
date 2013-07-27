@@ -52,21 +52,15 @@ public:
  void runTest() { suite_HdividerDistTests.testConcurrentWriteResultUsingDbUsingHdividerCache(); }
 } testDescription_suite_HdividerDistTests_testConcurrentWriteResultUsingDbUsingHdividerCache;
 
-static class TestDescription_suite_HdividerDistTests_testMongoIdAccessor : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_HdividerDistTests_testMongoIdAccessor() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 330, "testMongoIdAccessor" ) {}
- void runTest() { suite_HdividerDistTests.testMongoIdAccessor(); }
-} testDescription_suite_HdividerDistTests_testMongoIdAccessor;
-
 static class TestDescription_suite_HdividerDistTests_testMongoIdCache : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_HdividerDistTests_testMongoIdCache() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 410, "testMongoIdCache" ) {}
+ TestDescription_suite_HdividerDistTests_testMongoIdCache() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 409, "testMongoIdCache" ) {}
  void runTest() { suite_HdividerDistTests.testMongoIdCache(); }
 } testDescription_suite_HdividerDistTests_testMongoIdCache;
 
 static class TestDescription_suite_HdividerDistTests_testMongoStateAccessor : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_HdividerDistTests_testMongoStateAccessor() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 450, "testMongoStateAccessor" ) {}
+ TestDescription_suite_HdividerDistTests_testMongoStateAccessor() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 449, "testMongoStateAccessor" ) {}
  void runTest() { suite_HdividerDistTests.testMongoStateAccessor(); }
 } testDescription_suite_HdividerDistTests_testMongoStateAccessor;
 

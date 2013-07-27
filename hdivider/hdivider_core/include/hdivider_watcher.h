@@ -100,6 +100,7 @@ public:
     
     void setHandled(InputId input_id);
     int isHandled(InputId input_id);
+    int setHandledIfNot(int64_t input_id);
     void lockResult(ResultId result_id, string worker_id);
     void unlockResult(ResultId result_id, string worker_id);
     

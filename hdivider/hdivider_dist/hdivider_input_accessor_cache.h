@@ -9,6 +9,7 @@
 #define	HDIVIDER_INPUT_ACCESSOR_CACHE_H
 
 #include "hdivider_mongo_accessors.h"
+#include <fstream>
 
 class HdividerInputIdCache: public  HdividerInputIdIt
 {
@@ -30,6 +31,8 @@ class HdividerInputIdCache: public  HdividerInputIdIt
     void cache_became_smaller();
     
     HdividerInputIdCache()  { }
+    
+    ofstream out;
     
     public:
         

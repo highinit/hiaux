@@ -18,6 +18,8 @@ using namespace std;
 
 class HdividerMongoInputIdIt : public HdividerInputIdIt 
 {
+    int nskip;
+    
     int cur_id;
     string db_name;
     string coll_name;
@@ -27,6 +29,11 @@ class HdividerMongoInputIdIt : public HdividerInputIdIt
     
     bool isend;
     int coll_size;
+    string ip;
+    string login;
+    string pass;
+    int port;
+    void connect();
     
 public:
     

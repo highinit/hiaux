@@ -7,38 +7,46 @@
 
 #include "hdivider_mongo_accessors.h"
 
-HdividerMongoInputIdIt::HdividerMongoInputIdIt(string ip, int port, string db_name, string coll_name, string login, string pass)
+void HdividerMongoInputIdIt::connect()
 {
-    this->coll_size = 0;
-    this->db_name = db_name;
-    isend = 1;
-    this->coll_name = coll_name;
-    conn = new mongo;
-
     int status = mongo_connect(conn, ip.c_str(), port);
 
-      if( status != MONGO_OK )
+    if( status != MONGO_OK )
+    {
+      switch ( conn->err )
       {
-          switch ( conn->err )
-          {
-            case MONGO_CONN_SUCCESS:    {  break; }
-            case MONGO_CONN_NO_SOCKET:  { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NO_SOCKET" ); return; }
-            case MONGO_CONN_FAIL:       { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_FAIL" ); return; }
-            case MONGO_CONN_NOT_MASTER: { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NOT_MASTER" ); return; }
-          }
+        case MONGO_CONN_SUCCESS:    {  break; }
+        case MONGO_CONN_NO_SOCKET:  { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NO_SOCKET" );  }
+        case MONGO_CONN_FAIL:       { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_FAIL" );  }
+        case MONGO_CONN_NOT_MASTER: { throw new string ("HdividerMongoInputIdIt:: MONGO_CONN_NOT_MASTER" );  }
       }
-      if ( mongo_cmd_authenticate(conn, db_name.c_str(), login.c_str(), pass.c_str()) == MONGO_ERROR )
-      {
-             throw new string ("HdividerMongoInputIdIt:: MONGO_ERROR error AUTH");
-             return;
-      }
+    }
+    if ( mongo_cmd_authenticate(conn, db_name.c_str(), login.c_str(), pass.c_str()) == MONGO_ERROR )
+    {
+         throw new string ("HdividerMongoInputIdIt:: MONGO_ERROR error AUTH");
+    }
 
     bson query[1];
     bson_init(query);
     bson_finish(query);
     this->coll_size = (int)mongo_count(conn, db_name.c_str(), coll_name.c_str(), query);
     bson_destroy(query);
+}
 
+HdividerMongoInputIdIt::HdividerMongoInputIdIt(string ip, int port, string db_name, string coll_name, string login, string pass)
+{
+    nskip = 0;
+    this->coll_size = 0;
+    this->db_name = db_name;
+    isend = 1;
+    this->coll_name = coll_name;
+    conn = new mongo;
+    this->ip = ip;
+    this->login = login;
+    this->pass = pass;
+    this->port = port;
+    connect();
+    
     setFirst();
 }
 
@@ -69,10 +77,48 @@ void HdividerMongoInputIdIt::getNext()
             {
                     cur_id = int (bson_iterator_int( iterator ));
                     isend = 0;
+                    nskip++;
             }
     }
     else
     {
+        cout << "input getNext error\n";
+        bool ok = 0;
+        for (int i = 0; i<3; i++)
+        {
+ 
+            cout << "reseting cursor\n";
+           
+            mongo_cursor_destroy(obj_cursor);
+            mongo_cursor_init( obj_cursor, conn, (db_name+"."+coll_name).c_str() );
+            mongo_cursor_set_skip (obj_cursor, nskip);
+            bson_iterator iterator[1];
+            
+            if ( mongo_cursor_next( obj_cursor ) == MONGO_OK )
+            {
+                if ( mongo_cursor_next( obj_cursor ) == MONGO_OK )
+                {
+                    cout << "cursor reset ok. continuing\n";
+                    if ( bson_find( iterator, mongo_cursor_bson( obj_cursor ), "id" ))
+                    {
+                        cout << "got next id \n";
+                        cur_id = int (bson_iterator_int( iterator ));
+                        isend = 0;
+                        ok = 1;
+                        nskip++;
+                        break;
+                    }
+                }
+            }
+            
+            // if not helped reconnect
+            cout << "reconnecting\n";
+            mongo_disconnect(conn);
+            connect();
+            
+        }
+        
+        if (!ok)
         isend = 1;
     }
 }

@@ -326,7 +326,7 @@ public:
         delete env;       
     }
     
-    void testMongoIdAccessor()
+    void ltestMongoIdAccessor()
     {
         string ip = "127.0.0.1";
         int port = 27017;
