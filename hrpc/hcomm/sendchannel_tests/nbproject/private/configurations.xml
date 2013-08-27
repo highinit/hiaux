@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="89">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="../tests" name="tests">
+      <df name="cxxtest">
+        <df name="admin">
+        </df>
+        <df name="bin">
+        </df>
+        <df name="build_tools">
+          <df name="cmake">
+          </df>
+          <df name="SCons">
+            <df name="test">
+              <df name="default_env">
+              </df>
+              <df name="empty_source_list">
+                <in>requirement.hpp</in>
+                <in>test_bar.t.h</in>
+                <in>test_foo.t.h</in>
+              </df>
+              <df name="expanding_#">
+              </df>
+              <df name="globbing">
+                <df name="src">
+                  <in>requirement.cpp</in>
+                  <in>requirement.h</in>
+                  <in>test_bar.t.h</in>
+                  <in>test_foo.t.h</in>
+                </df>
+              </df>
+              <df name="globbing_edmundo">
+                <in>hello.cc</in>
+                <in>hellotest.t.h</in>
+                <in>main.cpp</in>
+              </df>
+              <df name="include_CCFLAGS">
+                <df name="src">
+                  <in>not-with-pedantic.h</in>
+                  <in>only_with_ansi.t.h</in>
+                </df>
+              </df>
+              <df name="include_CXXFLAGS">
+                <df name="src">
+                  <in>not-with-pedantic.h</in>
+                </df>
+              </df>
+              <df name="multifile_tests">
+                <df name="src">
+                  <in>requirement.cpp</in>
+                  <in>requirement.h</in>
+                  <in>test_bar.t.h</in>
+                  <in>test_foo.t.h</in>
+                </df>
+              </df>
+              <df name="need_cpppath">
+                <df name="src">
+                  <df name="cpppathdir">
+                    <in>include.h</in>
+                  </df>
+                  <in>cpppath.t.h</in>
+                </df>
+              </df>
+              <df name="nonstandard_cxxtest_dir">
+              </df>
+              <df name="printer_propagation">
+                <df name="cxxtest">
+                  <in>CrazyRunner.h</in>
+                </df>
+                <df name="src">
+                  <in>failtest.t.h</in>
+                </df>
+              </df>
+              <df name="recursive_sources">
+                <df name="src">
+                  <in>requirement.cpp</in>
+                  <in>requirement.h</in>
+                  <in>test_bar.t.h</in>
+                  <in>test_foo.t.h</in>
+                </df>
+              </df>
+              <df name="string_cpppath">
+                <df name="src">
+                  <df name="cpppathdir">
+                    <in>include.h</in>
+                  </df>
+                  <in>cpppath.t.h</in>
+                </df>
+              </df>
+              <df name="target_syntax">
+                <df name="src">
+                  <df name="cpppathdir">
+                    <in>include.h</in>
+                  </df>
+                  <in>cpppath.t.h</in>
+                </df>
+              </df>
+            </df>
+          </df>
+        </df>
+        <df name="cxxtest">
+          <in>Descriptions.cpp</in>
+          <in>Descriptions.h</in>
+          <in>DummyDescriptions.cpp</in>
+          <in>DummyDescriptions.h</in>
+          <in>ErrorFormatter.h</in>
+          <in>ErrorPrinter.h</in>
+          <in>Flags.h</in>
+          <in>GlobalFixture.cpp</in>
+          <in>GlobalFixture.h</in>
+          <in>Gui.h</in>
+          <in>LinkedList.cpp</in>
+          <in>LinkedList.h</in>
+          <in>MSVCErrorPrinter.h</in>
+          <in>Mock.h</in>
+          <in>ParenPrinter.h</in>
+          <in>QtGui.h</in>
+          <in>RealDescriptions.cpp</in>
+          <in>RealDescriptions.h</in>
+          <in>Root.cpp</in>
+          <in>SelfTest.h</in>
+          <in>StdHeaders.h</in>
+          <in>StdTestSuite.h</in>
+          <in>StdValueTraits.h</in>
+          <in>StdioFilePrinter.h</in>
+          <in>StdioPrinter.h</in>
+          <in>TeeListener.h</in>
+          <in>TestListener.h</in>
+          <in>TestMain.h</in>
+          <in>TestRunner.h</in>
+          <in>TestSuite.cpp</in>
+          <in>TestSuite.h</in>
+          <in>TestTracker.cpp</in>
+          <in>TestTracker.h</in>
+          <in>ValueTraits.cpp</in>
+          <in>ValueTraits.h</in>
+          <in>Win32Gui.h</in>
+          <in>X11Gui.h</in>
+          <in>XUnitPrinter.h</in>
+          <in>XmlFormatter.h</in>
+          <in>XmlPrinter.h</in>
+          <in>YesNoRunner.h</in>
+          <in>unix.h</in>
+        </df>
+        <df name="doc">
+          <df name="epub">
+            <df name="bin">
+              <df name="lib">
+              </df>
+              <df name="xslt">
+              </df>
+            </df>
+          </df>
+          <df name="examples">
+            <in>Assertions.h</in>
+            <in>BadTestSuite1.h</in>
+            <in>MockTestSuite.h</in>
+            <in>MyClass.h</in>
+            <in>MyTestSuite1.h</in>
+            <in>MyTestSuite10.h</in>
+            <in>MyTestSuite11.h</in>
+            <in>MyTestSuite2.h</in>
+            <in>MyTestSuite3.h</in>
+            <in>MyTestSuite4.h</in>
+            <in>MyTestSuite5.h</in>
+            <in>MyTestSuite6.h</in>
+            <in>MyTestSuite7.h</in>
+            <in>MyTestSuite8.h</in>
+            <in>MyTestSuite9.h</in>
+            <in>Namespace1.h</in>
+            <in>Namespace2.h</in>
+            <in>TMyClass.h</in>
+            <in>rand_example.cpp</in>
+            <in>time_mock.cpp</in>
+            <in>time_mock.h</in>
+            <in>time_real.cpp</in>
+          </df>
+          <df name="images">
+            <df name="icons">
+              <df name="callouts">
+              </df>
+            </df>
+          </df>
+          <df name="man">
+          </df>
+        </df>
+        <df name="python">
+          <df name="cxxtest">
+          </df>
+          <df name="python3">
+            <df name="cxxtest">
+            </df>
+            <df name="scripts">
+            </df>
+          </df>
+          <df name="scripts">
+          </df>
+        </df>
+        <df name="sample">
+          <df name="gui">
+            <in>GreenYellowRed.h</in>
+          </df>
+          <df name="mock">
+            <df name="T">
+              <in>stdlib.h</in>
+            </df>
+            <in>Dice.cpp</in>
+            <in>Dice.h</in>
+            <in>MockStdlib.h</in>
+            <in>TestDice.h</in>
+            <in>mock_stdlib.cpp</in>
+            <in>real_stdlib.cpp</in>
+            <in>roll.cpp</in>
+          </df>
+          <df name="msvc">
+          </df>
+          <df name="parts">
+          </df>
+          <df name="SCons">
+            <df name="include">
+              <in>stack.h</in>
+            </df>
+            <df name="src">
+              <in>stack.c</in>
+            </df>
+            <df name="tests">
+              <in>stack_test.h</in>
+            </df>
+          </df>
+          <df name="winddk">
+          </df>
+          <in>CreatedTest.h</in>
+          <in>DeltaTest.h</in>
+          <in>EnumTraits.h</in>
+          <in>ExceptionTest.h</in>
+          <in>FixtureTest.h</in>
+          <in>MessageTest.h</in>
+          <in>SimpleTest.h</in>
+          <in>TraitsTest.h</in>
+          <in>yes_no_runner.cpp</in>
+        </df>
+        <df name="test">
+          <df name="cxxtest">
+            <in>DummyGui.h</in>
+          </df>
+          <df name="fake">
+            <df name="X11">
+              <in>Xlib.h</in>
+              <in>Xutil.h</in>
+            </df>
+            <in>commctrl.h</in>
+            <in>qapplication.h</in>
+            <in>qglobal.h</in>
+            <in>qlabel.h</in>
+            <in>qlayout.h</in>
+            <in>qmessagebox.h</in>
+            <in>qpixmap.h</in>
+            <in>qprogressbar.h</in>
+            <in>qstatusbar.h</in>
+            <in>qstring.h</in>
+            <in>qwidget.h</in>
+            <in>windows.h</in>
+          </df>
+          <df name="unit">
+            <in>LinkedList_test.t.h</in>
+          </df>
+          <in>AborterNoThrow.h</in>
+          <in>BadTest.h</in>
+          <in>Comments.h</in>
+          <in>Comments2.h</in>
+          <in>CppTemplateTest.h</in>
+          <in>DeepAbort.h</in>
+          <in>DefaultAbort.h</in>
+          <in>DefaultTraits.h</in>
+          <in>DoubleCall.h</in>
+          <in>DynamicAbort.h</in>
+          <in>DynamicMax.h</in>
+          <in>EmptySuite.h</in>
+          <in>Exceptions.h</in>
+          <in>Factor.h</in>
+          <in>ForceNoEh.h</in>
+          <in>GfSetUpFails.h</in>
+          <in>GfSetUpThrows.h</in>
+          <in>GfTearDownFails.h</in>
+          <in>GfTearDownThrows.h</in>
+          <in>GlobalFixtures.h</in>
+          <in>GoodSuite.h</in>
+          <in>GuiWait.h</in>
+          <in>HaveStd.h</in>
+          <in>IncludeTest.h</in>
+          <in>InheritedTest.h</in>
+          <in>Int64.h</in>
+          <in>LessThanEquals.h</in>
+          <in>LongLong.h</in>
+          <in>LongTraits.h</in>
+          <in>MaxDump.h</in>
+          <in>MockTest.h</in>
+          <in>Namespace1.h</in>
+          <in>Namespace2.h</in>
+          <in>NoEh.h</in>
+          <in>Part1.h</in>
+          <in>Part2.h</in>
+          <in>Relation.h</in>
+          <in>SameData.h</in>
+          <in>SameFiles.h</in>
+          <in>SameFilesLonger.h</in>
+          <in>SameZero.h</in>
+          <in>SetUpWorldError.h</in>
+          <in>SetUpWorldFails.h</in>
+          <in>SetUpWorldThrows.h</in>
+          <in>SimpleInheritedTest.h</in>
+          <in>SimpleInheritedTest2.h</in>
+          <in>Something.h</in>
+          <in>StlTraits.h</in>
+          <in>TearDownWorldFails.h</in>
+          <in>TearDownWorldThrows.h</in>
+          <in>TestNonFinite.h</in>
+          <in>ThrowNoStd.h</in>
+          <in>ThrowsAssert.h</in>
+          <in>TraitsTest.h</in>
+          <in>Tsm.h</in>
+          <in>UserTraits.h</in>
+          <in>VoidTraits.h</in>
+          <in>WideCharTest.h</in>
+          <in>WorldFixtures.h</in>
+          <in>anything.cpp</in>
+          <in>int64.cpp</in>
+          <in>longlong.cpp</in>
+          <in>main.cpp</in>
+          <in>stpltpl.cpp</in>
+          <in>tpltpl.cpp</in>
+          <in>wchar.cpp</in>
+        </df>
+      </df>
+      <in>main.cpp</in>
+      <in>sendchannel_test.h</in>
+    </df>
+  </logicalFolder>
+  <projectmakefile>../tests/Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>../tests</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>

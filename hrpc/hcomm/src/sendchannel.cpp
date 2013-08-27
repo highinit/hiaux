@@ -1,84 +1,60 @@
 #include "../include/sendchannel.h"
-//#include "../include/sendchman.h"
-//#include "../include/hlog.h" 
-//#define LOG(str) hlog_log(str, "HdividerWatcher.log")
-
-hsock_t send_channel_t::hsock;
-/*
-int send_channel_t::csend(char *str)
-{
-        char *packet = new char[255];
-        strcpy(packet,"");
-        strcpy(packet, str);
-        if (send(*sock, packet, 255, 0)<=0)
-        {
-			//state = FAULT;
-        }
-        delete [] packet;
-        return 0;
-}*/
 
 int send_channel_t::csend(string str)
 {
-        //str.erase(std::remove(str.begin(), str.end(), '\r'), str.end());
-        //str.erase(std::remove(str.begin(), str.end(), '\n'), str.end());
-        //if (str.length()==0) return 1;
-    
-         
-    
-        char packet_size_str[10];
-        
-        for (int i = 0; i<10; i++)
-            packet_size_str[i] = 0;
-        
-        if (str.length()<999999)
-        {
-            sprintf(packet_size_str, "%d", (int)str.length()+2);
-            packet_size_str[8] = '\r';
-            packet_size_str[9] = '\n';
-           // strcat(packet_size_str, "\r\n");
-        }
-        else
-        {
-            throw new string("send_channel_t::csend too big packet" + str);
-        }
-        
-        int err = send(*sock, packet_size_str, 10, 0);
-        if (err==-1)
-        {
-            throw new string ("send_channel_t::csend failed to send packet_size_str"); 
-        }
-        else if (err!=10)
-        {
-            throw new string ("send_channel_t::csend not 5 bytes"); 
-        }
-        
-        if (str.length()==0) return 0;
-        
-        char *packet = new char[str.length()+2];
-        
-        for (int i = 0; i<str.length()+2; i++)
-            packet[i] = 0;
- 
-        
-        strcpy(packet,"");
-        strcpy(packet, str.c_str());
-        //strcat(packet, "\r\n");
-        packet [str.length()] = '\r';
-        packet [str.length()+1] = '\n';
-        
-        err = send(*sock, packet, str.length()+2, 0);
-        if (err==-1)
-        {
-            throw new string ("send_channel_t::csend failed to send packet_size_str"); 
-        }
-        else if (err!=str.length()+2)
-        {
-            throw new string ("send_channel_t::csend not str.length()+2 bytes"); 
-        }
-        
-        delete [] packet;
-        return 0;
+    char packet_size_str[10];
+
+    for (int i = 0; i<10; i++)
+        packet_size_str[i] = 0;
+
+    if (str.length()<999999)
+    {
+        sprintf(packet_size_str, "%d", (int)str.length()+2);
+        packet_size_str[8] = '\r';
+        packet_size_str[9] = '\n';
+       // strcat(packet_size_str, "\r\n");
+    }
+    else
+    {
+        throw new string("send_channel_t::csend too big packet" + str);
+    }
+
+    int err = send(*sock, packet_size_str, 10, 0);
+    if (err==-1)
+    {
+        throw new string ("send_channel_t::csend failed to send packet_size_str"); 
+    }
+    else if (err!=10)
+    {
+        throw new string ("send_channel_t::csend not 5 bytes"); 
+    }
+
+    if (str.length()==0) return 0;
+
+    char *packet = new char[str.length()+2];
+
+    for (int i = 0; i<str.length()+2; i++)
+        packet[i] = 0;
+
+
+    strcpy(packet,"");
+    strcpy(packet, str.c_str());
+    //strcat(packet, "\r\n");
+    packet [str.length()] = '\r';
+    packet [str.length()+1] = '\n';
+
+    err = send(*sock, packet, str.length()+2, 0);
+    if (err==-1)
+    {
+        throw new string ("send_channel_t::csend failed to send packet_size_str"); 
+    }
+    else if (err!=str.length()+2)
+    {
+        throw new string ("send_channel_t::csend not str.length()+2 bytes"); 
+    }
+
+    delete [] packet;
+    return 0;
 }
 
 
@@ -145,42 +121,13 @@ string send_channel_t::crecv()
         string ret(packet);
         delete [] packet;
 
-        
-        //ret = ret.substr(0, ret.length()-1);
-        //ret = ret.substr(0, ret.length()-1);
-        //ret.erase(std::remove(ret.begin(), ret.end(), '\r'), ret.end());
-        //ret.erase(std::remove(ret.begin(), ret.end(), '\n'), ret.end());
 
-        
-        /*while (ret.length()>packet_size-2)
-        {
-            ret = ret.substr(0, ret.length()-1);
-        }*/
-
-        if (ret == "send_channel_t::confirm_close")
-        {
-            //LOG("crecv:: otherside requested close protocol initiation");
-            otherside_close_confirm_waiting = 1;
-            if (!thisside_waiting_close)
-                return crecv();
-        }
         return ret;
 }
-/*
-char* send_channel_t::crecv(char *bf)
-{
-        bf = new char[255];
-	if (recv(*sock, bf, 255, 0)<=0)
-	{
-                //state = FAULT;
-	}
-        return bf;
-}*/
 
 send_channel_t::send_channel_t()
 {
-    otherside_close_confirm_waiting = 0;
-    thisside_waiting_close = 0;
+
 }
 
 send_channel_t::~send_channel_t()
