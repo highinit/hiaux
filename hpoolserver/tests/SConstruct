@@ -1,0 +1,5 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('threadpool_test', 
+['../../threadpool/threadpool.cpp',
+'../hpoolserver.cpp',
+'hpoolserver_main.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g')

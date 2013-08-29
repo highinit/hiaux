@@ -1,0 +1,4 @@
+env = Environment(CCFLAGS='-std=gnu++11 ')
+Program('mapr_test', 
+['mapr_test.cpp',
+'../core/mapreduce.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g')

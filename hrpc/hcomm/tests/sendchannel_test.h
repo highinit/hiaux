@@ -4,6 +4,33 @@
 #include <errno.h>
 #include "../include/hsock.h"
 
+#ifdef __MACH__
+#include <mach/clock.h>
+#include <mach/mach.h>
+#endif
+
+
+
+struct timespec ts;
+
+#ifdef __MACH__ // OS X does not have clock_gettime, use clock_get_time
+
+#define CLOCK_THREAD_CPUTIME_ID 0
+
+void clock_gettime(int mode, timespec *ts)
+{
+    clock_serv_t cclock;
+    mach_timespec_t mts;
+    host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
+    clock_get_time(cclock, &mts);
+    mach_port_deallocate(mach_task_self(), cclock);
+    ts->tv_sec = mts.tv_sec;
+    ts->tv_nsec = mts.tv_nsec;
+}
+
+#endif
+
+
 void getSockError()
 {
     if (errno == EACCES)
@@ -113,7 +140,6 @@ public:
             
             pthread_t th;
             pthread_create(&th, 0, serv_th, (void*)&arg);
-            sleep(1);
             int cli = hSock::client("127.0.0.1", port);
 
             char bf[15];
@@ -121,6 +147,8 @@ public:
             
             char bf1[20];
             strcpy(bf1, "");
+            
+            sleep(1);
             
             timespec start, finish;
             clock_gettime(CLOCK_THREAD_CPUTIME_ID, &start);

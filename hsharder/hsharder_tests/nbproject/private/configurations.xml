@@ -333,8 +333,8 @@
           <in>wchar.cpp</in>
         </df>
       </df>
-      <in>main.cpp</in>
-      <in>sendchannel_test.h</in>
+      <in>hsharder_test.cpp</in>
+      <in>hsharder_test.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>../tests/Makefile</projectmakefile>
@@ -365,7 +365,7 @@
         </runcommandpicklist>
         <runcommand>"${OUTPUT_PATH}"</runcommand>
         <rundir>../tests</rundir>
-        <buildfirst>false</buildfirst>
+        <buildfirst>true</buildfirst>
         <terminal-type>0</terminal-type>
         <remove-instrumentation>0</remove-instrumentation>
         <environment>

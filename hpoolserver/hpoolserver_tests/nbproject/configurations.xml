@@ -2,7 +2,7 @@
 <configurationDescriptor version="88">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="../tests" name="tests">
-      <in>sendchannel_test.h</in>
+      <in>hpoolserver_tests.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -32,7 +32,7 @@
           <executablePath></executablePath>
         </makeTool>
       </makefileType>
-      <item path="../tests/sendchannel_test.h" ex="false" tool="3" flavor2="0">
+      <item path="../tests/hpoolserver_tests.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

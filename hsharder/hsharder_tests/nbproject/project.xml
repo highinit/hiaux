@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.cnd.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>sendchannel_tests</name>
+            <name>hsharder_tests</name>
             <c-extensions>c</c-extensions>
             <cpp-extensions>cc,cpp</cpp-extensions>
             <header-extensions>h,hh,hpp</header-extensions>
