@@ -26,8 +26,8 @@ public:
         {
             char bf[20];
             sprintf(bf, "%d", i);
-            std::cout << bf << std::endl;
-            /*std::string key(bf);
+            //std::cout << bf << std::endl;
+            std::string key(bf);
             if (sharder.getRealShard(key)=="_1_")
             {
                 s1++;
@@ -38,10 +38,11 @@ public:
             {
                 std::cout << "unknown shard\n";
                 TS_ASSERT(0);
-            }*/
+            }
           
         }
         
-        std::cout << "s1:" << s1 << std::endl << "s2:" << s2 << std::endl;
+        TS_ASSERT(s1/s2 < 2);
+        TS_ASSERT(s2/s1 < 2);
     }
 };

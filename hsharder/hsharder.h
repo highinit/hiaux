@@ -1,17 +1,17 @@
 #include <vector>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <map>
 
 template <class ShardInfo, class KeyType>
 class hSharder
 {
-    std::vector<ShardInfo> virtual_shards;
+    std::map<int, ShardInfo> virtual_shards;
     boost::function<int(KeyType)> hash_f;
 public:
      
     hSharder(int nvirtual_shards, boost::function<int(KeyType)> hash_f)
     {
-        virtual_shards.reserve(nvirtual_shards);
         this->hash_f = hash_f;
     }
     
