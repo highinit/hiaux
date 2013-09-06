@@ -352,6 +352,7 @@
       <in>hstringid_worker.h</in>
       <in>hword_db_accessor.h</in>
       <in>hword_master_skel.h</in>
+      <in>porter_stemmer.cpp</in>
       <in>porter_stemmer.h</in>
     </df>
   </logicalFolder>

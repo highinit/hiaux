@@ -29,7 +29,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>mapr_test</executablePath>
         </makeTool>
       </makefileType>
       <item path="mapr_test.cpp" ex="false" tool="1" flavor2="0">

@@ -2,6 +2,10 @@
 #define  MAPREDUCE_H
 
 #include <vector>
+#include <tr1/unordered_map>
+
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
 class InputType
@@ -23,26 +27,28 @@ public:
     EmitType value;
 };
 
-typedef std::vector<InputType> InputLocalChunk;
-typedef boost::shared_ptr<InputLocalChunk> InputLocalChunkPtr;
-typedef boost::shared_ptr<EmitType> EmitTypePtr;
-typedef boost::unordered_map<int64_t, std::vector<EmitTypePtr> > EmitHash;
-typedef boost::shared_ptr<EmitHash> EmitHashPtr;
+class BatchAccessor
+{
+public:
+    virtual bool end() = 0;
+    virtual InputType& getNextInput() = 0;
+};
 
 class MapReduce
 {
-    void emit(int64_t key, EmitType &e);
-    std::string job_name;
-    std::string node_name;
+    
+    std::string m_job_name;
+    std::string m_node_name;
+protected:
+    boost::function<void(int64_t, EmitType*)> emit; 
+    
 public:
     
-    virtual void map(int64_t map_key, InputType &object) = 0;   
-    virtual ReduceResult reduce(int64_t emit_key, std::vector<EmitType> &emits) = 0;
+    MapReduce (std::string job_name, std::string node_name);
     
-    virtual InputType getInput(int64_t id) = 0;
-    virtual void saveReduceResult(ReduceResult result, FILE *f) = 0;
-    virtual ReduceResult getNextLocalReduceResult(FILE *f) = 0;
-    virtual void uploadResult(ReduceResult result);
+    void setEmitF(boost::function<void(int64_t, EmitType*)> emitf);
+    virtual void map(InputType &object) = 0;   
+    virtual EmitType* reduce(int64_t emit_key, EmitType* a, EmitType* b) = 0;
 };
 
 #endif
