@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#define CONN_QUEUE_SIZE 10
+#define CONN_QUEUE_SIZE 1000
 
 using namespace std;
 
@@ -31,22 +31,22 @@ class hSockClientInfo
 {
 public:
 
-    string ip;
-    int port;
-    int sock;
+    string m_ip;
+    int m_port;
+    int m_sock;
     
     hSockClientInfo(const std::string ip, const int port, const int sock)
     {
-        this->ip = ip;
-        this->port = port;
-        this->sock = sock;
+        m_ip = ip;
+        m_port = port;
+        m_sock = sock;
     }
     
     hSockClientInfo& operator=(const hSockClientInfo &c)
     {
-        this->ip = c.ip;
-        this->port = c.port;
-        this->sock = c.sock;
+        m_ip = c.m_ip;
+        m_port = c.m_port;
+        m_sock = c.m_sock;
         return *this;
     }
 };

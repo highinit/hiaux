@@ -27,11 +27,17 @@ static hPoolServerTests suite_hPoolServerTests;
 static CxxTest::List Tests_hPoolServerTests = { 0, 0 };
 CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 6, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
 
-static class TestDescription_suite_hPoolServerTests_testO : public CxxTest::RealTestDescription {
+static class TestDescription_suite_hPoolServerTests_testCheckInitConnection : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testO() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 11, "testO" ) {}
- void runTest() { suite_hPoolServerTests.testO(); }
-} testDescription_suite_hPoolServerTests_testO;
+ TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 37, "testCheckInitConnection" ) {}
+ void runTest() { suite_hPoolServerTests.testCheckInitConnection(); }
+} testDescription_suite_hPoolServerTests_testCheckInitConnection;
+
+static class TestDescription_suite_hPoolServerTests_testSendSimple : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 67, "testSendSimple" ) {}
+ void runTest() { suite_hPoolServerTests.testSendSimple(); }
+} testDescription_suite_hPoolServerTests_testSendSimple;
 
 #include <cxxtest/Root.cpp>
 const char* CxxTest::RealWorldDescription::_worldName = "cxxtest";

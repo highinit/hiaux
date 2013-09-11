@@ -7,7 +7,7 @@
 
 #include <cstdlib>
 #include "../core/mapreduce.h"
-#include "../core/MapReduceDispatcher.h"
+#include "../core/MRNodeDispatcher.h"
 
 using namespace std;
 
@@ -22,6 +22,16 @@ class InvertLine : public EmitType
 {
 public:
     std::vector<int64_t> pages;
+    
+    virtual void dump(std::string filename)
+    {
+      
+    }
+    
+    virtual void restore(std::string filename)
+    {
+        
+    }
 };
 
 class MapReduceInvertIndex : public MapReduce
@@ -34,7 +44,7 @@ public:
         
     }
     
-    virtual void map(InputType &object)
+    virtual void map(const InputType &object)
     {
         Document& in_obj = ( Document& ) object ; 
         for (int i = 0; i<in_obj.words.size(); i++)
@@ -48,8 +58,6 @@ public:
     
     virtual EmitType* reduce(int64_t emit_key, EmitType* _a, EmitType* _b)
     {
-        //std::vector<InvertLine*> *emits = (std::vector<InvertLine*>*) emits_;
-
         InvertLine *a = (InvertLine*) _a;
         InvertLine *b = (InvertLine*) _b;
         
@@ -60,6 +68,11 @@ public:
         
         delete b;
         return a;
+    }
+    
+    virtual void finilize(EmitType* result) 
+    {
+    
     }
 };
 
@@ -89,15 +102,27 @@ public:
     }
 };
 
+void onAllBatchesFinished(EmitQueueHash *queue_hash)
+{
+    std::cout << "onAllBatchesFinished" << std::endl;
+}
+
 int main(int argc, char** argv) 
 {
     MapReduceInvertIndex *MR = new MapReduceInvertIndex("InvertIndex", "localhost");
-    
-    MapReduceDispatcher *mr_disp = new MapReduceDispatcher(MR);
+    hThreadPool *pool = new hThreadPool(4);
+    MRNodeDispatcher *mr_disp = new MRNodeDispatcher(MR, pool, boost::bind(&onAllBatchesFinished, _1));
     DocumentBatch *batch = new DocumentBatch(0, 9, 42);
     DocumentBatch *batch2 = new DocumentBatch(5, 12, 13);
-    BatchMapper* mapper = mr_disp->proceed(batch);
-    mr_disp->proceed(batch2);
+    std::vector<BatchAccessor*> batches;
+    batches.push_back(batch);
+    batches.push_back(batch2);
+    
+    mr_disp->proceedBatches(batches);
+    
+    
+    pool->run();
+    sleep(1);
     
     //std::tr1::unordered_map<int64_t, std::vector<EmitType*>* > res_hash = mapper->
     
@@ -106,17 +131,26 @@ int main(int argc, char** argv)
     EmitQueueHash::iterator it = hash->begin();
     while (it != hash->end())
     {
-        std::cout << it->first << ": ";
-        EmitQueue::iterator vit = it->second->begin();
-        while (vit != it->second->end())
+        std::cout << "key:" << it->first << " emits: " << it->second->size() << "| ";
+        
+        while (it->second->size() != 0)
         {
-            InvertLine *line = (InvertLine*)it->second->at(0);
-            std::cout << " " << line->pages[0] << ", ";
-            vit++;
+            std:cout << ":(";
+            InvertLine* line = (InvertLine*) it->second->front();
+            it->second->pop();
+            
+            std::cout << line->pages.size() << ") "; 
+            for (int i =0 ; i<line->pages.size(); i++)
+            std::cout << " " << line->pages[i] << ", ";
         }
         std::cout << std::endl;
         it++;
     }
+    
+    MRStats stats = mr_disp->getStats();
+    std::cout << "maps: " << stats.nmaps << std::endl;
+    std::cout << "emits: " << stats.nemits << std::endl;
+    std::cout << "reduces: " << stats.nreduces << std::endl;
     
     return 0;
 }

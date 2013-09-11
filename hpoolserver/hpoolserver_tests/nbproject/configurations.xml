@@ -29,7 +29,7 @@
           <buildCommandWorkingDir>../tests</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>../tests/threadpool_test</executablePath>
         </makeTool>
       </makefileType>
       <item path="../tests/hpoolserver_tests.h" ex="false" tool="3" flavor2="0">

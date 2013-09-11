@@ -1,4 +1,6 @@
 env = Environment(CCFLAGS='-std=gnu++11 ')
 Program('mapr_test', 
 ['mapr_test.cpp',
-'../core/mapreduce.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g')
+'../core/mapreduce.cpp',
+'../core/MRNodeDispatcher.cpp',
+'../../threadpool/threadpool.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g')

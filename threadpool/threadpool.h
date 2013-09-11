@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 #include <vector>
 #include <pthread.h>
+//#include <pthread_rwlock.h>
 
 class hLock
 {
@@ -60,6 +61,88 @@ public:
         pthread_cond_signal(&cond);
         pthread_mutex_unlock(&lock);
     }
+};
+
+class hRWLockRead
+{
+    pthread_rwlock_t *m_lock;
+public:
+    
+    hRWLockRead(pthread_rwlock_t *lock)
+    {
+        m_lock = lock;
+        pthread_rwlock_rdlock(m_lock);
+    }
+    
+    ~hRWLockRead()
+    {
+        pthread_rwlock_unlock(m_lock);
+    }
+    
+    hRWLockRead(const hRWLockRead &a)
+    {
+        this->m_lock = a.m_lock;
+    }
+    
+    void unlock()
+    {
+        pthread_rwlock_unlock(m_lock);
+    }
+};
+
+class hRWLockWrite
+{
+    pthread_rwlock_t *m_lock;
+public:
+    
+    hRWLockWrite(pthread_rwlock_t *lock)
+    {
+        m_lock = lock;
+        pthread_rwlock_wrlock(m_lock);
+    }
+    
+    ~hRWLockWrite()
+    {
+        pthread_rwlock_unlock(m_lock);
+    }
+    
+    hRWLockWrite(const hRWLockWrite &a)
+    {
+        this->m_lock = a.m_lock;
+    }
+    
+    void unlock()
+    {
+        pthread_rwlock_unlock(m_lock);
+    }
+};
+
+class hRWLock
+{
+    pthread_rwlock_t *m_lock;
+public:
+    
+    hRWLock()
+    {
+        m_lock = new pthread_rwlock_t;
+        pthread_rwlock_init(m_lock, 0);
+    }
+    
+    ~hRWLock()
+    {
+        delete m_lock;
+    }
+    
+    hRWLockRead read()
+    {
+        return hRWLockRead(m_lock);
+    }
+    
+    hRWLockWrite write()
+    {
+        return hRWLockWrite(m_lock);
+    }
+    
 };
 
 class hThread;

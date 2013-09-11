@@ -17,14 +17,9 @@ public:
 class EmitType
 {
 public:
-    
-};
-
-class ReduceResult
-{
-public:
-    int64_t key;
-    EmitType value;
+  int64_t key;
+  virtual void dump(std::string filename) = 0;
+  virtual void restore(std::string filename) = 0;
 };
 
 class BatchAccessor
@@ -47,8 +42,9 @@ public:
     MapReduce (std::string job_name, std::string node_name);
     
     void setEmitF(boost::function<void(int64_t, EmitType*)> emitf);
-    virtual void map(InputType &object) = 0;   
+    virtual void map(const InputType &object) = 0;   
     virtual EmitType* reduce(int64_t emit_key, EmitType* a, EmitType* b) = 0;
+    virtual void finilize(EmitType*) = 0;
 };
 
 #endif

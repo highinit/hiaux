@@ -1,28 +1,23 @@
-#pragma once
-#include "common.h"
-#include "hqueue.h"
+#ifndef SENDCHANNEL_H
+#define SENDCHANNEL_H
 
-#define OK 0
-#define FAULT 1
+#include <string>
 
-class send_channel_t
+class hSendChannel
 {
-    int sock;    
+    int m_socket;    
+    
+    hSendChannel() { } 
+    
     public:
 
-    send_channel_t();
-    ~send_channel_t();
+   
+    ~hSendChannel();
+    hSendChannel(int sock);
 
-    send_channel_t(int sock);
-
-    int csend(string str);
-    string crecv();
-
-    int csend(void* mem, size_t size);
-    void *crecv(size_t size);
-    
-    void connect(string ip, int port);
-    void close();
-
+    int csend(const std::string &str);
+    std::string crecv();
+    int csend(const void* mem, size_t size);
 };
 
+#endif
