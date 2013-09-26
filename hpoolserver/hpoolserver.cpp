@@ -25,7 +25,8 @@ class PoolException : public std::exception
     
 };
 
-hPoolServer::hPoolServer(boost::shared_ptr<hThreadPool> pool, boost::function<void(hSockClientInfo)> serve_func)
+hPoolServer::hPoolServer(boost::shared_ptr<hThreadPool> pool,
+		boost::function<void(hSockClientInfo)> serve_func)
 {
     m_pool = pool;
     m_serve_func = serve_func;
@@ -42,11 +43,16 @@ void hPoolServer::listenThread()
     {
        struct sockaddr_in cli_addr;
        size_t clilen = sizeof(cli_addr);
-       int accepted_socket = accept(m_socket, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
+       int accepted_socket = accept(m_socket, 
+				(struct sockaddr *) &cli_addr, 
+				(socklen_t*)&clilen);
 
-       if (accepted_socket < 0) throw new PoolException("hsock_t::server: ERROR accepting");
+       if (accepted_socket < 0) throw new PoolException("hsock_t::server: err accepting");
 
-       hSockClientInfo clinet_info(inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port, accepted_socket);
+       hSockClientInfo clinet_info(inet_ntoa(cli_addr.sin_addr),
+				cli_addr.sin_port,
+				accepted_socket);
+       
        m_pool->addTask(boost::bind(m_serve_func, clinet_info));
     } 
 }

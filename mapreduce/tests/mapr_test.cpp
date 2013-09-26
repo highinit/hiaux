@@ -4,154 +4,188 @@
  *
  * Created on August 24, 2013, 1:58 AM
  */
-
+#include <vector>
 #include <cstdlib>
 #include "../core/mapreduce.h"
-#include "../core/MRNodeDispatcher.h"
+#include "../core/MRBatchDispatcher.h"
+
+#include "../core/ReduceDispatcher.h"
+
+#include "mapr_test.h"
+#include <iostream>
 
 using namespace std;
 
-class Document : public InputType
+std::string InvertLine::dump()
 {
-public:
-    int64_t id;
-    std::vector<int64_t> words;
-};
 
-class InvertLine : public EmitType
-{
-public:
-    std::vector<int64_t> pages;
-    
-    virtual void dump(std::string filename)
-    {
-      
-    }
-    
-    virtual void restore(std::string filename)
-    {
-        
-    }
-};
+}
 
-class MapReduceInvertIndex : public MapReduce
+void InvertLine::restore(std::string dumped)
 {
-public:
-    
-    MapReduceInvertIndex(std::string job_name, std::string node_name) :
+
+}
+
+MapReduceInvertIndex::MapReduceInvertIndex(std::string job_name, std::string node_name) :
         MapReduce(job_name, node_name)
-    {
-        
-    }
-    
-    virtual void map(const InputType &object)
-    {
-        Document& in_obj = ( Document& ) object ; 
-        for (int i = 0; i<in_obj.words.size(); i++)
-        {
-            InvertLine *line = new InvertLine;
-            line->pages.push_back(in_obj.id);
-            emit(in_obj.words[i], line);
-        }
-        
-    }
-    
-    virtual EmitType* reduce(int64_t emit_key, EmitType* _a, EmitType* _b)
-    {
-        InvertLine *a = (InvertLine*) _a;
-        InvertLine *b = (InvertLine*) _b;
-        
-        for (int i = 0; i<  b->pages.size(); i++)
-        {
-            a->pages.push_back(b->pages[i]);
-        }
-        
-        delete b;
-        return a;
-    }
-    
-    virtual void finilize(EmitType* result) 
-    {
-    
-    }
-};
-
-class DocumentBatch : public BatchAccessor
 {
-    bool isend;
-    Document doc;
-public:
-    
-    DocumentBatch(int b, int e, int docid)
-    {
-        isend = 0;
-        doc.id = docid;
-        for (int i =b ; i<e; i++)
-        doc.words.push_back(i);        
-    }
-    
-    virtual bool end()
-    {
-        return isend;
-    }
-    
-    virtual InputType& getNextInput()
-    {
-        isend = 1;
-        return doc;
-    }
-};
 
-void onAllBatchesFinished(EmitQueueHash *queue_hash)
+} 
+
+void MapReduceInvertIndex::map(InputType* object)
 {
-    std::cout << "onAllBatchesFinished" << std::endl;
+	//std::cout << "MapReduceInvertIndex::map\n";
+	
+	Document *in_obj = (Document *) object ;
+	//std::cout << in_obj->id << std::endl;
+	for (int i = 0; i<in_obj->words.size(); i++)
+	{
+		InvertLine *line = new InvertLine;
+		line->pages.push_back(in_obj->id);
+		emit(in_obj->words[i], line);
+	}
+}
+
+EmitType* MapReduceInvertIndex::reduce(int64_t emit_key, EmitType* _a, EmitType* _b)
+{
+//	std::cout << "reduce\n";
+	InvertLine *a = (InvertLine*) _a;
+	InvertLine *b = (InvertLine*) _b;
+
+	for (int i = 0; i<b->pages.size(); i++)
+	{
+		a->pages.push_back(b->pages[i]);
+	}
+
+	delete b;
+	return a;
+}
+
+void MapReduceInvertIndex::finilize(EmitType* result) 
+{
+    
+}
+
+MapReduce *MapReduceInvertIndex::copy()
+{
+	return new MapReduceInvertIndex(*this);
+}
+
+DocumentBatch::DocumentBatch(std::vector < Document*> &docs)
+{
+	isend = 0;
+	for (int i = 0 ; i<docs.size(); i++)
+	m_docs.push(docs[i]);
+}
+
+Document::Document(int b, int e, int docid)
+{
+	id = docid;
+	for (int i =b ; i<e; i++)
+	words.push_back(i);        
+}
+
+bool DocumentBatch::end()
+{
+	return isend;
+}
+
+InputType* DocumentBatch::getNextInput()
+{
+	
+	Document *doc_doc = m_docs.front();
+	InputType* doc = (InputType*) doc_doc;
+	
+	m_docs.pop();
+	//std::cout << "id:"<< doc_doc->id << "\n";
+	if (m_docs.size()==0) isend = 1;
+	return  doc;
+}
+
+MRBatchDispatcher *mr_disp;
+int64_t start_time;
+
+//#define PRINT
+
+void onAllReducesFinished(EmitQueueHash *hash)
+{
+
+	std::cout << "onAllReducesFinished" << std::endl;
+	EmitQueueHash::iterator it = hash->begin();
+	while (it != hash->end())
+	{
+#ifdef PRINT		
+	  std::cout << "key:" << it->first;
+#endif        
+		while (it->second->size() != 0)
+		{
+#ifdef PRINT	
+		   std:cout << ":(";
+#endif
+		   InvertLine* line = (InvertLine*) it->second->front();
+			it->second->pop();
+#ifdef PRINT	
+			std::cout << line->pages.size() << ") "; 
+			for (int i =0 ; i<line->pages.size(); i++)
+			std::cout << " " << line->pages[i] << ", ";
+#endif
+			delete line;
+		}
+#ifdef PRINT	
+	  std::cout << std::endl;
+#endif
+		it++;
+	}
+	delete hash;
+	MRStats stats = mr_disp->getStats();
+	std::cout << "maps: " << stats.nmaps << std::endl;
+	std::cout << "emits: " << stats.nemits << std::endl;
+	std::cout << "reduces: " << stats.nreduces << std::endl;
+	std::cout << "time took: " << time(0) - start_time << std::endl;
 }
 
 int main(int argc, char** argv) 
 {
-    MapReduceInvertIndex *MR = new MapReduceInvertIndex("InvertIndex", "localhost");
-    hThreadPool *pool = new hThreadPool(4);
-    MRNodeDispatcher *mr_disp = new MRNodeDispatcher(MR, pool, boost::bind(&onAllBatchesFinished, _1));
-    DocumentBatch *batch = new DocumentBatch(0, 9, 42);
-    DocumentBatch *batch2 = new DocumentBatch(5, 12, 13);
-    std::vector<BatchAccessor*> batches;
-    batches.push_back(batch);
-    batches.push_back(batch2);
-    
-    mr_disp->proceedBatches(batches);
-    
-    
-    pool->run();
-    sleep(1);
-    
-    //std::tr1::unordered_map<int64_t, std::vector<EmitType*>* > res_hash = mapper->
-    
-    EmitQueueHash* hash = mr_disp->emit_queue_hash;
-    
-    EmitQueueHash::iterator it = hash->begin();
-    while (it != hash->end())
-    {
-        std::cout << "key:" << it->first << " emits: " << it->second->size() << "| ";
-        
-        while (it->second->size() != 0)
-        {
-            std:cout << ":(";
-            InvertLine* line = (InvertLine*) it->second->front();
-            it->second->pop();
-            
-            std::cout << line->pages.size() << ") "; 
-            for (int i =0 ; i<line->pages.size(); i++)
-            std::cout << " " << line->pages[i] << ", ";
-        }
-        std::cout << std::endl;
-        it++;
-    }
-    
-    MRStats stats = mr_disp->getStats();
-    std::cout << "maps: " << stats.nmaps << std::endl;
-    std::cout << "emits: " << stats.nemits << std::endl;
-    std::cout << "reduces: " << stats.nreduces << std::endl;
-    
-    return 0;
+	MapReduceInvertIndex *MR = new MapReduceInvertIndex("InvertIndex", "localhost");
+	hThreadPool *pool = new hThreadPool(5);
+	mr_disp = new MRBatchDispatcher(MR, pool, boost::bind(&onAllReducesFinished, _1));
+/*	DocumentBatch *batch = new DocumentBatch(0, 10, 42);
+	DocumentBatch *batch2 = new DocumentBatch(5, 20, 13);
+	DocumentBatch *batch3 = new DocumentBatch(2, 7, 6);
+	DocumentBatch *batch4 = new DocumentBatch(0, 20, 2);
+	DocumentBatch *batch5 = new DocumentBatch(0, 20, 3);
+*/	
+	std::shared_ptr< std::vector<BatchAccessor*> > 
+				batches (new std::vector<BatchAccessor*>);
+/*	batches->push_back(batch);
+	batches->push_back(batch2);
+	batches->push_back(batch3);
+	batches->push_back(batch4);
+	batches->push_back(batch5);
+*/
+	
+	std::vector<Document*> docs;
+	
+	const int input_size = 1000;
+	
+	for (int i = 0; i<=input_size; i++)
+	{
+		Document *doc = new Document(i, i+2000, i);
+		docs.push_back( doc );
+		if (i%(input_size/4) ==0)
+		{
+			DocumentBatch *batch = new DocumentBatch(docs);
+			docs.clear();
+			batches->push_back(batch);
+		}
+	}
+	
+	
+	start_time = time(0);
+	mr_disp->proceedBatches(batches);
+	pool->run();
+	pool->join();
+
+	return 0;
 }
 

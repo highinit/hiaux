@@ -13,13 +13,11 @@
 
 #include "../../../hlogger/hlogger.h"
 
-using namespace std;
-
 class obj_rec_t
 {
 	public:
-	string name;
-	string pass;							// delete
+	std::string name;
+	std::string pass;							// delete
 	//send_channel_t *hb_ch;				// heartbeat channel
 
 	obj_rec_t(string name, string pass)
@@ -42,11 +40,11 @@ class obj_rec_t
 class node_t
 {
 	public:
-	string ip;				// ip
+	std::string ip;				// ip
 	int port;					// node port
-	string name;				// node name
+	std::string name;				// node name
 	int status;
-	map<string, obj_rec_t*> object;	// objects on node
+	std::map<string, obj_rec_t*> object;	// objects on node
         
         ~node_t()
         {
@@ -80,7 +78,7 @@ void *check_hb_fnc(void *a);
 */
 class hcomm_srv_t
 {
-	map<string,node_t*>  node;	// nodes
+	std::map<std::string, node_t*>  node;	// nodes
 	portrange_t cliports;
 	int srvport;
 	hsock_t *sock;

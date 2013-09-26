@@ -7,11 +7,18 @@
 #include <boost/bind.hpp>
 #include <vector>
 #include <pthread.h>
+#include <queue>
 //#include <pthread_rwlock.h>
 
 class hLock
 {
     pthread_mutex_t m;
+    
+    hLock &operator=(const hLock &a)
+    { 
+		return *this;
+	}
+    
 public:
     hLock()
     {
@@ -21,6 +28,11 @@ public:
     void lock()
     {
         pthread_mutex_lock(&m);
+    }
+    
+    bool trylock()
+    {
+        return pthread_mutex_trylock(&m) == 0;
     }
     
     void unlock()
@@ -93,27 +105,32 @@ public:
 class hRWLockWrite
 {
     pthread_rwlock_t *m_lock;
+    std::atomic<int> m_locked;
 public:
     
     hRWLockWrite(pthread_rwlock_t *lock)
     {
-        m_lock = lock;
-        pthread_rwlock_wrlock(m_lock);
+	m_lock = lock;
+	m_locked = 1;
+	pthread_rwlock_wrlock(m_lock);
     }
-    
+
     ~hRWLockWrite()
     {
-        pthread_rwlock_unlock(m_lock);
+	if (m_locked.load())
+	pthread_rwlock_unlock(m_lock);
     }
-    
+
     hRWLockWrite(const hRWLockWrite &a)
     {
-        this->m_lock = a.m_lock;
+	m_lock = a.m_lock;
+	m_locked = a.m_locked.load();
     }
-    
+
     void unlock()
     {
-        pthread_rwlock_unlock(m_lock);
+	m_locked = 0;
+	pthread_rwlock_unlock(m_lock);
     }
 };
 
@@ -147,8 +164,12 @@ public:
 
 class hThread;
 
-typedef boost::shared_ptr<boost::lockfree::queue< boost::function<void()> > > CallBackQueue; 
+//boost::lockfree::queue
+typedef boost::shared_ptr<boost::lockfree::queue< boost::function<void()>* > > CallBackQueue; 
 typedef boost::shared_ptr<boost::lockfree::queue<hThread*> > ThreadQueue;
+
+//typedef boost::shared_ptr<std::queue< boost::function<void()> > > CallBackQueue; 
+//typedef boost::shared_ptr<std::queue<hThread*> > ThreadQueue;
 
 class hThread
 {
@@ -166,8 +187,9 @@ public:
     
     bool queueNotEmpty();
     
-    void addTask(boost::function<void()> f);
+    void addTask(boost::function<void()> *f);
     void kick();
+    void join();
 };
 
 class hThreadPool
@@ -182,8 +204,9 @@ public:
     
     hThreadPool(int nthreads);
     // boost::function<void()> f = boost::bind(&hTaskHandler::calc, &handler);
-    void addTask(boost::function<void()> f);
+    void addTask(boost::function<void()>* f);
     void run();
+    void join();
 };
 
 #endif

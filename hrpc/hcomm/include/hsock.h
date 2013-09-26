@@ -1,4 +1,5 @@
-#pragma once
+#ifndef HSOCK_H
+#define HSOCK_H
 #include <stdio.h>
 #include <iostream>
 #include <stdlib.h>
@@ -25,13 +26,11 @@
 
 #define CONN_QUEUE_SIZE 1000
 
-using namespace std;
-
 class hSockClientInfo
 {
 public:
 
-    string m_ip;
+    std::string m_ip;
     int m_port;
     int m_sock;
     
@@ -64,7 +63,7 @@ class hSock
         struct sockaddr_in cli_addr;
         int clilen = sizeof(cli_addr);
         int newsockfd = accept(listen_socket, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
-        if (newsockfd < 0) throw new string("hsock_t::server: ERROR accepting");
+        if (newsockfd < 0) throw new std::string("hsock_t::server: ERROR accepting");
         return new hSockClientInfo(inet_ntoa(cli_addr.sin_addr), cli_addr.sin_port, newsockfd);        
     }
         
@@ -76,7 +75,7 @@ class hSock
         int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         if (sockfd < 0)
-                throw new string("hsock_t::server: ERROR opening server socket");
+                throw new std::string("hsock_t::server: ERROR opening server socket");
         serv_addr.sin_family = PF_INET;
         serv_addr.sin_port = htons(port);
         serv_addr.sin_addr.s_addr = INADDR_ANY;
@@ -94,8 +93,8 @@ class hSock
                 exit(1);
         }
 
-        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)))
-        throw new string("hsock_t::server: Error server binding");
+        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))==0)
+        throw new std::string("hsock_t::server: Error server binding");
 
         listen(sockfd, CONN_QUEUE_SIZE);
         return sockfd;
@@ -119,7 +118,7 @@ class hSock
     }
  
     
-    static int client(string ip, int portno)
+    static int client(std::string ip, int portno)
     {               
         int sockfd;
         struct sockaddr_in serv_addr;
@@ -128,7 +127,7 @@ class hSock
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
         if (sockfd < 0)
-                throw new string("hsock_t::client: ERROR opening client socket");
+                throw new std::string("hsock_t::client: ERROR opening client socket");
         
         int yes = 1;
         if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(yes)) == -1) 
@@ -142,9 +141,10 @@ class hSock
         serv_addr.sin_port = htons(portno);
 
         if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)))
-                throw new string("hsock_t::client: ERROR connecting");
+                throw new std::string("hsock_t::client: ERROR connecting");
         return sockfd;
     }
 
 };
 
+#endif
