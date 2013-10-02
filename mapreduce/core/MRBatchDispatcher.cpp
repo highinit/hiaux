@@ -101,7 +101,7 @@ MRStats NodeReducer::getStats()
 {
     return m_stats;
 }
-
+/*
 void MRBatchDispatcher::lockKey(int64_t key)
 {
 	hRWLockWrite hash_write_lock = queue_hash_lock.write();
@@ -143,7 +143,7 @@ void MRBatchDispatcher::unlockKey(int64_t key)
 	
 	//hash_write_lock.unlock();
 }
-
+*/
 void MRBatchDispatcher::mapBatchTask(BatchAccessor* batch)
 {
 	BatchMapper *mapper = new BatchMapper(batch, 
@@ -155,6 +155,7 @@ void MRBatchDispatcher::mapBatchTask(BatchAccessor* batch)
 	delete mapper;
 }
 
+/*
 void MRBatchDispatcher::reduceTask(int64_t key)
 {
 	//std::cout << "reduceTask lockKey\n";
@@ -195,41 +196,43 @@ void MRBatchDispatcher::reduceTask(int64_t key)
 			}
 		}
 	}
-}
+}*/
 
 void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash)
 {
-//	return;
-	// push to emit_queue_hash queues
-	hRWLockWrite writelock = queue_hash_lock.write();
+	//hRWLockWrite writelock = queue_hash_lock.write();
 	EmitHash::iterator it = emit_hash->begin();
 	EmitHash::iterator end = emit_hash->end();
 
 	while (it != end)
 	{
-		EmitQueueHash::iterator queue_hash_it = emit_queue_hash->find(it->first);
-		if (queue_hash_it != emit_queue_hash->end())
-		{
-			queue_hash_it->second->push(it->second);
-			m_nreduces_launched++;
-			m_pool->addTask(new boost::function<void()>(
-					boost::bind(&MRBatchDispatcher::reduceTask, this, it->first)));
-		} else
-		{
-			std::shared_ptr<EmitQueue> queue_ptr(new EmitQueue);
-			queue_ptr->push(it->second);
-			emit_queue_hash->insert(
-			std::pair<int64_t, std::shared_ptr<EmitQueue> >(it->first, queue_ptr)); 
-		}
+		reducer->addReduceResult( EmitTypeAccessorPtr( 
+		EmitTypeAccessorPtr(new EmitTypeAccessor(it->second, "FIXTHISSHIT") ) ) );
 		it++;
 	}
 	// atom
 	m_nbatches_finished++;
+	
+	//std::cout << "bf: " << m_nbatches_finished.load() << std::endl;
+	
+	if (m_nbatches_finished.load() == m_nbatches)
+	{
+		if (finish_lock.trylock())
+		{
+			if (finished) return;
+			finished = 1;
+			std::cout << "Batching finished\n";
+			//sleep(10);
+			reducer->start();
+			//m_onAllReducesFinished ();
+			finish_lock.unlock();
+		}
+	}
 }
 
 MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR, 
                                hThreadPool *pool, 
-                               boost::function<void(EmitQueueHash*)> onAllReducesFinished)
+                               boost::function<void()> onAllReducesFinished)
 {
 	m_nbatches = 0;
 	m_nbatches_finished = 0;
@@ -237,11 +240,12 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 	finished = 0;
 
 	m_MR = MR;
-	emit_queue_hash = new EmitQueueHash;
+//	emit_queue_hash = new EmitQueueHash;
 	m_pool = pool;
 	m_onAllReducesFinished = onAllReducesFinished;
 	m_nreduces_launched =  0;
 	m_nreduces_finished = 0;
+	reducer.reset(new ReduceDispatcher);
 }
 
 void MRBatchDispatcher::proceedBatches(

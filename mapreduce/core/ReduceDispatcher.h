@@ -26,9 +26,10 @@
 
 class EmitTypeAccessor
 {
-	EmitType *m_result;
-	std::string *m_filepath;
+	
+	std::string m_filepath;
 public:
+	EmitType *m_result;
 	
 	EmitTypeAccessor(EmitType *m_result, std::string filepath);
 	EmitType *getResult();
@@ -41,7 +42,23 @@ public:
 };
 
 typedef boost::shared_ptr<EmitTypeAccessor> EmitTypeAccessorPtr;
-typedef boost::shared_ptr< std::queue<EmitTypeAccessorPtr> > EmitAcessorQueue;
+
+class EmitAcessorQueue : public std::queue<EmitTypeAccessorPtr > 
+{
+public:
+	hLock m_lock;
+	
+	
+	void lock()
+	{
+		m_lock.lock();
+	}
+	
+	void unlock()
+	{
+		m_lock.unlock();
+	}
+};
 
 class KeyReducer
 {
@@ -59,6 +76,7 @@ public:
 class ReduceDispatcher
 {
 	std::unordered_map<int64_t, EmitAcessorQueue > m_reduce_hash;
+	hRWLock hash_lock;
 public:
 	
 	void addReduceResult(EmitTypeAccessorPtr emit);

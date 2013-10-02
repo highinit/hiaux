@@ -42,7 +42,6 @@ public:
 
 typedef std::unordered_map<int64_t, EmitType* > EmitHash;
 typedef std::queue<EmitType*> EmitQueue;
-typedef std::unordered_map<int64_t, std::shared_ptr<EmitQueue> > EmitQueueHash;
 
 class BatchAccessor
 {

@@ -21,6 +21,7 @@
 #include <unordered_map>
 #include "../../threadpool/threadpool.h"
 #include "mapreduce.h"
+#include "ReduceDispatcher.h"
 #include <queue>
 #include <atomic>
 
@@ -68,7 +69,7 @@ class MRBatchDispatcher
     MRStats m_stats;
 
     hLock finish_lock;
-    boost::function<void(EmitQueueHash*)> m_onAllReducesFinished;
+    boost::function<void()> m_onAllReducesFinished;
 
     size_t m_nbatches;
 
@@ -77,26 +78,24 @@ class MRBatchDispatcher
     std::atomic<size_t> m_nreduces_launched;
     std::atomic<size_t> m_nreduces_finished;
 
-    EmitQueueHash* emit_queue_hash;
-    std::unordered_map<int64_t, std::shared_ptr<hLock> > m_key_locks;
-    hRWLock queue_hash_lock;
-
     bool finished = 1;
     
+	std::shared_ptr<ReduceDispatcher> reducer; 
+	
     void lockKey(int64_t key);
     void unlockKey(int64_t key);
 
 public:
 
-    MRBatchDispatcher(MapReduce *MR, hThreadPool *pool, boost::function<void(EmitQueueHash*)> onAllBatchesFinished);
+    MRBatchDispatcher(MapReduce *MR, hThreadPool *pool, boost::function<void()> onAllBatchesFinished);
 
     void mapBatchTask(BatchAccessor* batch);   
-    void reduceTask(int64_t key);
+    //void reduceTask(int64_t key);
 
     void onBatchFinished(std::shared_ptr<EmitHash> emit_hash);
 
     void proceedBatches(std::shared_ptr< std::vector<BatchAccessor*> > batches);
-    void mergeEmits(std::string filename);
+    //void mergeEmits(std::string filename);
 
     MRStats getStats();
 };
