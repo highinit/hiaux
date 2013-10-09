@@ -245,7 +245,7 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 	m_onAllReducesFinished = onAllReducesFinished;
 	m_nreduces_launched =  0;
 	m_nreduces_finished = 0;
-	reducer.reset(new ReduceDispatcher(MR));
+	reducer.reset(new ReduceDispatcher(pool, MR));
 }
 
 void MRBatchDispatcher::proceedBatches(

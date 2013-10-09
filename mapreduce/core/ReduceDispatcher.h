@@ -24,15 +24,17 @@
 #include "mapreduce.h"
 #include <queue>
 
+#include "FileCartulary.h"
+
 class EmitTypeAccessor
 {
 	EmitType *m_emit;
-	int fd;
 	size_t offset;
 	size_t size;
 public:
 
 	EmitTypeAccessor(EmitType *emit, int write_fd);
+	~EmitTypeAccessor() { }
 	void restore(int read_fd);
 	EmitType *getEmit();
 };
@@ -40,11 +42,17 @@ public:
 //typedef boost::shared_ptr<EmitTypeAccessor> EmitTypeAccessorPtr;
 
 //public std::queue<EmitType*>
-class EmitAcessorQueue : std::queue<EmitTypeAccessor> 
+class EmitAcessorVec : public std::vector<EmitTypeAccessor> 
 {
-public:
+	EmitAcessorVec (EmitAcessorVec & a);
+	EmitAcessorVec& operator=(EmitAcessorVec&);
 	hLock m_lock;
 	
+public:
+	
+	EmitAcessorVec()
+	{
+	}
 	
 	void lock()
 	{
@@ -57,36 +65,61 @@ public:
 	}
 };
 
+typedef boost::shared_ptr<EmitAcessorVec> EmitAcessorVecPtr;
+
 class KeyReducer
-{
-	MapReduce *m_MR;
-	EmitAcessorQueue m_reduce_queue;
-	
+{	
 public:
 
-	KeyReducer(std::string prefix,
-				MapReduce *MR,
-				EmitAcessorQueue reduce_queue);
+	KeyReducer(MapReduce *MR,
+				EmitAcessorVecPtr reduce_vec);
+	
+};
+
+class EmitVecQueue : public std::queue<EmitAcessorVecPtr>
+{
+	EmitVecQueue (EmitVecQueue & a);
+	EmitVecQueue& operator=(EmitVecQueue&);
+	hLock m_lock;
+public:
+	
+	EmitVecQueue()
+	{
+	}
+	
+	void lock()
+	{
+		m_lock.lock();
+	}
+	
+	void unlock()
+	{
+		m_lock.unlock();
+	}
 	
 };
 
 class ReduceDispatcher
 {
-	std::unordered_map<int64_t, EmitAcessorQueue > m_reduce_hash;
-	// writer id, fd
-	std::unordered_map<int, int> write_fd;
-	
+	std::unordered_map<int64_t, EmitAcessorVecPtr > m_reduce_hash;
 	hRWLock hash_lock;
+	
+	EmitVecQueue emit_vec_ram_cache;
+	
+	AppendFileDeposit fd_deposit;
 	MapReduce *m_MR;
 	
-	std::string getFilenameById(int id);
-	int readFd(int);
+	hThreadPool* m_pool;
+	
 public:
 	
-	ReduceDispatcher(MapReduce *MR);
+	ReduceDispatcher(hThreadPool* m_pool, MapReduce *MR);
+	
+	std::string getBatchFilenameById(int id);
 	
 	void addReduceResult(EmitType* emit, int dumpfiled);
 	void start();
+	void reduceTask(EmitAcessorVecPtr emit_vec);
 };
 
 #endif // REDUCE_DISPATCHER_H

@@ -147,7 +147,7 @@ void onAllReducesFinished()
 int main(int argc, char** argv) 
 {
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex("InvertIndex", "localhost");
-	hThreadPool *pool = new hThreadPool(2);
+	hThreadPool *pool = new hThreadPool(10);
 	mr_disp = new MRBatchDispatcher(MR, pool, boost::bind(&onAllReducesFinished));
 /*	DocumentBatch *batch = new DocumentBatch(0, 10, 42);
 	DocumentBatch *batch2 = new DocumentBatch(5, 20, 13);

@@ -5,5 +5,5 @@ Program('mapr_test',
 '../core/MRBatchDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
-'../core/ReadFileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++0x -stdlib=libstdc++ -g', CXX='clang++', 
-LINKFLAGS='')
+'../core/FileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++11 -stdlib=libc++ -Wno-c++98-compat -g', CXX='clang++', 
+LINKFLAGS='-lc++')
