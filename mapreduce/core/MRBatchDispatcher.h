@@ -47,7 +47,8 @@ public:
     
     BatchMapper(BatchAccessor* batch,
 	    MapReduce *MR,
-	    boost::function<void(std::shared_ptr<EmitHash>)> onBatchFinished);
+	    boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
+		int batchid);
     void emit(int64_t key, EmitType* emit_value);
     MRStats getStats();
 };
@@ -89,10 +90,10 @@ public:
 
     MRBatchDispatcher(MapReduce *MR, hThreadPool *pool, boost::function<void()> onAllBatchesFinished);
 
-    void mapBatchTask(BatchAccessor* batch);   
+    void mapBatchTask(BatchAccessor* batch, int batchid);   
     //void reduceTask(int64_t key);
 
-    void onBatchFinished(std::shared_ptr<EmitHash> emit_hash);
+    void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
 
     void proceedBatches(std::shared_ptr< std::vector<BatchAccessor*> > batches);
     //void mergeEmits(std::string filename);

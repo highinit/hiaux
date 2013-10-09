@@ -25,6 +25,7 @@
 #include <vector>
 #include <pthread.h>
 #include <queue>
+#include <atomic>
 //#include <pthread_rwlock.h>
 
 class hLock
@@ -195,11 +196,11 @@ class hThread
     
     ThreadQueue waiting_threads;
     
-    pthread_t th;
+    pthread_t *m_th;
     hCondWaiter local_queue_notempty;
 public:
     
-    hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t &th);
+    hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th);
     void run();
     
     bool queueNotEmpty();

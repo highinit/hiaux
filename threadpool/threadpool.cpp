@@ -17,12 +17,12 @@
 
 #include "threadpool.h"
 
-hThread::hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t &th)
+hThread::hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th)
 {
     this->waiting_threads = waiting_threads;
     this->local_task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(100) );
     this->task_queue = task_queue;
-    this->th = th;
+	m_th = th;
 }
 
 void hThread::run()
@@ -66,7 +66,8 @@ void hThread::kick()
 
 void hThread::join()
 {
-    pthread_join(th, 0);
+	void *end;
+    pthread_join(*m_th, &end);
 }
 
 hThreadPool::hThreadPool(int nthreads)
@@ -103,12 +104,12 @@ void hThreadPool::run()
 {
     for (int i = 0; i<nthreads; i++)
     {
-        pthread_t th;
+        pthread_t *th = new pthread_t;
         hThread *thread = new hThread(task_queue, waiting_threads, th);
         threads.push_back(thread);
         boost::function<void()> *f  = new boost::function<void()>;
         *f = boost::bind(&hThread::run, thread);
-        pthread_create(&th, 0, &call_boost_function, (void*)f);
+        pthread_create(th, 0, &call_boost_function, (void*)f);
     }
 }
 

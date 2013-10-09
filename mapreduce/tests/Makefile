@@ -3,11 +3,11 @@
 
 default:	all
 all:    
-	/usr/local/bin/scons
+	scons
 clean:
-	/usr/local/bin/scons -c
+	scons -c
 install:
-	/usr/local/bin/scons install
+	scons install
 
 #LDFLAGS+= /usr/local/lib/libbson.a
 #LDFLAGS+= /usr/local/lib/libmongoc.a

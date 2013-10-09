@@ -26,24 +26,21 @@
 
 class EmitTypeAccessor
 {
-	
-	std::string m_filepath;
+	EmitType *m_emit;
+	int fd;
+	size_t offset;
+	size_t size;
 public:
-	EmitType *m_result;
-	
-	EmitTypeAccessor(EmitType *m_result, std::string filepath);
-	EmitType *getResult();
-	void dump();
-	void restore();
-	int64_t key()
-	{
-		return m_result->key;
-	}
+
+	EmitTypeAccessor(EmitType *emit, int write_fd);
+	void restore(int read_fd);
+	EmitType *getEmit();
 };
 
-typedef boost::shared_ptr<EmitTypeAccessor> EmitTypeAccessorPtr;
+//typedef boost::shared_ptr<EmitTypeAccessor> EmitTypeAccessorPtr;
 
-class EmitAcessorQueue : public std::queue<EmitTypeAccessorPtr > 
+//public std::queue<EmitType*>
+class EmitAcessorQueue : std::queue<EmitTypeAccessor> 
 {
 public:
 	hLock m_lock;
@@ -76,10 +73,19 @@ public:
 class ReduceDispatcher
 {
 	std::unordered_map<int64_t, EmitAcessorQueue > m_reduce_hash;
+	// writer id, fd
+	std::unordered_map<int, int> write_fd;
+	
 	hRWLock hash_lock;
+	MapReduce *m_MR;
+	
+	std::string getFilenameById(int id);
+	int readFd(int);
 public:
 	
-	void addReduceResult(EmitTypeAccessorPtr emit);
+	ReduceDispatcher(MapReduce *MR);
+	
+	void addReduceResult(EmitType* emit, int dumpfiled);
 	void start();
 };
 

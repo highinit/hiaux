@@ -4,4 +4,6 @@ Program('mapr_test',
 '../core/mapreduce.cpp',
 '../core/MRBatchDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
-'../../threadpool/threadpool.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++11 -stdlib=libc++ -Wno-c++98-compat', CXX='clang++', LINKFLAGS='-lc++')
+'../../threadpool/threadpool.cpp',
+'../core/ReadFileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++0x -stdlib=libstdc++ -g', CXX='clang++', 
+LINKFLAGS='')

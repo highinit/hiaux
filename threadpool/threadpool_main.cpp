@@ -20,22 +20,22 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_HdividerDistTests_init = false;
-#include "/Users/phrk/Projects/highinit_repos/tetramorph/threadpool/threadpool_tests.h"
+#include "/home/a.gilmutdinov/projects/tetramorph/threadpool/threadpool_tests.h"
 
 static HdividerDistTests suite_HdividerDistTests;
 
 static CxxTest::List Tests_HdividerDistTests = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_HdividerDistTests( "threadpool_tests.h", 44, "HdividerDistTests", suite_HdividerDistTests, Tests_HdividerDistTests );
+CxxTest::StaticSuiteDescription suiteDescription_HdividerDistTests( "threadpool_tests.h", 60, "HdividerDistTests", suite_HdividerDistTests, Tests_HdividerDistTests );
 
 static class TestDescription_suite_HdividerDistTests_testO : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_HdividerDistTests_testO() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 51, "testO" ) {}
+ TestDescription_suite_HdividerDistTests_testO() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 67, "testO" ) {}
  void runTest() { suite_HdividerDistTests.testO(); }
 } testDescription_suite_HdividerDistTests_testO;
 
 static class TestDescription_suite_HdividerDistTests_test1 : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_HdividerDistTests_test1() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 68, "test1" ) {}
+ TestDescription_suite_HdividerDistTests_test1() : CxxTest::RealTestDescription( Tests_HdividerDistTests, suiteDescription_HdividerDistTests, 84, "test1" ) {}
  void runTest() { suite_HdividerDistTests.test1(); }
 } testDescription_suite_HdividerDistTests_test1;
 

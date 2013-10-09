@@ -5,7 +5,7 @@
  * Created on August 24, 2013, 1:58 AM
  */
 #include <vector>
-#include <cstdlib>
+//#include <cstdlib>
 #include "../core/mapreduce.h"
 #include "../core/MRBatchDispatcher.h"
 
@@ -147,7 +147,7 @@ void onAllReducesFinished()
 int main(int argc, char** argv) 
 {
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex("InvertIndex", "localhost");
-	hThreadPool *pool = new hThreadPool(5);
+	hThreadPool *pool = new hThreadPool(2);
 	mr_disp = new MRBatchDispatcher(MR, pool, boost::bind(&onAllReducesFinished));
 /*	DocumentBatch *batch = new DocumentBatch(0, 10, 42);
 	DocumentBatch *batch2 = new DocumentBatch(5, 20, 13);

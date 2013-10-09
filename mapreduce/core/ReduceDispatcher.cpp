@@ -17,12 +17,14 @@
 
 #include "ReduceDispatcher.h"
 
+
+/*
 EmitTypeAccessor::EmitTypeAccessor(EmitType *result, std::string filepath)
 {
 	m_result = result;
 	m_filepath = filepath;
-}
-
+}*/
+/*
 EmitType *getResult()
 {
 
@@ -36,7 +38,7 @@ void EmitTypeAccessor::dump()
 void EmitTypeAccessor::restore()
 {
 	
-}
+}*/
 
 KeyReducer::KeyReducer(std::string prefix,
 					MapReduce *MR,
@@ -47,13 +49,29 @@ KeyReducer::KeyReducer(std::string prefix,
 
 }
 
-void ReduceDispatcher::addReduceResult(EmitTypeAccessorPtr emit)
+std::string ReduceDispatcher::getFilenameById(int id)
+{
+	char filename[50];
+	sprintf(filename, "batch%demits", id);
+	return std::string(filename);
+}
+
+ReduceDispatcher::ReduceDispatcher(MapReduce *MR):
+		m_MR(MR)
+{
+}
+
+void ReduceDispatcher::addReduceResult(EmitType* emit, int batchid)
 {
 	//std::cout << "addReduceResult " << emit->key() << std::endl;
+
+	
+	
+	/*
 	hRWLockWrite rd_lock = hash_lock.write();
 	
 	std::unordered_map<int64_t, EmitAcessorQueue >::iterator it = 
-			m_reduce_hash.find(emit->key());
+			m_reduce_hash.find(emit->key);
 	if (it!=m_reduce_hash.end())
 	{
 		//it->second.lock();
@@ -66,27 +84,31 @@ void ReduceDispatcher::addReduceResult(EmitTypeAccessorPtr emit)
 		q.push(emit);
 		//rd_lock.unlock();
 		//hRWLockWrite wr_lock = hash_lock.write();
-		m_reduce_hash.insert(std::pair<int64_t, EmitAcessorQueue>(emit->key(), q));
-	}
+		m_reduce_hash.insert(std::pair<int64_t, EmitAcessorQueue>(emit->key, q));
+	}*/
 }
 
 #include "../tests/mapr_test.h"
 
 void ReduceDispatcher::start()
 {
+	std::cout << "Reducer Start\n";
+//	return;
+	std::cout << "Hash size: " << m_reduce_hash.size() << std::endl;
+	
 	auto hash_it = m_reduce_hash.begin();
 	auto hash_end = m_reduce_hash.end();
 	while (hash_it != hash_end)
 	{
 		std::cout << hash_it->first << "\n";
 		
-		while (hash_it->second.size()!=0)
+	/*	while (hash_it->second.size()!=0)
 		{
-			InvertLine *line = (InvertLine*)hash_it->second.front()->m_result;
+			InvertLine *line = (InvertLine*)hash_it->second.front();
 			std::cout << line->pages[0] << " ";
 			hash_it->second.pop();
 		}
-		std::cout << "\n\n";
+		std::cout << "\n";*/
 		hash_it++;
 	}
 }
