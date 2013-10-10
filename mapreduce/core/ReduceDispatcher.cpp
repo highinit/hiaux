@@ -165,7 +165,7 @@ void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 				if (finished) return;
 				finished = 1;
 				std::cout << "FINISHED\n";
-				m_reduce_hash.clear();
+				//m_reduce_hash.clear();
 				//sleep(10);
 				//m_onAllReducesFinished (emit_queue_hash);
 				finish_lock.unlock();
@@ -187,7 +187,6 @@ void ReduceDispatcher::restoreKey(EmitAcessorVecPtr emit_vec)
 void ReduceDispatcher::dumpResultKey(int64_t key, EmitType* emit)
 {
 	std::string	dump = m_dumper->dump(emit);
-	delete emit;
 	//std::cout << dump <<std::endl;
 	size_t size = dump.size();
 	
@@ -218,7 +217,7 @@ void ReduceDispatcher::start()
 					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	
 	const int min_active_tasks = 8;
-	const int max_keys_in_cache = 20;
+	const int max_keys_in_cache = 1000;
 	
 	std::cout << "Hash size: " << m_reduce_hash.size() << std::endl;
 

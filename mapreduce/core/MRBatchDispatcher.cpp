@@ -165,13 +165,13 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 	m_onAllReducesFinished = onAllReducesFinished;
 	m_nreduces_launched =  0;
 	m_nreduces_finished = 0;
-	reducer.reset(new ReduceDispatcher(pool, MR, dumper));
+	reducer = new ReduceDispatcher(pool, MR, dumper);
 }
 
 void MRBatchDispatcher::proceedBatches(
 	std::shared_ptr< std::vector<BatchAccessor*> > batches)
 {
-	const int max_running_batchings = 4;
+	const int max_running_batchings = 100;
 	
 	m_nbatches = batches->size();
 	for (int i = 0; i<batches->size(); i++)

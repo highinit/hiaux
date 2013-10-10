@@ -4,28 +4,28 @@ import glob
 import subprocess
 
 platform = sys.platform
+print "PLATFORM:"+platform
 
-_CCFLAGS = ''
+_CCFLAGS = '-v'
 _CXX = ''
-_LINKFLAGS = ''
+_LINKFLAGS = '-lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread -v'
 
 #LINUX
 if platform[:5]=="linux":
 	_CCFLAGS = '-std=c++11 -stdlib=libstdc++'
         _CXX = 'clang++'    
-        _LINKFLAGS = '-lprotobuf'
+        _LINKFLAGS = ''
 #MACOSX
-else:
+if platform=="darwin":
 	_CCFLAGS = '-std=c++11 -stdlib=libc++ -Wno-c++98-compat'	
 	_CXX = 'clang++'
-	_LINKFLAGS = '-lc++'
 
 env = Environment()
 Program('mapr_test', 
 ['mapr_test.cpp',
-'invertline.pb.cc',
 '../core/mapreduce.cpp',
 '../core/MRBatchDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
-'../core/FileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)
+'../core/FileCartulary.cpp',
+'invertline.pb.cc'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)

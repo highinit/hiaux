@@ -207,11 +207,11 @@ int main(int argc, char** argv)
 	
 	std::vector<Document*> docs;
 	
-	const int input_size = 1000;
+	const int input_size = 100000;
 	
 	for (int i = 0; i<=input_size; i++)
 	{
-		Document *doc = new Document(i, i+20, i);
+		Document *doc = new Document(i, i+2000, i);
 		docs.push_back( doc );
 		if (i%(input_size/10) ==0)
 		{

@@ -1,0 +1,6 @@
+package mapr_test;
+
+message InvertLine {
+	required int64 key = 1;
+	repeated int64 pages = 2;
+}

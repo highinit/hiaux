@@ -85,7 +85,7 @@ class MRBatchDispatcher
 
     bool finished = 1;
     
-	std::shared_ptr<ReduceDispatcher> reducer; 
+	ReduceDispatcher* reducer; 
 	
     void lockKey(int64_t key);
     void unlockKey(int64_t key);
