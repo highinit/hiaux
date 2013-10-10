@@ -1,9 +1,31 @@
+import sys
+import os
+import glob
+import subprocess
+
+platform = sys.platform
+
+_CCFLAGS = ''
+_CXX = ''
+_LINKFLAGS = ''
+
+#LINUX
+if platform[:5]=="linux":
+	_CCFLAGS = '-std=c++11 -stdlib=libstdc++'
+        _CXX = 'clang++'    
+        _LINKFLAGS = '-lprotobuf'
+#MACOSX
+else:
+	_CCFLAGS = '-std=c++11 -stdlib=libc++ -Wno-c++98-compat'	
+	_CXX = 'clang++'
+	_LINKFLAGS = '-lc++'
+
 env = Environment()
 Program('mapr_test', 
 ['mapr_test.cpp',
+'invertline.pb.cc',
 '../core/mapreduce.cpp',
 '../core/MRBatchDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
-'../core/FileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++11 -stdlib=libc++ -Wno-c++98-compat -g', CXX='clang++', 
-LINKFLAGS='-lc++')
+'../core/FileCartulary.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)

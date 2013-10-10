@@ -10,11 +10,15 @@
 
 class Document
 {
+	int m_b;
+	int m_e;
 public:
 	int64_t id;
 	std::vector<int64_t> words;
-
+	
+	void fill();
 	Document(int b, int e, int id);
+	~Document();
 };
 
 class DocumentBatch : public BatchAccessor
@@ -27,27 +31,27 @@ public:
 
 	virtual bool end();
 	virtual InputType* getNextInput();
+	~DocumentBatch();
 };
 
 class MapReduceInvertIndex : public MapReduce
 {
 public:
 
-	MapReduceInvertIndex(std::string job_name, std::string node_name);
+	MapReduceInvertIndex();
 
 	virtual void map(InputType* object);    
 	virtual EmitType* reduce(int64_t emit_key, EmitType* _a, EmitType* _b);
 	virtual void finilize(EmitType* result);
 	virtual MapReduce *copy();
+	
+	~MapReduceInvertIndex() { } 
 };
 
 class InvertLine : public EmitType
 {
 public:
 	std::vector<int64_t> pages;
-
-	virtual std::string dump();
-	virtual void restore(std::string dumped);
 
 	InvertLine(int64_t _key)
 	{
@@ -58,6 +62,13 @@ public:
 	{
 		pages.clear();
 	}
+};
+
+class InvertLineDumper : public EmitDumper
+{
+public:
+	virtual std::string dump(EmitType *emit);
+	virtual EmitType* restore(std::string dumped);
 };
 
 void onAllBatchesFinished();

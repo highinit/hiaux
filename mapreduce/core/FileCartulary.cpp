@@ -9,25 +9,31 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
-int ReadFileRent::getReadFile(std::string filename)
+int ReadFileRent::getReadFile(int fileid)
 {
-	std::unordered_map<std::string, int>::iterator it = filecache.find(filename);
+	std::unordered_map<int, int>::iterator it = filecache.find(fileid);
 	if (it != filecache.end())
 	{
 		return it->second;
 	}
 	else
 	{
-		int fd = open(filename.c_str(), O_RDONLY,  
+		int fd = open(m_filename_from_id(fileid).c_str(), O_RDONLY,  
 					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-		filecache.insert(std::pair<std::string, int>(filename, fd));
+		filecache.insert(std::pair<int, int>(fileid, fd));
 		return fd;
 	}
 }
 
+ReadFileRent::ReadFileRent(boost::function<std::string(int id)> filename_from_id):
+	m_filename_from_id (filename_from_id)
+{
+	
+}
+
 ReadFileRent::~ReadFileRent()
 {
-	std::unordered_map<std::string, int>::iterator it = filecache.begin();
+	std::unordered_map<int, int>::iterator it = filecache.begin();
 	while (it != filecache.end())
 	{
 		close(it->second);
@@ -51,20 +57,25 @@ int AppendFileDeposit::getAppendFile(int id)
 	}
 	else
 	{
-		int fd = open(m_filename_from_id(id).c_str(), O_APPEND, O_CREAT,   
+		int fd = open(m_filename_from_id(id).c_str(), O_WRONLY | O_CREAT | O_APPEND,   
 					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		filecache.insert(std::pair<int, int>(id, fd));
 		return fd;
 	}
 }
 
-AppendFileDeposit::~AppendFileDeposit()
+void AppendFileDeposit::close()
 {
 	std::unordered_map<int, int>::iterator it = filecache.begin();
 	while (it != filecache.end())
 	{
-		close(it->second);
+		::close(it->second);
 		filecache.erase(it);
 		it++;
 	}
+}
+
+AppendFileDeposit::~AppendFileDeposit()
+{
+	close();
 }

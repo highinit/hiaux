@@ -17,17 +17,64 @@
 
 #include "ReduceDispatcher.h"
 
+#include <sys/types.h>
+#include <dirent.h>
+
+#include <sys/uio.h>
+#include <sys/stat.h> 
+#include <fcntl.h>
+#include <sys/uio.h> 
+#include <unistd.h>
+
 #include "../tests/mapr_test.h"
 
-EmitTypeAccessor::EmitTypeAccessor(EmitType *emit, int append_fd):
-	m_emit(emit)		
+EmitTypeAccessor::EmitTypeAccessor(EmitType *emit, EmitDumper *dumper, int append_fd, int emitter_id):
+	m_emit(emit),
+	m_emitter_id(emitter_id)
 {
 	// dump and remember offset and size
+	std::string	dump = dumper->dump(emit);
+	delete m_emit;
+	//std::cout << dump <<std::endl;
+	m_offset = lseek(append_fd, 0, SEEK_CUR);
+	size_t size = dump.size();
+	
+	iovec atom[2];
+	atom[0].iov_base =  &size;
+	atom[0].iov_len = sizeof(size_t);
+
+	atom[1].iov_base = (void*)dump.data();
+	atom[1].iov_len = size;
+
+	writev(append_fd, atom, 2);
+	dump.clear();
 }
 
-void EmitTypeAccessor::restore(int read_fd)
+int EmitTypeAccessor::getEmitterId()
 {
+	return m_emitter_id;
+}
+
+void EmitTypeAccessor::restore(EmitDumper *dumper, int read_fd)
+{
+	lseek(read_fd, m_offset, SEEK_SET);
+	size_t size;
+	if (read(read_fd, &size, sizeof(size_t))!=sizeof(size_t))
+	{
+		std::cout << "READ ERROR\n";
+		exit(0);
+	}
+	char *bf = new char [size+1];
+	if (read(read_fd, bf, size)!=size)
+	{
+		std::cout << "READ ERROR\n";
+		exit(0);
+	}
+	bf[size] = '\0';
 	
+	//m_emit->restore(dump);
+	m_emit = dumper->restore(std::string(bf));
+	delete [] bf;
 }
 
 EmitType *EmitTypeAccessor::getEmit()
@@ -58,22 +105,26 @@ std::string ReduceDispatcher::getBatchFilenameById(int id)
 	return std::string(filename);
 }
 
-ReduceDispatcher::ReduceDispatcher(hThreadPool* pool, MapReduce *MR):
+ReduceDispatcher::ReduceDispatcher(hThreadPool* pool, MapReduce *MR, EmitDumper *dumper):
 		m_pool (pool),
-		
+		m_dumper (dumper),
 		fd_deposit (boost::bind(&ReduceDispatcher::getBatchFilenameById,
+					this, _1)),
+		fd_rent (boost::bind(&ReduceDispatcher::getBatchFilenameById,
 					this, _1))
 {
 	m_MR = MR->copy();
 }
 
-void ReduceDispatcher::addReduceResult(EmitType* emit, int batchid)
+void ReduceDispatcher::addReduceResult(EmitType* emit, int emitter_id)
 {
 	//std::cout << "addReduceResult " << emit->key() << std::endl;
-	int fd = fd_deposit.getAppendFile(batchid);
-	EmitTypeAccessor emit_acc(emit, fd); // flushes to batch file
-	
 	hRWLockWrite rd_lock = hash_lock.write();
+	
+	int fd = fd_deposit.getAppendFile(emitter_id);
+	EmitTypeAccessor emit_acc(emit, m_dumper, fd, emitter_id); // flushes to file
+	
+	
 	
 	std::unordered_map<int64_t, EmitAcessorVecPtr >::iterator it = 
 			m_reduce_hash.find(emit->key);
@@ -98,28 +149,76 @@ void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 {
 	KeyReducer reducer(m_MR, emit_vec);
 	
-	/*m_nreduces_finished++;
+	m_nreduces_finished++;
 
+	EmitType *emit = emit_vec->at(0).getEmit();
+	dumpResultKey(emit->key, emit);
+	emit_vec->clear();
+	delete emit;
+	
 	if (m_nreduces_launched.load() == m_nreduces_finished.load())
 	{
-		if (m_nbatches_finished.load() == m_nbatches)
+		if (m_all_reduces_launched.load())
 		{
 			if (finish_lock.trylock())
 			{
 				if (finished) return;
 				finished = 1;
 				std::cout << "FINISHED\n";
+				m_reduce_hash.clear();
 				//sleep(10);
-				m_onAllReducesFinished (emit_queue_hash);
+				//m_onAllReducesFinished (emit_queue_hash);
 				finish_lock.unlock();
+				exit(0);
 			}
 		}
-	}*/
+	}
+}
+
+void ReduceDispatcher::restoreKey(EmitAcessorVecPtr emit_vec)
+{
+	for (int i = 0; i<emit_vec->size(); i++)
+	{
+		emit_vec->at(i).restore(m_dumper,
+							fd_rent.getReadFile(emit_vec->at(i).getEmitterId()) );
+	}
+}
+
+void ReduceDispatcher::dumpResultKey(int64_t key, EmitType* emit)
+{
+	std::string	dump = m_dumper->dump(emit);
+	delete emit;
+	//std::cout << dump <<std::endl;
+	size_t size = dump.size();
+	
+	iovec atom[3];
+	
+	atom[0].iov_base =  &key;
+	atom[0].iov_len = sizeof(int64_t);
+	
+	atom[1].iov_base =  &size;
+	atom[1].iov_len = sizeof(size_t);
+
+	atom[2].iov_base = (void*)dump.data();
+	atom[2].iov_len = size;
+
+	writev(fd_result, atom, 2);
+	dump.clear();
 }
 
 void ReduceDispatcher::start()
 {	
 	hRWLockWrite rd_lock = hash_lock.write();
+	//if (finished) return;
+	//fd_deposit.close();
+	m_all_reduces_launched = 0;
+	finished = 0;
+	
+	fd_result = open("result", O_WRONLY | O_CREAT | O_APPEND,   
+					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	
+	const int min_active_tasks = 8;
+	const int max_keys_in_cache = 20;
 	
 	std::cout << "Hash size: " << m_reduce_hash.size() << std::endl;
 
@@ -130,20 +229,31 @@ void ReduceDispatcher::start()
 	auto hash_end = m_reduce_hash.end();
 	
 	
-	while (hash_it != hash_end)
-	{
-		//emit_vec_ram_cache.lock();
-		//emit_vec_ram_cache.push(hash_it->second);
-		//emit_vec_ram_cache.unlock();
-		m_pool->addTask(new boost::function<void()> (
-				boost::bind(&ReduceDispatcher::reduceTask, this, hash_it->second)));
-		//sleep(1);
-		//if (i==2)
-		//break;
-		i++;
-		hash_it++;
+	while (1)
+	{	
+		while (emit_vec_ram_cache.size()<max_keys_in_cache && hash_it != hash_end)
+		{
+			restoreKey(hash_it->second);
+			emit_vec_ram_cache.push(hash_it->second);
+			hash_it++;
+		}
+		
+		if (m_nreduces_launched.load()-m_nreduces_finished.load()< min_active_tasks)
+		{
+			if (emit_vec_ram_cache.size()==0 && hash_it == hash_end)
+			{
+				break;
+				m_all_reduces_launched = 1;
+			}
+			
+			m_nreduces_launched++;
+			m_pool->addTask(new boost::function<void()> (
+					boost::bind(&ReduceDispatcher::reduceTask, this, emit_vec_ram_cache.front())));
+			emit_vec_ram_cache.pop();
+		}
 	}
-	
+	m_all_reduces_launched = 1;
+	/*
 	sleep(1);
 	hash_it = m_reduce_hash.begin();
 
@@ -162,5 +272,5 @@ void ReduceDispatcher::start()
 		std::cout << "\n";
 		hash_it++;
 	}
-	
+*/
 }

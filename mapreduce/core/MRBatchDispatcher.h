@@ -49,6 +49,7 @@ public:
 	    MapReduce *MR,
 	    boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
 		int batchid);
+	~BatchMapper();
     void emit(int64_t key, EmitType* emit_value);
     MRStats getStats();
 };
@@ -65,6 +66,8 @@ public:
 class MRBatchDispatcher
 {
     MapReduce *m_MR;
+	EmitDumper *m_emit_dumper;
+	
     hThreadPool* m_pool;
 
     MRStats m_stats;
@@ -74,6 +77,7 @@ class MRBatchDispatcher
 
     size_t m_nbatches;
 
+	std::atomic<size_t> m_nbatches_launched;
     std::atomic<size_t> m_nbatches_finished;
 
     std::atomic<size_t> m_nreduces_launched;
@@ -88,7 +92,10 @@ class MRBatchDispatcher
 
 public:
 
-    MRBatchDispatcher(MapReduce *MR, hThreadPool *pool, boost::function<void()> onAllBatchesFinished);
+    MRBatchDispatcher(MapReduce *MR,
+					EmitDumper *dumper,
+					hThreadPool *pool,
+					boost::function<void()> onAllBatchesFinished);
 
     void mapBatchTask(BatchAccessor* batch, int batchid);   
     //void reduceTask(int64_t key);

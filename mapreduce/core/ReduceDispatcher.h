@@ -29,19 +29,17 @@
 class EmitTypeAccessor
 {
 	EmitType *m_emit;
-	size_t offset;
-	size_t size;
+	size_t m_offset;
+	int m_emitter_id;
 public:
 
-	EmitTypeAccessor(EmitType *emit, int write_fd);
+	EmitTypeAccessor(EmitType *emit, EmitDumper *dumper, int write_fd, int emitter_id);
 	~EmitTypeAccessor() { }
-	void restore(int read_fd);
+	int getEmitterId();
+	void restore(EmitDumper *dumper, int read_fd);
 	EmitType *getEmit();
 };
 
-//typedef boost::shared_ptr<EmitTypeAccessor> EmitTypeAccessorPtr;
-
-//public std::queue<EmitType*>
 class EmitAcessorVec : public std::vector<EmitTypeAccessor> 
 {
 	EmitAcessorVec (EmitAcessorVec & a);
@@ -103,21 +101,33 @@ class ReduceDispatcher
 {
 	std::unordered_map<int64_t, EmitAcessorVecPtr > m_reduce_hash;
 	hRWLock hash_lock;
+	hLock finish_lock;
+	bool finished;
 	
 	EmitVecQueue emit_vec_ram_cache;
 	
 	AppendFileDeposit fd_deposit;
+	ReadFileRent fd_rent;
+	
 	MapReduce *m_MR;
+	EmitDumper *m_dumper;
+	hThreadPool *m_pool;
 	
-	hThreadPool* m_pool;
+	std::atomic<uint32_t> m_nreduces_launched;
+	std::atomic<uint32_t> m_nreduces_finished;
+	std::atomic<bool> m_all_reduces_launched;
 	
+	void restoreKey(EmitAcessorVecPtr emit_vec);
+	int fd_result;
+	void dumpResultKey(int64_t key, EmitType* emit);
+
 public:
 	
-	ReduceDispatcher(hThreadPool* m_pool, MapReduce *MR);
+	ReduceDispatcher(hThreadPool* m_pool, MapReduce *MR, EmitDumper *dumper);
 	
 	std::string getBatchFilenameById(int id);
 	
-	void addReduceResult(EmitType* emit, int dumpfiled);
+	void addReduceResult(EmitType* emit, int emitter_id);
 	void start();
 	void reduceTask(EmitAcessorVecPtr emit_vec);
 };
