@@ -75,16 +75,22 @@ public:
 
     void wait()
     {
-        pthread_mutex_lock(&lock);
-        
-        pthread_cond_destroy(&cond);
-        pthread_cond_init(&cond, 0);
-        
-        while (!m_state_ok())
-        {
-            pthread_cond_wait(&cond, &lock);
-        }
-        pthread_mutex_unlock(&lock);
+		pthread_mutex_lock(&lock);
+
+	/*	if (m_state_ok())
+		{
+			pthread_mutex_unlock(&lock);
+			return;
+		}
+*/
+		pthread_cond_destroy(&cond);
+		pthread_cond_init(&cond, 0);
+
+		while (!m_state_ok())
+		{
+			pthread_cond_wait(&cond, &lock);
+		}
+		pthread_mutex_unlock(&lock);
     }
     
     void kick()

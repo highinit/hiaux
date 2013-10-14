@@ -20,7 +20,7 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_HdividerDistTests_init = false;
-#include "/home/a.gilmutdinov/projects/tetramorph/threadpool/threadpool_tests.h"
+#include "/Users/phrk/Projects/highinit_repos/tetramorph/threadpool/threadpool_tests.h"
 
 static HdividerDistTests suite_HdividerDistTests;
 

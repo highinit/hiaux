@@ -13,8 +13,14 @@
 
 class MaprTests
 {
+	hLock load_lock;
 public:	
 	
 	void testInvLineDumper();
 	void testMRInterResult();
+	
+	void loadCache(MRInterResult *inter,
+				bool cid,
+				std::vector<int64_t> &keys, int b, int e);
+	void testMRInterResultAsync();
 };

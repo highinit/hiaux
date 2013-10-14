@@ -14,8 +14,8 @@ class MRInterResult
 	std::unordered_map<int64_t, EmitType*> m_emit_cache0;
 	std::unordered_map<int64_t, EmitType*> m_emit_cache1;
 	
-	bool m_cache0_ready;
-	bool m_cache1_ready;
+	std::atomic<bool> m_cache0_ready;
+	std::atomic<bool> m_cache1_ready;
 	hCondWaiter m_cache0_ready_lock;
 	hCondWaiter m_cache1_ready_lock;
 	

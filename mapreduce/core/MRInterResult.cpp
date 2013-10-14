@@ -12,21 +12,21 @@
 MRInterResult::MRInterResult(int fd, EmitDumper* dumper):
 	m_fd(fd),
 	m_dumper(dumper),
-	m_cache0_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, m_cache0_ready)),
-	m_cache1_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, m_cache1_ready))
+	m_cache0_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 0)),
+	m_cache1_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 1))
 {
 
 }
 
 bool MRInterResult::checkCacheReady(bool cid)
 {
-	if (cid==0)
+	if (cid==false)
 	{
-		return m_cache0_ready;
+		return m_cache0_ready.load();
 	}
 	else
 	{
-		return m_cache1_ready;
+		return m_cache1_ready.load();
 	}
 }
 
@@ -92,7 +92,7 @@ void MRInterResult::preload(int64_t key, bool cid)
 	
 	EmitType *emit = restore(it->second);
 	
-	if (cid==0)
+	if (cid==false)
 	{
 		m_emit_cache0.insert(std::pair<int64_t, EmitType*>(key, emit));
 	}
@@ -104,7 +104,7 @@ void MRInterResult::preload(int64_t key, bool cid)
 
 EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 {
-	if (cid==0)
+	if (cid==false)
 	{	
 		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
 
@@ -138,11 +138,11 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 
 void MRInterResult::condWaitCache(bool cid)
 {
-	if (cid==0)
+	if (!cid && !m_cache0_ready.load())
 	{
 		m_cache0_ready_lock.wait();
 	}
-	else
+	else if (cid && !m_cache1_ready.load())
 	{
 		m_cache1_ready_lock.wait();
 	}
@@ -150,7 +150,7 @@ void MRInterResult::condWaitCache(bool cid)
 
 void MRInterResult::clearCache(bool cid)
 {
-	if (cid==0)
+	if (cid==false)
 	{
 		m_cache0_ready = 0;
 	}
@@ -162,7 +162,7 @@ void MRInterResult::clearCache(bool cid)
 
 void MRInterResult::setCacheReady(bool cid)
 {
-	if (cid==0)
+	if (cid==false)
 	{
 		m_cache0_ready = 1;
 		m_cache0_ready_lock.kick();
