@@ -124,6 +124,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	EmitHash::iterator it = emit_hash->begin();
 	EmitHash::iterator end = emit_hash->end();
 	
+	std::cout << "batch finished. flushing \n";
 	while (it != end)
 	{
 		reducer->addReduceResult(it->second, batchid); 
@@ -131,6 +132,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 		it++;
 	}
 	emit_hash->clear();
+	std::cout << "flushing finished\n";
 	// atom
 	m_nbatches_finished++;
 	
@@ -141,6 +143,8 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 			if (finished) return;
 			finished = 1;
 			std::cout << "Batching finished\n";
+			std::cout << "maps: " << m_stats.nmaps << std::endl; 
+			std::cout << "emits: " << m_stats.nemits << std::endl;
 			reducer->start();
 			finish_lock.unlock();
 		}
@@ -171,7 +175,7 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 void MRBatchDispatcher::proceedBatches(
 	std::shared_ptr< std::vector<BatchAccessor*> > batches)
 {
-	const int max_running_batchings = 100;
+	const int max_running_batchings = 1;
 	
 	m_nbatches = batches->size();
 	for (int i = 0; i<batches->size(); i++)

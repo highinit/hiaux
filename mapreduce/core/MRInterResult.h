@@ -9,7 +9,7 @@ class MRInterResult
 	int m_fd;
 	EmitDumper* m_dumper;
 	// key, offset
-	std::unordered_map<int64_t, size_t> m_file_map;
+	std::unordered_map<int64_t, off_t> m_file_map;
 	
 	std::unordered_map<int64_t, EmitType*> m_emit_cache0;
 	std::unordered_map<int64_t, EmitType*> m_emit_cache1;
@@ -20,7 +20,7 @@ class MRInterResult
 	hCondWaiter m_cache1_ready_lock;
 	
 	// not thread safe
-	EmitType *restore(size_t offset);
+	EmitType *restore(off_t offset);
 	
 public:
 	

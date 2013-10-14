@@ -34,14 +34,14 @@ void MRInterResult::addEmit(int64_t key, EmitType *emit)
 {
 	std::string dump = m_dumper->dump(emit);
 	delete emit;
-	//std::cout << dump <<std::endl;
-	size_t offset = lseek(m_fd, 0, SEEK_CUR);
+
+	off_t offset = lseek(m_fd, 0, SEEK_END);
 	size_t size = dump.size();
-	
+
 	iovec atom[3];
 	atom[0].iov_base =  &key;
 	atom[0].iov_len = sizeof(int64_t);
-	
+
 	atom[1].iov_base =  &size;
 	atom[1].iov_len = sizeof(size_t);
 
@@ -51,10 +51,10 @@ void MRInterResult::addEmit(int64_t key, EmitType *emit)
 	writev(m_fd, atom, 3);
 	dump.clear();
 	
-	m_file_map.insert(std::pair<int64_t, size_t>(key, offset));
+	m_file_map.insert(std::pair<int64_t, off_t>(key, offset));
 }
 
-EmitType *MRInterResult::restore(size_t offset)
+EmitType *MRInterResult::restore(off_t offset)
 {
 	lseek(m_fd, offset, SEEK_SET);
 	size_t size;
@@ -68,15 +68,14 @@ EmitType *MRInterResult::restore(size_t offset)
 	{
 		throw "MRInterResult::preload: READ ERROR\n";
 	}
-	char *bf = new char [size];
+	char bf[size+1];
 	if (read(m_fd, bf, size)!=size)
 	{
 		throw "MRInterResult::preload: READ ERROR\n";
 	}
-	//bf[size] = '\0';
+	bf[size] = '\0';
 	
-	EmitType *emit = m_dumper->restore(std::string(bf));
-	delete [] bf;
+	EmitType *emit = m_dumper->restore(bf);
 	return emit;
 }
 
@@ -107,7 +106,7 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 {
 	if (cid==0)
 	{	
-		auto cache_it = m_emit_cache0.find(key);
+		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
 
 		if (cache_it != m_emit_cache0.end())
 		{
@@ -122,7 +121,7 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 	}
 	else
 	{
-		auto cache_it = m_emit_cache1.find(key);
+		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache1.find(key);
 
 		if (cache_it != m_emit_cache1.end())
 		{

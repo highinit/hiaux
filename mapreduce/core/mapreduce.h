@@ -29,7 +29,7 @@
 class InputType
 {
 public:
-    virtual ~InputType();
+    virtual ~InputType() { }
 };
 
 class EmitType
