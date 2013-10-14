@@ -8,7 +8,7 @@ print "PLATFORM:"+platform
 
 _CCFLAGS = '-v'
 _CXX = ''
-_LINKFLAGS = '-lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread -v'
+_LINKFLAGS = '-lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread -v -g'
 
 #LINUX
 if platform[:5]=="linux":
@@ -21,11 +21,13 @@ if platform=="darwin":
 	_CXX = 'clang++'
 
 env = Environment()
-Program('mapr_test', 
-['mapr_test.cpp',
+Program('mapr_unit', 
+['mapr_unit.cpp',
+'../example_invindex/mapr_test.cpp',
+'../example_invindex/invertline.pb.cc',
 '../core/mapreduce.cpp',
+'../core/MRInterResult.cpp',
 '../core/MRBatchDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
-'../core/FileCartulary.cpp',
-'invertline.pb.cc'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)
+'../core/FileCartulary.cpp'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)

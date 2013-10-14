@@ -180,6 +180,7 @@ void onAllReducesFinished()
 	std::cout << "time took: " << time(0) - start_time << std::endl;*/
 }
 
+/*
 int main(int argc, char** argv) 
 {
 	
@@ -190,21 +191,10 @@ int main(int argc, char** argv)
 									new InvertLineDumper,
 									pool,
 									boost::bind(&onAllReducesFinished));
-/*	DocumentBatch *batch = new DocumentBatch(0, 10, 42);
-	DocumentBatch *batch2 = new DocumentBatch(5, 20, 13);
-	DocumentBatch *batch3 = new DocumentBatch(2, 7, 6);
-	DocumentBatch *batch4 = new DocumentBatch(0, 20, 2);
-	DocumentBatch *batch5 = new DocumentBatch(0, 20, 3);
-*/	
+
 	std::shared_ptr< std::vector<BatchAccessor*> > 
 				batches (new std::vector<BatchAccessor*>);
-/*	batches->push_back(batch);
-	batches->push_back(batch2);
-	batches->push_back(batch3);
-	batches->push_back(batch4);
-	batches->push_back(batch5);
-*/
-	
+
 	std::vector<Document*> docs;
 	
 	const int input_size = 100000;
@@ -229,3 +219,4 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+*/

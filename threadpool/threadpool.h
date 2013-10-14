@@ -63,22 +63,24 @@ class hCondWaiter
 {
     pthread_mutex_t lock;
     pthread_cond_t cond;
+	boost::function<bool()> m_state_ok;
 public:
-    
-    hCondWaiter()
-    {
-        pthread_mutex_init(&lock, 0);
-        pthread_cond_init(&cond, 0);
-    }
-    
-    void waitForIt(boost::function<bool()> state)
+
+	hCondWaiter(boost::function<bool()> stateReachedFunc)
+	{
+		pthread_mutex_init(&lock, 0);
+		pthread_cond_init(&cond, 0);
+		m_state_ok = stateReachedFunc;
+	}
+
+    void wait()
     {
         pthread_mutex_lock(&lock);
         
         pthread_cond_destroy(&cond);
         pthread_cond_init(&cond, 0);
         
-        while (!state())
+        while (!m_state_ok())
         {
             pthread_cond_wait(&cond, &lock);
         }

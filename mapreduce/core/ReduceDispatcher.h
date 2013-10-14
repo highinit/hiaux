@@ -26,19 +26,7 @@
 
 #include "FileCartulary.h"
 
-class EmitTypeAccessor
-{
-	EmitType *m_emit;
-	size_t m_offset;
-	int m_emitter_id;
-public:
 
-	EmitTypeAccessor(EmitType *emit, EmitDumper *dumper, int write_fd, int emitter_id);
-	~EmitTypeAccessor() { }
-	int getEmitterId();
-	void restore(EmitDumper *dumper, int read_fd);
-	EmitType *getEmit();
-};
 
 class EmitAcessorVec : public std::vector<EmitTypeAccessor> 
 {

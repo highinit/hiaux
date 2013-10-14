@@ -17,7 +17,8 @@
 
 #include "threadpool.h"
 
-hThread::hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th)
+hThread::hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th):
+	local_queue_notempty(boost::bind(&hThread::queueNotEmpty, this))
 {
     this->waiting_threads = waiting_threads;
     this->local_task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(100) );
@@ -45,7 +46,7 @@ void hThread::run()
         }    
         
         waiting_threads->push(this);
-        local_queue_notempty.waitForIt(boost::bind(&hThread::queueNotEmpty, this));     
+        local_queue_notempty.wait();     
     }
 }
 

@@ -91,23 +91,23 @@ class InvertLine : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required int64 key = 1;
+  // required uint64 key = 1;
   inline bool has_key() const;
   inline void clear_key();
   static const int kKeyFieldNumber = 1;
-  inline ::google::protobuf::int64 key() const;
-  inline void set_key(::google::protobuf::int64 value);
+  inline ::google::protobuf::uint64 key() const;
+  inline void set_key(::google::protobuf::uint64 value);
 
-  // repeated int64 pages = 2;
+  // repeated uint64 pages = 2;
   inline int pages_size() const;
   inline void clear_pages();
   static const int kPagesFieldNumber = 2;
-  inline ::google::protobuf::int64 pages(int index) const;
-  inline void set_pages(int index, ::google::protobuf::int64 value);
-  inline void add_pages(::google::protobuf::int64 value);
-  inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+  inline ::google::protobuf::uint64 pages(int index) const;
+  inline void set_pages(int index, ::google::protobuf::uint64 value);
+  inline void add_pages(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
       pages() const;
-  inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_pages();
 
   // @@protoc_insertion_point(class_scope:mapr_test.InvertLine)
@@ -117,8 +117,8 @@ class InvertLine : public ::google::protobuf::Message {
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::google::protobuf::int64 key_;
-  ::google::protobuf::RepeatedField< ::google::protobuf::int64 > pages_;
+  ::google::protobuf::uint64 key_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > pages_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
@@ -137,7 +137,7 @@ class InvertLine : public ::google::protobuf::Message {
 
 // InvertLine
 
-// required int64 key = 1;
+// required uint64 key = 1;
 inline bool InvertLine::has_key() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
@@ -148,38 +148,38 @@ inline void InvertLine::clear_has_key() {
   _has_bits_[0] &= ~0x00000001u;
 }
 inline void InvertLine::clear_key() {
-  key_ = GOOGLE_LONGLONG(0);
+  key_ = GOOGLE_ULONGLONG(0);
   clear_has_key();
 }
-inline ::google::protobuf::int64 InvertLine::key() const {
+inline ::google::protobuf::uint64 InvertLine::key() const {
   return key_;
 }
-inline void InvertLine::set_key(::google::protobuf::int64 value) {
+inline void InvertLine::set_key(::google::protobuf::uint64 value) {
   set_has_key();
   key_ = value;
 }
 
-// repeated int64 pages = 2;
+// repeated uint64 pages = 2;
 inline int InvertLine::pages_size() const {
   return pages_.size();
 }
 inline void InvertLine::clear_pages() {
   pages_.Clear();
 }
-inline ::google::protobuf::int64 InvertLine::pages(int index) const {
+inline ::google::protobuf::uint64 InvertLine::pages(int index) const {
   return pages_.Get(index);
 }
-inline void InvertLine::set_pages(int index, ::google::protobuf::int64 value) {
+inline void InvertLine::set_pages(int index, ::google::protobuf::uint64 value) {
   pages_.Set(index, value);
 }
-inline void InvertLine::add_pages(::google::protobuf::int64 value) {
+inline void InvertLine::add_pages(::google::protobuf::uint64 value) {
   pages_.Add(value);
 }
-inline const ::google::protobuf::RepeatedField< ::google::protobuf::int64 >&
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
 InvertLine::pages() const {
   return pages_;
 }
-inline ::google::protobuf::RepeatedField< ::google::protobuf::int64 >*
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
 InvertLine::mutable_pages() {
   return &pages_;
 }

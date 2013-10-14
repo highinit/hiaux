@@ -80,7 +80,7 @@ void protobuf_AddDesc_invertline_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\020invertline.proto\022\tmapr_test\"(\n\nInvertL"
-    "ine\022\013\n\003key\030\001 \002(\003\022\r\n\005pages\030\002 \003(\003", 71);
+    "ine\022\013\n\003key\030\001 \002(\004\022\r\n\005pages\030\002 \003(\004", 71);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "invertline.proto", &protobuf_RegisterTypes);
   InvertLine::default_instance_ = new InvertLine();
@@ -118,7 +118,7 @@ InvertLine::InvertLine(const InvertLine& from)
 
 void InvertLine::SharedCtor() {
   _cached_size_ = 0;
-  key_ = GOOGLE_LONGLONG(0);
+  key_ = GOOGLE_ULONGLONG(0);
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
 }
 
@@ -154,7 +154,7 @@ InvertLine* InvertLine::New() const {
 
 void InvertLine::Clear() {
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    key_ = GOOGLE_LONGLONG(0);
+    key_ = GOOGLE_ULONGLONG(0);
   }
   pages_.Clear();
   ::memset(_has_bits_, 0, sizeof(_has_bits_));
@@ -167,12 +167,12 @@ bool InvertLine::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   while ((tag = input->ReadTag()) != 0) {
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // required int64 key = 1;
+      // required uint64 key = 1;
       case 1: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, &key_)));
           set_has_key();
         } else {
@@ -182,19 +182,19 @@ bool InvertLine::MergePartialFromCodedStream(
         break;
       }
 
-      // repeated int64 pages = 2;
+      // repeated uint64 pages = 2;
       case 2: {
         if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
             ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT) {
          parse_pages:
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitive<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  1, 16, input, this->mutable_pages())));
         } else if (::google::protobuf::internal::WireFormatLite::GetTagWireType(tag)
                    == ::google::protobuf::internal::WireFormatLite::
                       WIRETYPE_LENGTH_DELIMITED) {
           DO_((::google::protobuf::internal::WireFormatLite::ReadPackedPrimitiveNoInline<
-                   ::google::protobuf::int64, ::google::protobuf::internal::WireFormatLite::TYPE_INT64>(
+                   ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  input, this->mutable_pages())));
         } else {
           goto handle_uninterpreted;
@@ -222,14 +222,14 @@ bool InvertLine::MergePartialFromCodedStream(
 
 void InvertLine::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
-  // required int64 key = 1;
+  // required uint64 key = 1;
   if (has_key()) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(1, this->key(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(1, this->key(), output);
   }
 
-  // repeated int64 pages = 2;
+  // repeated uint64 pages = 2;
   for (int i = 0; i < this->pages_size(); i++) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt64(
+    ::google::protobuf::internal::WireFormatLite::WriteUInt64(
       2, this->pages(i), output);
   }
 
@@ -241,15 +241,15 @@ void InvertLine::SerializeWithCachedSizes(
 
 ::google::protobuf::uint8* InvertLine::SerializeWithCachedSizesToArray(
     ::google::protobuf::uint8* target) const {
-  // required int64 key = 1;
+  // required uint64 key = 1;
   if (has_key()) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt64ToArray(1, this->key(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt64ToArray(1, this->key(), target);
   }
 
-  // repeated int64 pages = 2;
+  // repeated uint64 pages = 2;
   for (int i = 0; i < this->pages_size(); i++) {
     target = ::google::protobuf::internal::WireFormatLite::
-      WriteInt64ToArray(2, this->pages(i), target);
+      WriteUInt64ToArray(2, this->pages(i), target);
   }
 
   if (!unknown_fields().empty()) {
@@ -263,20 +263,20 @@ int InvertLine::ByteSize() const {
   int total_size = 0;
 
   if (_has_bits_[0 / 32] & (0xffu << (0 % 32))) {
-    // required int64 key = 1;
+    // required uint64 key = 1;
     if (has_key()) {
       total_size += 1 +
-        ::google::protobuf::internal::WireFormatLite::Int64Size(
+        ::google::protobuf::internal::WireFormatLite::UInt64Size(
           this->key());
     }
 
   }
-  // repeated int64 pages = 2;
+  // repeated uint64 pages = 2;
   {
     int data_size = 0;
     for (int i = 0; i < this->pages_size(); i++) {
       data_size += ::google::protobuf::internal::WireFormatLite::
-        Int64Size(this->pages(i));
+        UInt64Size(this->pages(i));
     }
     total_size += 1 * this->pages_size() + data_size;
   }
