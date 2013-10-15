@@ -1,5 +1,5 @@
-#ifndef MRNODE_DISPATCHER
-#define MRNODE_DISPATCHER
+#ifndef MRINTER_RESULT_DISPATCHER
+#define MRINTER_RESULT_DISPATCHER
 
 #include "mapreduce.h"
 #include "../../threadpool/threadpool.h"
@@ -41,6 +41,8 @@ public:
 	void clearCache(bool cid);
 	void setCacheReady(bool cid);
 };
+
+typedef boost::shared_ptr<MRInterResult> MRInterResultPtr;
 
 #endif
 

@@ -1,4 +1,5 @@
 #include "mapr_unit.h"
+#include "../core/MRNodeDispatcher.h"
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -136,7 +137,7 @@ void MaprTests::testMRInterResultAsync()
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	MRInterResult *inter = new MRInterResult(fd, new InvertLineDumper);
 	
-	const int nemits = 10000;
+	const int nemits = 100;
 	const int nparts = 10;
 	int emits_per_part = nemits/nparts;
 	

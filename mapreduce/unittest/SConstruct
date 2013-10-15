@@ -29,6 +29,8 @@ Program('mapr_unit',
 '../core/mapreduce.cpp',
 '../core/MRInterResult.cpp',
 '../core/MRBatchDispatcher.cpp',
+'../core/MRNodeDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
+'../../threadpool/taskcounter.cpp',
 '../core/FileCartulary.cpp'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)

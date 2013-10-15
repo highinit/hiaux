@@ -123,7 +123,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 {
 	EmitHash::iterator it = emit_hash->begin();
 	EmitHash::iterator end = emit_hash->end();
-	
+
 	std::cout << "batch finished. flushing \n";
 	while (it != end)
 	{
@@ -131,11 +131,14 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 		//delete it->second;
 		it++;
 	}
+
 	emit_hash->clear();
 	std::cout << "flushing finished\n";
 	// atom
-	m_nbatches_finished++;
+	//m_nbatches_finished++;
 	
+
+	/*
 	if (m_nbatches_finished.load() == m_nbatches)
 	{
 		if (finish_lock.trylock())
@@ -148,17 +151,26 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 			reducer->start();
 			finish_lock.unlock();
 		}
-	}
+	}*/
+}
+
+void MRBatchDispatcher::onBatchingFinished()
+{
+	std::cout << "_______Batching finished\n";
+	reducer->start();
 }
 
 MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 								EmitDumper *dumper,
                                hThreadPool *pool, 
-                               boost::function<void()> onAllReducesFinished)
+                               boost::function<void()> onAllReducesFinished):
+	batch_tasks_counter(pool,
+						4,
+						boost::bind(&MRBatchDispatcher::onBatchingFinished, this))
 {
 	m_nbatches = 0;
-	m_nbatches_launched = 0;
-	m_nbatches_finished = 0;
+	//m_nbatches_launched = 0;
+	//m_nbatches_finished = 0;
 
 	finished = 0;
 
@@ -167,8 +179,8 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
 //	emit_queue_hash = new EmitQueueHash;
 	m_pool = pool;
 	m_onAllReducesFinished = onAllReducesFinished;
-	m_nreduces_launched =  0;
-	m_nreduces_finished = 0;
+	//m_nreduces_launched =  0;
+	//m_nreduces_finished = 0;
 	reducer = new ReduceDispatcher(pool, MR, dumper);
 }
 
@@ -180,16 +192,19 @@ void MRBatchDispatcher::proceedBatches(
 	m_nbatches = batches->size();
 	for (int i = 0; i<batches->size(); i++)
 	{
-		while (m_nbatches_launched.load()-m_nbatches_finished.load()>=max_running_batchings)
+		//while (batch_tasks_counter.countRunning()>=max_running_batchings)
 		{
-			sleep(1);
+		//	sleep(1);
 		}
 		//std::cout << "launch batch \n";
-		m_nbatches_launched++;
-		m_pool->addTask(new boost::function<void()>(
+		//m_nbatches_launched++;
+		//m_pool->
+		std::cout << "add batch to scheduler\n";
+		batch_tasks_counter.addTask(new boost::function<void()>(
 			boost::bind(&MRBatchDispatcher::mapBatchTask, this, batches->at(i), i)));
 	}
-	batches->clear();
+	batch_tasks_counter.setNoMoreTasks();
+	//batches->clear();
 }
 
 MRStats MRBatchDispatcher::getStats()

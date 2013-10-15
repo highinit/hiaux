@@ -57,7 +57,8 @@ ReduceDispatcher::ReduceDispatcher(hThreadPool* pool, MapReduce *MR, EmitDumper 
 		fd_deposit (boost::bind(&ReduceDispatcher::getBatchFilenameById,
 					this, _1)),
 		fd_rent (boost::bind(&ReduceDispatcher::getBatchFilenameById,
-					this, _1))
+					this, _1)),
+		reduce_tasks_counter(pool, 4, boost::bind(&ReduceDispatcher::onFinished, this))
 {
 	m_MR = MR->copy();
 }
@@ -95,13 +96,13 @@ void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 {
 	KeyReducer reducer(m_MR, emit_vec);
 	
-	m_nreduces_finished++;
-
+	//m_nreduces_finished++;
 	EmitType *emit = emit_vec->at(0).getEmit();
 	dumpResultKey(emit->key, emit);
 	emit_vec->clear();
 	delete emit;
 	
+	/*
 	if (m_nreduces_launched.load() == m_nreduces_finished.load())
 	{
 		if (m_all_reduces_launched.load())
@@ -118,7 +119,13 @@ void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 				exit(0);
 			}
 		}
-	}
+	}*/
+}
+
+void ReduceDispatcher::onFinished()
+{
+	std::cout << "FINISHED\n";
+//	_onFinished();
 }
 
 void ReduceDispatcher::restoreKey(EmitAcessorVecPtr emit_vec)
@@ -152,28 +159,37 @@ void ReduceDispatcher::dumpResultKey(int64_t key, EmitType* emit)
 }
 
 void ReduceDispatcher::start()
-{	
+{
+	std::cout << "ReduceDispatcher::start()" << std::endl;
 	hRWLockWrite rd_lock = hash_lock.write();
 	//if (finished) return;
 	//fd_deposit.close();
-	m_all_reduces_launched = 0;
+	//m_all_reduces_launched = 0;
 	finished = 0;
-	
+
 	fd_result = open("result", O_WRONLY | O_CREAT | O_APPEND,   
 					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	
+
 	const int min_active_tasks = 8;
 	const int max_keys_in_cache = 1000;
-	
+
 	std::cout << "Hash size: " << m_reduce_hash.size() << std::endl;
 
-	
+
 	// preload grouped emits, run reduce tasks
 	int i = 0;
 	auto hash_it = m_reduce_hash.begin();
 	auto hash_end = m_reduce_hash.end();
 	
 	
+	while (hash_it != hash_end)
+	{
+		restoreKey(hash_it->second);
+		reduce_tasks_counter.addTask(new boost::function<void()> (
+					boost::bind(&ReduceDispatcher::reduceTask, this, hash_it->second)));
+		hash_it++;
+	}
+	/*
 	while (1)
 	{	
 		while (emit_vec_ram_cache.size()<max_keys_in_cache && hash_it != hash_end)
@@ -183,21 +199,23 @@ void ReduceDispatcher::start()
 			hash_it++;
 		}
 		
-		if (m_nreduces_launched.load()-m_nreduces_finished.load()< min_active_tasks)
+		//if (m_nreduces_launched.load()-m_nreduces_finished.load()< min_active_tasks)
+		if (reduce_tasks_counter.countRunning() < min_active_tasks)
 		{
 			if (emit_vec_ram_cache.size()==0 && hash_it == hash_end)
 			{
 				break;
-				m_all_reduces_launched = 1;
 			}
 			
-			m_nreduces_launched++;
+			//m_nreduces_launched++;
+			//reduce_tasks_counter.incLaunched();
 			m_pool->addTask(new boost::function<void()> (
 					boost::bind(&ReduceDispatcher::reduceTask, this, emit_vec_ram_cache.front())));
 			emit_vec_ram_cache.pop();
 		}
-	}
-	m_all_reduces_launched = 1;
+	}*/
+	
+	reduce_tasks_counter.setNoMoreTasks();
 	/*
 	sleep(1);
 	hash_it = m_reduce_hash.begin();

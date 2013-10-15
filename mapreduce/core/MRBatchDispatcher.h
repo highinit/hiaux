@@ -75,14 +75,13 @@ class MRBatchDispatcher
     hLock finish_lock;
     boost::function<void()> m_onAllReducesFinished;
 
-    size_t m_nbatches;
-
-	std::atomic<size_t> m_nbatches_launched;
-    std::atomic<size_t> m_nbatches_finished;
-
-    std::atomic<size_t> m_nreduces_launched;
-    std::atomic<size_t> m_nreduces_finished;
-
+	//std::atomic<size_t> m_nbatches_launched;
+    //std::atomic<size_t> m_nbatches_finished;
+	TaskLauncher batch_tasks_counter;
+	//std::shared_ptr< std::vector<BatchAccessor*> > m_batches;
+	size_t  m_nbatches;
+	
+	
     bool finished = 1;
     
 	ReduceDispatcher* reducer; 
@@ -101,7 +100,7 @@ public:
     //void reduceTask(int64_t key);
 
     void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
-
+	void onBatchingFinished();
     void proceedBatches(std::shared_ptr< std::vector<BatchAccessor*> > batches);
     //void mergeEmits(std::string filename);
 

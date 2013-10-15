@@ -21,6 +21,7 @@
 #include <unordered_map>
 
 #include "../../hpoolserver/hpoolserver.h"
+#include "../../threadpool/taskcounter.h"
 #include "mapreduce.h"
 #include <queue>
 
@@ -101,15 +102,21 @@ class ReduceDispatcher
 	EmitDumper *m_dumper;
 	hThreadPool *m_pool;
 	
+	/*
 	std::atomic<uint32_t> m_nreduces_launched;
 	std::atomic<uint32_t> m_nreduces_finished;
 	std::atomic<bool> m_all_reduces_launched;
+	*/
+	
+	TaskLauncher reduce_tasks_counter;
 	
 	void restoreKey(EmitAcessorVecPtr emit_vec);
 	int fd_result;
 	void dumpResultKey(int64_t key, EmitType* emit);
 
 public:
+	
+	void onFinished();
 	
 	ReduceDispatcher(hThreadPool* m_pool, MapReduce *MR, EmitDumper *dumper);
 	

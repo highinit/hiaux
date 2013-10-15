@@ -21,6 +21,7 @@ using namespace std;
 std::string InvertLineDumper::dump(EmitType *emit)
 {
 	InvertLine *line = (InvertLine*) emit;
+	//std::cout << "dump line->pages.size(): " << line->pages.size() << std::endl;
 	mapr_test::InvertLine pb_line;
 	
 	pb_line.set_key(line->key);
@@ -44,7 +45,9 @@ EmitType* InvertLineDumper::restore(std::string dumped)
 		line->pages.push_back(pb_line.pages(i));
 	}
 	pb_line.Clear();
-	
+//	std::cout << "restore line->pages.size(): " << line->pages.size() 
+//			<< " " << line->pages[0]
+//			<< std::endl;
 	return (EmitType*) line;
 }
 
@@ -180,7 +183,7 @@ void onAllReducesFinished()
 	std::cout << "time took: " << time(0) - start_time << std::endl;*/
 }
 
-/*
+
 int main(int argc, char** argv) 
 {
 	
@@ -219,4 +222,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-*/
