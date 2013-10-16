@@ -224,21 +224,33 @@ void MaprTests::onMRInterMergerFinished()
 
 void MaprTests::testMRInterMerger()
 {
+	hThreadPool *pool = new hThreadPool(10);
+	pool->run();
+	
 	std::cout << "MaprTests::testMRInterMerger\n";
-	int fd1 = open("inter1",  O_RDWR | O_CREAT | O_TRUNC,
+	int fd1 = open("/Volumes/seagate/inter1",  O_RDWR | O_CREAT | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	MRInterResultPtr inter1 (new MRInterResult(fd1, new InvertLineDumper));
 	
-	int fd2 = open("inter2",  O_RDWR | O_CREAT | O_TRUNC,
+	int fd2 = open("/Volumes/seagate/inter2",  O_RDWR | O_CREAT | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	MRInterResultPtr inter2 (new MRInterResult(fd2, new InvertLineDumper));
 	
-	int fd3 = open("inter3",  O_RDWR | O_CREAT | O_TRUNC,
+	int fd3 = open("/Volumes/seagate/inter3",  O_RDWR | O_CREAT | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	MRInterResultPtr inter3 (new MRInterResult(fd3, new InvertLineDumper));
 
-	int nkeys = 100000;
-	int keys_in_cache = 1000;
+	pool->addTask(new boost::function<void()>(
+		boost::bind(&MRInterResult::writeThread, inter1, 100000)));
+	
+	pool->addTask(new boost::function<void()>(
+		boost::bind(&MRInterResult::writeThread, inter2, 100000)));
+	
+	pool->addTask(new boost::function<void()>(
+		boost::bind(&MRInterResult::writeThread, inter3, 100000)));
+	
+	int nkeys = 10000000;
+	int keys_in_cache = 100000;
 	
 	for (int64_t i = 1; i<=2*nkeys/3; i++)
 	{
@@ -257,13 +269,15 @@ void MaprTests::testMRInterMerger()
 	}
 	std::cout << "emits created\n";
 	int64_t ts_start = time(0);
-
-	hThreadPool *pool = new hThreadPool(6);
-	pool->run();
+	
+	inter1->waitFlushFinished();
+	inter2->waitFlushFinished();
+	
 	TaskLauncher preload_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
 	MRInterMerger::merge(preload_tasks_launcher, inter1, inter2, inter3, MR, keys_in_cache);
 	
+	inter3->waitFlushFinished();
 	std::cout << "time took " << time(0) - ts_start << std::endl; 
 	// 40 sec, 500mb
 	

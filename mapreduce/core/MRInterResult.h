@@ -22,18 +22,30 @@ class MRInterResult
 	hCondWaiter m_cache0_ready_lock;
 	hCondWaiter m_cache1_ready_lock;
 	
+	// key / dump
+	std::queue< std::pair<int64_t, std::string> > write_buffer;
+	hLock wbuffer_lock;
+	//hCondWaiter m_write_buffer_empty;
+	std::atomic<bool> no_more_writes;
+	hLock flush_finish_lock;
+	
 	// not thread safe
 	EmitType *restore(off_t offset);
 	
+	void flush(std::pair<int64_t, std::string> dump);
 public:
 	
 	MRInterResult(int fd, EmitDumper* dumper);
 	~MRInterResult();
 	
+	bool checkWriteBufferNotEmpty();
+	void writeThread(int max_buffer_size);
+	
 	bool checkCacheReady(bool cid);
 	
 	// add to m_file_map and dump. not thread safe with itself and other methods
 	void addEmit(int64_t key, EmitType *emitvec);
+	void waitFlushFinished();
 	Int64VecPtr getKeys();
 	
 	// preload & getEmit thread safe when cid's are different

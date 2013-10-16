@@ -13,9 +13,11 @@ MRInterResult::MRInterResult(int fd, EmitDumper* dumper):
 	m_fd(fd),
 	m_dumper(dumper),
 	m_cache0_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 0)),
-	m_cache1_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 1))
+	m_cache1_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 1)),
+//	m_write_buffer_empty(boost::bind(&MRInterResult::checkWriteBufferNotEmpty, this)),
+	no_more_writes(0)
 {
-
+	flush_finish_lock.lock();
 }
 
 MRInterResult::~MRInterResult()
@@ -23,6 +25,78 @@ MRInterResult::~MRInterResult()
 	m_file_map.clear();
 	m_emit_cache0.clear();
 	m_emit_cache1.clear();
+}
+
+bool MRInterResult::checkWriteBufferNotEmpty()
+{
+	wbuffer_lock.lock();
+	bool notempty = (write_buffer.size()==0);
+	wbuffer_lock.lock();
+	return notempty;
+}
+
+void MRInterResult::flush(std::pair<int64_t, std::string> dump)
+{
+	off_t offset = lseek(m_fd, 0, SEEK_END);
+	size_t size = dump.second.size();
+
+	iovec atom[3];
+	atom[0].iov_base =  &dump.first;
+	atom[0].iov_len = sizeof(int64_t);
+
+	atom[1].iov_base =  &size;
+	atom[1].iov_len = sizeof(size_t);
+
+	atom[2].iov_base = (void*)dump.second.data();
+	atom[2].iov_len = size;
+
+	writev(m_fd, atom, 3);
+	dump.second.clear();
+	
+	m_file_map.insert(std::pair<int64_t, off_t>(dump.first, offset));
+}
+
+void MRInterResult::writeThread(int max_buffer_size)
+{
+	while (1)
+	{
+		//m_write_buffer_empty.wait();
+		wbuffer_lock.lock();
+		
+		if (write_buffer.size()>max_buffer_size)
+		{
+			while (write_buffer.size()>max_buffer_size/2)
+			{
+				flush(write_buffer.front());
+				write_buffer.pop();
+			}
+			wbuffer_lock.unlock();
+		}
+		else if (write_buffer.size()!=0)
+		{
+			flush(write_buffer.front());
+			write_buffer.pop();
+			wbuffer_lock.unlock();
+		}
+		else
+		{
+			if (no_more_writes)
+			{
+				flush_finish_lock.unlock();
+				wbuffer_lock.unlock();
+				break;
+			}
+			wbuffer_lock.unlock();
+		}
+	}
+}
+
+void MRInterResult::waitFlushFinished()
+{
+	wbuffer_lock.lock();
+	no_more_writes = 1;
+	wbuffer_lock.unlock();
+	flush_finish_lock.lock();
 }
 
 bool MRInterResult::checkCacheReady(bool cid)
@@ -42,23 +116,12 @@ void MRInterResult::addEmit(int64_t key, EmitType *emit)
 	std::string dump = m_dumper->dump(emit);
 	delete emit;
 
-	off_t offset = lseek(m_fd, 0, SEEK_END);
-	size_t size = dump.size();
-
-	iovec atom[3];
-	atom[0].iov_base =  &key;
-	atom[0].iov_len = sizeof(int64_t);
-
-	atom[1].iov_base =  &size;
-	atom[1].iov_len = sizeof(size_t);
-
-	atom[2].iov_base = (void*)dump.data();
-	atom[2].iov_len = size;
-
-	writev(m_fd, atom, 3);
-	dump.clear();
-	
-	m_file_map.insert(std::pair<int64_t, off_t>(key, offset));
+	//m_write_buffer_empty.lock();
+	wbuffer_lock.lock();
+	write_buffer.push(std::pair<int64_t, std::string>(key, dump));
+	wbuffer_lock.unlock();
+	//m_write_buffer_empty.kick();
+	//m_write_buffer_empty.unlock();
 }
 
 EmitType *MRInterResult::restore(off_t offset)
