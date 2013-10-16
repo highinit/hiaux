@@ -21,6 +21,9 @@ public:
 	
 	void loadCache(MRInterResult *inter,
 				bool cid,
-				std::vector<int64_t> &keys, int b, int e);
+				Int64VecPtr keys, int b, int e);
 	void testMRInterResultAsync();
+	
+	void onMRInterMergerFinished();
+	void testMRInterMerger();
 };

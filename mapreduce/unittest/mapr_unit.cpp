@@ -1,6 +1,8 @@
 #include "mapr_unit.h"
 #include "../core/MRNodeDispatcher.h"
 
+#include "../core/MRInterMerger.h"
+
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -57,14 +59,14 @@ void MaprTests::testMRInterResult()
 		inter->addEmit(i, line);
 	}
 
-	std::vector<int64_t> keys = inter->getKeys();
+	Int64VecPtr keys = inter->getKeys();
 
-	for (int i = 0; i<keys.size(); i++)
+	for (int i = 0; i<keys->size(); i++)
 	{
-		inter->preload(keys[i], cid);
+		inter->preload(keys->at(i), cid);
 		InvertLine *line = (InvertLine*)
-					inter->getEmit(keys[i], cid);
-		if (line->key != keys[i])
+					inter->getEmit(keys->at(i), cid);
+		if (line->key != keys->at(i))
 		{
 			std::cout << "TEST FAILED: different keys\n";
 			exit(0);
@@ -115,13 +117,13 @@ void MaprTests::testMRInterResult()
 
 void MaprTests::loadCache(MRInterResult *inter,
 				bool cid,
-				std::vector<int64_t> &keys, int b, int e)
+				Int64VecPtr keys, int b, int e)
 {
 	load_lock.lock();
 	//std::cout << "loaded " << b << " to " << e << std::endl;
 	for (int i = b; i<e; i++)
 	{
-		inter->preload(keys[i], cid);
+		inter->preload(keys->at(i), cid);
 	}
 	inter->setCacheReady(cid);
 	//std::cout << "loaded Cache\n";
@@ -151,7 +153,7 @@ void MaprTests::testMRInterResultAsync()
 	}
 	
 	std::cout << "file written\n";
-	std::vector<int64_t> keys = inter->getKeys();
+	Int64VecPtr keys = inter->getKeys();
 	
 	int key_r_b = 0;
 	int key_r_e = emits_per_part;
@@ -170,7 +172,7 @@ void MaprTests::testMRInterResultAsync()
 	while (1)
 	{	
 		//std::cout << "waiting cache\n";
-		inter->condWaitCache(cid);	
+		inter->condWaitCache(cid);
 		
 		//std::cout << "reading from cache " << key_r_b << " to " << key_r_e << "\n";
 		nread += key_r_e - key_r_b;
@@ -178,7 +180,7 @@ void MaprTests::testMRInterResultAsync()
 		
 		for (int i = key_r_b; i<key_r_e; i++)
 		{
-			inter->getEmit(keys[i], cid);
+			inter->getEmit(keys->at(i), cid);
 		}
 		
 		key_r_b += emits_per_part;
@@ -210,18 +212,82 @@ void MaprTests::testMRInterResultAsync()
 		cid = !cid;
 	}
 	
-	std::cout << "FINISHED\n";;
+	std::cout << "FINISHED\n";
 	
 	exit(0);
 }
 
+void MaprTests::onMRInterMergerFinished()
+{
+	std::cout << "onMRInterMergerFinished\n";
+}
+
+void MaprTests::testMRInterMerger()
+{
+	std::cout << "MaprTests::testMRInterMerger\n";
+	int fd1 = open("inter1",  O_RDWR | O_CREAT | O_TRUNC,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	MRInterResultPtr inter1 (new MRInterResult(fd1, new InvertLineDumper));
+	
+	int fd2 = open("inter2",  O_RDWR | O_CREAT | O_TRUNC,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	MRInterResultPtr inter2 (new MRInterResult(fd2, new InvertLineDumper));
+	
+	int fd3 = open("inter3",  O_RDWR | O_CREAT | O_TRUNC,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	MRInterResultPtr inter3 (new MRInterResult(fd3, new InvertLineDumper));
+
+	int nkeys = 100000;
+	int keys_in_cache = 1000;
+	
+	for (int64_t i = 1; i<=2*nkeys/3; i++)
+	{
+		InvertLine* line = new InvertLine(i);
+		for (int j = i; j<i+50; j++)
+			line->pages.push_back(j);
+		inter1->addEmit(i, line);
+	}
+	
+	for (int64_t i = nkeys/3; i<=nkeys; i++)
+	{
+		InvertLine* line = new InvertLine(i);
+		for (int j = i; j<i+50; j++)
+			line->pages.push_back(j);
+		inter2->addEmit(i, line);
+	}
+	std::cout << "emits created\n";
+	int64_t ts_start = time(0);
+
+	hThreadPool *pool = new hThreadPool(6);
+	pool->run();
+	TaskLauncher preload_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
+	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
+	MRInterMerger::merge(preload_tasks_launcher, inter1, inter2, inter3, MR, keys_in_cache);
+	
+	std::cout << "time took " << time(0) - ts_start << std::endl; 
+	// 40 sec, 500mb
+	
+	//Int64VecPtr keys = inter3->getKeys();
+	//std::cout << "nkeys: " << keys->size() << std::endl; 
+	
+	/*for (int i = 0; i<keys->size(); i++)
+	{
+		inter3->preload(keys->at(i), 0);
+		InvertLine* line = (InvertLine*)inter3->getEmit(keys->at(i), 0);
+		
+		std::cout << "key: " << keys->at(i) << " ";
+		line->print();
+	}*/
+}
+
+
 int main(int argc, char **argv)
 {
-	std::cout << "MaprTests::testMRInterResult\n";
 	MaprTests tests;
 	//tests.testInvLineDumper();
 	//tests.testMRInterResult();
-	tests.testMRInterResultAsync();
+	//tests.testMRInterResultAsync();
+	tests.testMRInterMerger();
 	
 	std::cout << "all tests ended\n";
 	return 0;

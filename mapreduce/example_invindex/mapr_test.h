@@ -62,6 +62,17 @@ public:
 	{
 		pages.clear();
 	}
+	
+	void print()
+	{
+		std::cout << "(" << pages.size() << ") | ";
+		for (int i = 0; i<pages.size(); i++)
+		{
+			std::cout << pages[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+
 };
 
 class InvertLineDumper : public EmitDumper

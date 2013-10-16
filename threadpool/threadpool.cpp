@@ -74,8 +74,8 @@ void hThread::join()
 hThreadPool::hThreadPool(int nthreads)
 {
     this->nthreads = nthreads;
-    this->task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(10000));
-    this->waiting_threads = ThreadQueue (new boost::lockfree::queue<hThread*>(10000));
+    this->task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(100));
+    this->waiting_threads = ThreadQueue (new boost::lockfree::queue<hThread*>(100));
 }
 
 void hThreadPool::addTask(boost::function<void()> *f)

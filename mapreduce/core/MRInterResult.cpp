@@ -18,6 +18,13 @@ MRInterResult::MRInterResult(int fd, EmitDumper* dumper):
 
 }
 
+MRInterResult::~MRInterResult()
+{
+	m_file_map.clear();
+	m_emit_cache0.clear();
+	m_emit_cache1.clear();
+}
+
 bool MRInterResult::checkCacheReady(bool cid)
 {
 	if (cid==false)
@@ -84,8 +91,8 @@ void MRInterResult::preload(int64_t key, bool cid)
 	auto it = m_file_map.find(key);
 	if (it==m_file_map.end())
 	{
-		std::cout << "no key in filemap\n";
-		exit(0);
+		//std::cout << "no key in filemap\n";
+		//exit(0);
 		return;
 		//throw "MRInterResult::preload: No such key";
 	}
@@ -116,7 +123,8 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 		}
 		else
 		{
-			throw "MRInterResult::getEmit Not in cache";
+			return NULL;
+			//throw "MRInterResult::getEmit Not in cache";
 		}
 	}
 	else
@@ -131,18 +139,19 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 		}
 		else
 		{
-			throw "MRInterResult::getEmit Not in cache";
+			//throw "MRInterResult::getEmit Not in cache";
+			return NULL;
 		}
 	}
 }
 
 void MRInterResult::condWaitCache(bool cid)
 {
-	if (!cid && !m_cache0_ready.load())
+	if (!cid)// && !m_cache0_ready.load())
 	{
 		m_cache0_ready_lock.wait();
 	}
-	else if (cid && !m_cache1_ready.load())
+	else if (cid)// && !m_cache1_ready.load())
 	{
 		m_cache1_ready_lock.wait();
 	}
@@ -152,11 +161,15 @@ void MRInterResult::clearCache(bool cid)
 {
 	if (cid==false)
 	{
+		m_cache0_ready_lock.lock();
 		m_cache0_ready = 0;
+		m_cache0_ready_lock.unlock();
 	}
 	else
 	{
+		m_cache1_ready_lock.lock();
 		m_cache1_ready = 0;
+		m_cache1_ready_lock.unlock();
 	}
 }
 
@@ -164,25 +177,29 @@ void MRInterResult::setCacheReady(bool cid)
 {
 	if (cid==false)
 	{
+		m_cache0_ready_lock.lock();
 		m_cache0_ready = 1;
 		m_cache0_ready_lock.kick();
+		m_cache0_ready_lock.unlock();
 	}
 	else
 	{
+		m_cache1_ready_lock.lock();
 		m_cache1_ready = 1;
 		m_cache1_ready_lock.kick();
+		m_cache1_ready_lock.unlock();
 	}
 }
 
-std::vector<int64_t> MRInterResult::getKeys()
+Int64VecPtr MRInterResult::getKeys()
 {
-	std::vector<int64_t> keys;
+	Int64VecPtr keys( new std::vector<int64_t> );
 	auto filemap_it = m_file_map.begin();
 	auto filemap_end = m_file_map.end();
 	
 	while (filemap_it != filemap_end)
 	{
-		keys.push_back(filemap_it->first);
+		keys->push_back(filemap_it->first);
 		filemap_it++;
 	}
 	return keys;

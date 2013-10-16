@@ -4,6 +4,9 @@
 #include "mapreduce.h"
 #include "../../threadpool/threadpool.h"
 
+typedef std::vector<int64_t> Int64Vec;
+typedef boost::shared_ptr< std::vector<int64_t> > Int64VecPtr;
+
 class MRInterResult
 {
 	int m_fd;
@@ -25,12 +28,13 @@ class MRInterResult
 public:
 	
 	MRInterResult(int fd, EmitDumper* dumper);
+	~MRInterResult();
 	
 	bool checkCacheReady(bool cid);
 	
 	// add to m_file_map and dump. not thread safe with itself and other methods
 	void addEmit(int64_t key, EmitType *emitvec);
-	std::vector<int64_t> getKeys();
+	Int64VecPtr getKeys();
 	
 	// preload & getEmit thread safe when cid's are different
 	void preload(int64_t key, bool cid); 

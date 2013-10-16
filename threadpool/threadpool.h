@@ -61,21 +61,21 @@ public:
 
 class hCondWaiter
 {
-    pthread_mutex_t lock;
+    pthread_mutex_t m_lock;
     pthread_cond_t cond;
 	boost::function<bool()> m_state_ok;
 public:
 
 	hCondWaiter(boost::function<bool()> stateReachedFunc)
 	{
-		pthread_mutex_init(&lock, 0);
+		pthread_mutex_init(&m_lock, 0);
 		pthread_cond_init(&cond, 0);
 		m_state_ok = stateReachedFunc;
 	}
 
     void wait()
     {
-		pthread_mutex_lock(&lock);
+		pthread_mutex_lock(&m_lock);
 
 	/*	if (m_state_ok())
 		{
@@ -83,21 +83,29 @@ public:
 			return;
 		}
 */
-		pthread_cond_destroy(&cond);
-		pthread_cond_init(&cond, 0);
+	//pthread_cond_destroy(&cond);
+	//	pthread_cond_init(&cond, 0);
 
 		while (!m_state_ok())
 		{
-			pthread_cond_wait(&cond, &lock);
+			pthread_cond_wait(&cond, &m_lock);
 		}
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&m_lock);
     }
     
+	void lock()
+	{
+		pthread_mutex_lock(&m_lock);
+	}
+	
+	void unlock()
+	{
+		pthread_mutex_unlock(&m_lock);
+	}
+	
     void kick()
     {
-        pthread_mutex_lock(&lock);
         pthread_cond_signal(&cond);
-        pthread_mutex_unlock(&lock);
     }
 };
 

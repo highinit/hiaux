@@ -183,10 +183,10 @@ void onAllReducesFinished()
 	std::cout << "time took: " << time(0) - start_time << std::endl;*/
 }
 
-
+/*
 int main(int argc, char** argv) 
 {
-	
+	std::cout << "maper_test\n";
 //	return 0;
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
 	hThreadPool *pool = new hThreadPool(10);
@@ -200,11 +200,12 @@ int main(int argc, char** argv)
 
 	std::vector<Document*> docs;
 	
-	const int input_size = 100000;
+	// keys: 4000000
+	const int input_size = 50;
 	
 	for (int i = 0; i<=input_size; i++)
 	{
-		Document *doc = new Document(i, i+2000, i);
+		Document *doc = new Document((4000000/50)*i, (4000000/50)*i+(4000000/50), i);
 		docs.push_back( doc );
 		if (i%(input_size/10) ==0)
 		{
@@ -222,3 +223,4 @@ int main(int argc, char** argv)
 
 	return 0;
 }
+*/

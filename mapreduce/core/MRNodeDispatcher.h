@@ -13,9 +13,10 @@ class MRNodeDispatcher
 {
 	boost::shared_ptr<MRBatchDispatcher> batch_dispatcher;
 	InterResultQueue inter_results;
-	hThreadPool *pool; 
+	hThreadPool *pool;
 	
 	TaskLauncher reduce_tasks_launcher;
+	TaskLauncher preload_tasks_launcher;
 	
 public:
 

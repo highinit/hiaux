@@ -1,11 +1,5 @@
 #include "MRNodeDispatcher.h"
 
-vomerledorg
-
-{
-
-};
-
 void MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 {
 	
@@ -23,7 +17,8 @@ void MRNodeDispatcher::onGotResult(MRInterResultPtr inter_result)
 		MRInterResultPtr b = inter_results.front();
 		inter_results.pop();
 		
-		reduce_tasks_launcher.addTask(new boost::bind(&MRNodeDispatcher::reduceTask, this, a, b);
+		reduce_tasks_launcher.addTask(new boost::function<void()>
+				(boost::bind(&MRNodeDispatcher::reduceTask, this, a, b)));
 	}
 	
 	inter_results.unlock();

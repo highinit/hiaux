@@ -1,3 +1,7 @@
+#ifndef MRTASK_LAUNCHER_H
+#define MRTASK_LAUNCHER_H
+
+
 #include "threadpool.h"
 
 typedef boost::lockfree::queue<boost::function<void()>*> TaskQueue;
@@ -42,3 +46,5 @@ public:
 	size_t countFinished();
 	bool checkAllLaunched();
 };
+
+#endif
