@@ -31,7 +31,7 @@ Int64VecPtr MRInterMerger::mergeKeys(Int64VecPtr a, Int64VecPtr b)
 	return keys_vec;
 }
 
-void MRInterMerger::loadCache(MRInterResultPtr inter,
+bool MRInterMerger::loadCache(MRInterResultPtr inter,
 				bool cid,
 				Int64VecPtr keys, int b, int e, hLock &lock)
 {
@@ -44,15 +44,17 @@ void MRInterMerger::loadCache(MRInterResultPtr inter,
 	inter->setCacheReady(cid);
 	//std::cout << "loaded Cache\n";
 	lock.unlock();
+	return 0;
 }
 
-void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
+MRStats MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 				MRInterResultPtr inter1,
 				MRInterResultPtr inter2,
 				MRInterResultPtr result,
 				MapReduce *MR,
 				int emits_in_cache)
 {
+	MRStats stats;
 	hLock inter1_lock;
 	hLock inter2_lock;
 	Int64VecPtr keys = mergeKeys(inter1->getKeys(), inter2->getKeys());
@@ -60,7 +62,7 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 	//const int nparts = 1000;
 	int nemits = keys->size();
 	int emits_per_part = fmin(emits_in_cache, nemits);//nemits/nparts;
-	std::cout << "emits_per_part: " << emits_per_part << std::endl;
+	//std::cout << "emits_per_part: " << emits_per_part << std::endl;
 	int key_r_b = 0;
 	int key_r_e = emits_per_part;
 	
@@ -94,7 +96,7 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 		{
 			EmitType* emit1 = inter1->getEmit(keys->at(i), cid);
 			EmitType* emit2 = inter2->getEmit(keys->at(i), cid);
-			
+			stats.nreduces++;
 			if (emit1 == NULL && emit2 == NULL)
 			{
 			
@@ -115,7 +117,7 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 				result->addEmit(keys->at(i), MR->reduce(keys->at(i), 
 														emit1,
 														emit2) );
-			}	
+			}
 		}
 		
 		key_r_b += emits_per_part;
@@ -134,7 +136,7 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 		inter1->clearCache(cid);
 		inter2->clearCache(cid);
 		preload_tasks_launcher.addTask(
-			new boost::function<void()>( boost::bind(&MRInterMerger::loadCache,
+			new boost::function<bool()>( boost::bind(&MRInterMerger::loadCache,
 								inter1,
 								cid,
 								keys,
@@ -142,7 +144,7 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 								key_e,
 								inter1_lock)));
 		preload_tasks_launcher.addTask(
-			new boost::function<void()>( boost::bind(&MRInterMerger::loadCache,
+			new boost::function<bool()>( boost::bind(&MRInterMerger::loadCache,
 								inter2,
 								cid,
 								keys,
@@ -151,4 +153,5 @@ void MRInterMerger::merge(TaskLauncher &preload_tasks_launcher,
 								inter2_lock)));
 		cid = !cid;
 	}
+	return stats;
 }

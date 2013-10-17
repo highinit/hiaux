@@ -21,7 +21,7 @@
 #include <unordered_map>
 
 #include "../../hpoolserver/hpoolserver.h"
-#include "../../threadpool/taskcounter.h"
+#include "../../threadpool/tasklauncher.h"
 #include "mapreduce.h"
 #include <queue>
 
@@ -124,7 +124,7 @@ public:
 	
 	void addReduceResult(EmitType* emit, int emitter_id);
 	void start();
-	void reduceTask(EmitAcessorVecPtr emit_vec);
+	bool reduceTask(EmitAcessorVecPtr emit_vec);
 };
 
 #endif // REDUCE_DISPATCHER_H

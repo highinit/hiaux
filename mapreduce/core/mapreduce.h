@@ -26,6 +26,20 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <atomic>
+
+class MRStats
+{
+public:
+    std::atomic<size_t> nmaps;
+    std::atomic<size_t> nemits;
+    std::atomic<size_t> nreduces;
+    MRStats();
+	MRStats(MRStats &a);
+    MRStats& operator+=(const MRStats &a);
+    MRStats& operator=(const MRStats &a);
+};
+
 class InputType
 {
 public:

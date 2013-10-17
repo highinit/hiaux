@@ -20,22 +20,12 @@
 
 #include <unordered_map>
 #include "../../threadpool/threadpool.h"
+#include "../../threadpool/tasklauncher.h"
+
 #include "mapreduce.h"
-#include "ReduceDispatcher.h"
+#include "MRInterResult.h"
 #include <queue>
 #include <atomic>
-
-class MRStats
-{
-    hLock lock;
-public:
-    size_t nmaps;
-    size_t nemits;
-    size_t nreduces;
-    MRStats();
-    MRStats& operator+=(const MRStats &a);
-    MRStats& operator=(const MRStats &a);
-};
 
 class BatchMapper
 {
@@ -54,15 +44,6 @@ public:
     MRStats getStats();
 };
 
-class NodeReducer
-{
-    MRStats m_stats;
-public:
-    
-    NodeReducer(int64_t key, std::shared_ptr<EmitQueue> emit_queue, MapReduce* MR);
-    MRStats getStats();    
-};
-
 class MRBatchDispatcher
 {
     MapReduce *m_MR;
@@ -71,39 +52,29 @@ class MRBatchDispatcher
     hThreadPool* m_pool;
 
     MRStats m_stats;
-
-    hLock finish_lock;
-    boost::function<void()> m_onAllReducesFinished;
-
-	//std::atomic<size_t> m_nbatches_launched;
-    //std::atomic<size_t> m_nbatches_finished;
-	TaskLauncher batch_tasks_counter;
-	//std::shared_ptr< std::vector<BatchAccessor*> > m_batches;
-	size_t  m_nbatches;
+	TaskLauncher m_batch_tasks_launcher;
+	TaskLauncher &m_flush_launcher;
 	
+	std::atomic<size_t> m_nbatches;
 	
-    bool finished = 1;
-    
-	ReduceDispatcher* reducer; 
-	
-    void lockKey(int64_t key);
-    void unlockKey(int64_t key);
+    boost::function<void(MRInterResultPtr)> m_onGotResult;
 
 public:
 
     MRBatchDispatcher(MapReduce *MR,
 					EmitDumper *dumper,
 					hThreadPool *pool,
-					boost::function<void()> onAllBatchesFinished);
+					size_t nbatch_threads,
+					TaskLauncher &flush_launcher,
+					boost::function<void(MRInterResultPtr)> onGotResult,
+					boost::function<void()> onBatchingFinished);
 
-    void mapBatchTask(BatchAccessor* batch, int batchid);   
-    //void reduceTask(int64_t key);
+    bool mapBatchTask(BatchAccessor* batch, int batchid);   
 
     void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
-	void onBatchingFinished();
-    void proceedBatches(std::shared_ptr< std::vector<BatchAccessor*> > batches);
-    //void mergeEmits(std::string filename);
-
+    void addBatch(BatchAccessor* batch);
+	void noMore();
+	
     MRStats getStats();
 };
 

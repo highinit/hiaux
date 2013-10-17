@@ -64,6 +64,11 @@ class hCondWaiter
     pthread_mutex_t m_lock;
     pthread_cond_t cond;
 	boost::function<bool()> m_state_ok;
+	
+	hCondWaiter();
+	hCondWaiter(hCondWaiter&);
+	hCondWaiter& operator=(hCondWaiter&);
+	
 public:
 
 	hCondWaiter(boost::function<bool()> stateReachedFunc)
@@ -83,13 +88,15 @@ public:
 			return;
 		}
 */
-	//pthread_cond_destroy(&cond);
-	//	pthread_cond_init(&cond, 0);
-
 		while (!m_state_ok())
 		{
 			pthread_cond_wait(&cond, &m_lock);
 		}
+		
+		
+	    pthread_cond_destroy(&cond);
+		pthread_cond_init(&cond, 0);
+		
 		pthread_mutex_unlock(&m_lock);
     }
     
@@ -204,6 +211,18 @@ typedef boost::shared_ptr<boost::lockfree::queue<hThread*> > ThreadQueue;
 
 //typedef boost::shared_ptr<std::queue< boost::function<void()> > > CallBackQueue; 
 //typedef boost::shared_ptr<std::queue<hThread*> > ThreadQueue;
+/*
+class CallBackQueue: public boost::shared_ptr<std::queue<boost::function<void()>*> >,
+		public hLock
+{
+
+};
+
+class ThreadQueue: public boost::shared_ptr<std::queue<hThread*> >, 
+		public hLock
+{
+
+};*/
 
 class hThread
 {
@@ -213,9 +232,11 @@ class hThread
     ThreadQueue waiting_threads;
     
     pthread_t *m_th;
-    hCondWaiter local_queue_notempty;
+    
 public:
     
+	hCondWaiter local_queue_notempty;
+	
     hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th);
     void run();
     

@@ -41,10 +41,8 @@ void MaprTests::testInvLineDumper()
 }
 
 void MaprTests::testMRInterResult()
-{
-	int fd = open("inter",  O_RDWR | O_CREAT | O_TRUNC,
-					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	MRInterResult *inter = new MRInterResult(fd, new InvertLineDumper);
+{/*
+	MRInterResult *inter = new MRInterResult("inter", new InvertLineDumper);
 
 	const int64_t nemits = 10;
 //	const int nparts = 10;
@@ -73,13 +71,8 @@ void MaprTests::testMRInterResult()
 		}
 		std::cout << line->pages.size() << " " <<  std::endl;
 
-		/*if (line->pages[0] != keys[i])
-		{
-			std::cout << "TEST FAILED: different emits\n";
-			exit(0);
-		}*/
 	}
-
+*/
 
 	int part_begin_key_i = 0;
 
@@ -115,7 +108,7 @@ void MaprTests::testMRInterResult()
 	*/
 }
 
-void MaprTests::loadCache(MRInterResult *inter,
+bool MaprTests::loadCache(MRInterResult *inter,
 				bool cid,
 				Int64VecPtr keys, int b, int e)
 {
@@ -128,16 +121,16 @@ void MaprTests::loadCache(MRInterResult *inter,
 	inter->setCacheReady(cid);
 	//std::cout << "loaded Cache\n";
 	load_lock.unlock();
+	return 0;
 }
 
 void MaprTests::testMRInterResultAsync()
 {
 	hThreadPool *pool = new hThreadPool(1);
 	pool->run();
+	TaskLauncher flush_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	
-	int fd = open("testMRInterResultAsync",  O_RDWR | O_CREAT | O_TRUNC,
-					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	MRInterResult *inter = new MRInterResult(fd, new InvertLineDumper);
+	MRInterResult *inter = new MRInterResult("testMRInterResultAsync", new InvertLineDumper, flush_tasks_launcher);
 	
 	const int nemits = 100;
 	const int nparts = 10;
@@ -219,37 +212,23 @@ void MaprTests::testMRInterResultAsync()
 
 void MaprTests::onMRInterMergerFinished()
 {
-	std::cout << "onMRInterMergerFinished\n";
+	std::cout << "finished\n";
 }
 
 void MaprTests::testMRInterMerger()
 {
-	hThreadPool *pool = new hThreadPool(10);
-	pool->run();
-	
 	std::cout << "MaprTests::testMRInterMerger\n";
-	int fd1 = open("/Volumes/seagate/inter1",  O_RDWR | O_CREAT | O_TRUNC,
-					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	MRInterResultPtr inter1 (new MRInterResult(fd1, new InvertLineDumper));
 	
-	int fd2 = open("/Volumes/seagate/inter2",  O_RDWR | O_CREAT | O_TRUNC,
-					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	MRInterResultPtr inter2 (new MRInterResult(fd2, new InvertLineDumper));
-	
-	int fd3 = open("/Volumes/seagate/inter3",  O_RDWR | O_CREAT | O_TRUNC,
-					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-	MRInterResultPtr inter3 (new MRInterResult(fd3, new InvertLineDumper));
+	hThreadPool *pool = new hThreadPool(8);
+	pool->run();
 
-	pool->addTask(new boost::function<void()>(
-		boost::bind(&MRInterResult::writeThread, inter1, 100000)));
+	TaskLauncher flush_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	
-	pool->addTask(new boost::function<void()>(
-		boost::bind(&MRInterResult::writeThread, inter2, 100000)));
+	MRInterResultPtr inter1 (new MRInterResult("inter1", new InvertLineDumper, flush_tasks_launcher));
+	MRInterResultPtr inter2 (new MRInterResult("inter2", new InvertLineDumper, flush_tasks_launcher));
+	MRInterResultPtr inter3 (new MRInterResult("inter3", new InvertLineDumper, flush_tasks_launcher));
 	
-	pool->addTask(new boost::function<void()>(
-		boost::bind(&MRInterResult::writeThread, inter3, 100000)));
-	
-	int nkeys = 10000000;
+	int nkeys = 1000000;
 	int keys_in_cache = 100000;
 	
 	for (int64_t i = 1; i<=2*nkeys/3; i++)
@@ -294,6 +273,90 @@ void MaprTests::testMRInterMerger()
 	}*/
 }
 
+void MaprTests::onGotResult(MRInterResultPtr res)
+{
+	res->waitFlushFinished();
+	std::cout << "got result\n";
+}
+
+void MaprTests::onBatchingFinished()
+{
+	std::cout << "Batching finished\n";
+	exit(0);
+}
+
+void MaprTests::testBatcher()
+{
+	std::cout << "MaprTests::testBatcher\n";
+	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
+	hThreadPool *pool = new hThreadPool(10);
+	pool->run();
+	TaskLauncher *flush_launcher = 
+			new TaskLauncher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
+	
+	mr_disp = new MRBatchDispatcher(MR, 
+									new InvertLineDumper,
+									pool,
+									1,
+									*flush_launcher,
+									boost::bind(&MaprTests::onGotResult, this, _1),
+									boost::bind(&MaprTests::onBatchingFinished, this));
+
+	std::vector<Document*> docs;
+	
+	// keys: 4000000
+	const int input_size = 50;
+	int nemits = 4000; //4000000
+	
+	for (int i = 0; i<=input_size; i++)
+	{
+		Document *doc = new Document((nemits/50)*i, (nemits/50)*i+(nemits/50), i);
+		docs.push_back( doc );
+		if (i%(input_size/10) ==0)
+		{
+			DocumentBatch *batch = new DocumentBatch(docs);
+			docs.clear();
+			//batches->push_back(batch);
+			mr_disp->addBatch(batch);
+		}
+	}
+	mr_disp->noMore();
+
+	pool->join();
+}
+
+void MaprTests::testNodeDispatcher()
+{
+	std::cout << "MaprTests::testNodeDispatcher\n";
+	hThreadPool *pool = new hThreadPool(8);
+	pool->run();
+	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
+												new MapReduceInvertIndex,
+												new InvertLineDumper);
+	
+	std::vector<Document*> docs;
+	
+	// keys: 4000000
+	const int input_size = 1000000;
+//	int nemits = 4000000; //4000000
+	
+	for (int i = 0; i<=input_size; i++)
+	{
+		Document *doc = new Document(i, i+1000, i);
+		docs.push_back( doc );
+		if (i%(input_size/40) ==0)
+		{
+			DocumentBatch *batch = new DocumentBatch(docs);
+			docs.clear();
+			//batches->push_back(batch);
+			node->addBatch(batch);
+		}
+	}
+	node->noMoreBatches();
+	
+	pool->join();
+	
+}
 
 int main(int argc, char **argv)
 {
@@ -301,8 +364,12 @@ int main(int argc, char **argv)
 	//tests.testInvLineDumper();
 	//tests.testMRInterResult();
 	//tests.testMRInterResultAsync();
-	tests.testMRInterMerger();
+	//tests.testMRInterMerger();
+	//tests.testBatcher();
+	tests.testNodeDispatcher();
 	
 	std::cout << "all tests ended\n";
 	return 0;
 }
+
+

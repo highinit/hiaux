@@ -3,6 +3,7 @@
 
 #include "mapreduce.h"
 #include "../../threadpool/threadpool.h"
+#include "../../threadpool/tasklauncher.h"
 
 typedef std::vector<int64_t> Int64Vec;
 typedef boost::shared_ptr< std::vector<int64_t> > Int64VecPtr;
@@ -25,9 +26,12 @@ class MRInterResult
 	// key / dump
 	std::queue< std::pair<int64_t, std::string> > write_buffer;
 	hLock wbuffer_lock;
-	//hCondWaiter m_write_buffer_empty;
 	std::atomic<bool> no_more_writes;
-	hLock flush_finish_lock;
+	
+	bool flush_finished; // buffer empty && nomore
+	hCondWaiter flush_finish_lock;
+	
+	size_t m_max_buffer_size;
 	
 	// not thread safe
 	EmitType *restore(off_t offset);
@@ -35,13 +39,18 @@ class MRInterResult
 	void flush(std::pair<int64_t, std::string> dump);
 public:
 	
-	MRInterResult(int fd, EmitDumper* dumper);
+	MRInterResult(std::string filename,
+				EmitDumper* dumper,
+				TaskLauncher &flush_launcher,
+				const size_t max_buffer_size = 100000);
+	
 	~MRInterResult();
 	
 	bool checkWriteBufferNotEmpty();
-	void writeThread(int max_buffer_size);
+	bool flushBuffer();
 	
 	bool checkCacheReady(bool cid);
+	bool FlushFinished();
 	
 	// add to m_file_map and dump. not thread safe with itself and other methods
 	void addEmit(int64_t key, EmitType *emitvec);

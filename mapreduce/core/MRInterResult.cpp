@@ -9,19 +9,28 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
-MRInterResult::MRInterResult(int fd, EmitDumper* dumper):
-	m_fd(fd),
+MRInterResult::MRInterResult(std::string filename,
+							EmitDumper* dumper,
+							TaskLauncher &flush_launcher,
+							const size_t max_buffer_size):
 	m_dumper(dumper),
 	m_cache0_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 0)),
 	m_cache1_ready_lock(boost::bind(&MRInterResult::checkCacheReady, this, 1)),
-//	m_write_buffer_empty(boost::bind(&MRInterResult::checkWriteBufferNotEmpty, this)),
-	no_more_writes(0)
+	no_more_writes(0),
+	m_max_buffer_size(max_buffer_size),
+	flush_finished(0),
+	flush_finish_lock(boost::bind(&MRInterResult::FlushFinished, this))
 {
-	flush_finish_lock.lock();
+	m_fd = open(filename.c_str(),  O_RDWR | O_CREAT | O_TRUNC,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+	flush_launcher.addTask(new boost::function<bool()>(
+		boost::bind(&MRInterResult::flushBuffer, this)));
 }
 
 MRInterResult::~MRInterResult()
 {
+	close(m_fd);
 	m_file_map.clear();
 	m_emit_cache0.clear();
 	m_emit_cache1.clear();
@@ -33,6 +42,11 @@ bool MRInterResult::checkWriteBufferNotEmpty()
 	bool notempty = (write_buffer.size()==0);
 	wbuffer_lock.lock();
 	return notempty;
+}
+
+bool MRInterResult::FlushFinished()
+{
+	return flush_finished;
 }
 
 void MRInterResult::flush(std::pair<int64_t, std::string> dump)
@@ -56,47 +70,65 @@ void MRInterResult::flush(std::pair<int64_t, std::string> dump)
 	m_file_map.insert(std::pair<int64_t, off_t>(dump.first, offset));
 }
 
-void MRInterResult::writeThread(int max_buffer_size)
+bool MRInterResult::flushBuffer()
 {
-	while (1)
+	//std::cout << ".";
+	//std::cout << "MRInterResult::flushBuffer wbuffer_lock.lock ";
+	wbuffer_lock.lock();
+	//std::cout << "OK\n";
+
+	if (write_buffer.size()>m_max_buffer_size)
 	{
-		//m_write_buffer_empty.wait();
-		wbuffer_lock.lock();
-		
-		if (write_buffer.size()>max_buffer_size)
-		{
-			while (write_buffer.size()>max_buffer_size/2)
-			{
-				flush(write_buffer.front());
-				write_buffer.pop();
-			}
-			wbuffer_lock.unlock();
-		}
-		else if (write_buffer.size()!=0)
+		while (write_buffer.size()>m_max_buffer_size/2)
 		{
 			flush(write_buffer.front());
 			write_buffer.pop();
-			wbuffer_lock.unlock();
-		}
-		else
-		{
-			if (no_more_writes)
-			{
-				flush_finish_lock.unlock();
-				wbuffer_lock.unlock();
-				break;
-			}
-			wbuffer_lock.unlock();
 		}
 	}
+	else if (write_buffer.size()!=0)
+	{
+		flush(write_buffer.front());
+		write_buffer.pop();
+	}
+	else
+	{
+		if (no_more_writes)
+		{
+		//	std::cout << "||||||||||||||||";
+			wbuffer_lock.unlock();
+			
+	    	//std::cout << "MRInterResult::flushBuffer flush_finish_lock.lock ";
+			flush_finish_lock.lock();
+		//	std::cout << "OK\n";
+			flush_finished = 1;
+			flush_finish_lock.kick();
+			flush_finish_lock.unlock();
+	
+			return 0;
+		}
+	}
+	wbuffer_lock.unlock();
+	return 1; // repeat
 }
 
 void MRInterResult::waitFlushFinished()
 {
+	//std::cout << "MRInterResult::wbuffer_lock ";
 	wbuffer_lock.lock();
+	//std::cout << "OK\n";
+	
 	no_more_writes = 1;
+	/*if (write_buffer.size()==0)
+	{
+		flush_finished = 1;
+		wbuffer_lock.unlock();
+		return;
+	}*/
 	wbuffer_lock.unlock();
-	flush_finish_lock.lock();
+	
+//	std::cout << "MRInterResult::flush_finish_lock.wait ";
+	flush_finish_lock.wait();
+	//std::cout << "OK\n";
 }
 
 bool MRInterResult::checkCacheReady(bool cid)

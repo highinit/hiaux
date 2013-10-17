@@ -26,6 +26,36 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
+MRStats::MRStats()
+{
+	nmaps = 0;
+	nemits = 0;
+	nreduces = 0;
+}
+
+MRStats::MRStats(MRStats &a)
+{
+	nmaps = a.nmaps.load();
+	nemits = a.nemits.load();
+	nreduces = a.nreduces.load();
+}
+
+MRStats& MRStats::operator+=(const MRStats &a)
+{
+	nmaps = nmaps.load() + a.nmaps.load();
+	nemits = nemits.load() + a.nemits.load();
+	nreduces = nreduces.load() + a.nreduces.load();
+	return *this;
+}
+
+MRStats& MRStats::operator=(const MRStats &a)
+{
+	nmaps = a.nmaps.load();
+	nemits = a.nemits.load();
+	nreduces = a.nreduces.load();
+	return *this;
+}
+
 MapReduce::MapReduce()
 {
 

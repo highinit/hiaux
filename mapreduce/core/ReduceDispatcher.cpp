@@ -92,7 +92,7 @@ void ReduceDispatcher::addReduceResult(EmitType* emit, int emitter_id)
 	rd_lock.unlock();
 }
 
-void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
+bool ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 {
 	KeyReducer reducer(m_MR, emit_vec);
 	
@@ -101,7 +101,7 @@ void ReduceDispatcher::reduceTask(EmitAcessorVecPtr emit_vec)
 	dumpResultKey(emit->key, emit);
 	emit_vec->clear();
 	delete emit;
-	
+	return 0;
 	/*
 	if (m_nreduces_launched.load() == m_nreduces_finished.load())
 	{
@@ -185,7 +185,7 @@ void ReduceDispatcher::start()
 	while (hash_it != hash_end)
 	{
 		restoreKey(hash_it->second);
-		reduce_tasks_counter.addTask(new boost::function<void()> (
+		reduce_tasks_counter.addTask(new boost::function<bool()> (
 					boost::bind(&ReduceDispatcher::reduceTask, this, hash_it->second)));
 		hash_it++;
 	}

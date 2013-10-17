@@ -10,20 +10,29 @@
 
 #include "../core/MRInterResult.h"
 #include "../example_invindex/mapr_test.h"
+#include "../core/MRBatchDispatcher.h"
 
 class MaprTests
 {
 	hLock load_lock;
+	
+	MRBatchDispatcher *mr_disp;
 public:	
 	
 	void testInvLineDumper();
 	void testMRInterResult();
 	
-	void loadCache(MRInterResult *inter,
+	bool loadCache(MRInterResult *inter,
 				bool cid,
 				Int64VecPtr keys, int b, int e);
 	void testMRInterResultAsync();
 	
 	void onMRInterMergerFinished();
 	void testMRInterMerger();
+	
+	void onGotResult(MRInterResultPtr res);
+	void onBatchingFinished();
+	void testBatcher();
+	
+	void testNodeDispatcher();
 };

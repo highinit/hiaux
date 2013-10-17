@@ -33,5 +33,5 @@ Program('mapr_unit',
 '../core/MRNodeDispatcher.cpp',
 '../core/ReduceDispatcher.cpp',
 '../../threadpool/threadpool.cpp',
-'../../threadpool/taskcounter.cpp',
+'../../threadpool/tasklauncher.cpp',
 '../core/FileCartulary.cpp'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)

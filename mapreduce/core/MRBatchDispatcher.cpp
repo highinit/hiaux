@@ -18,31 +18,6 @@
 #include "MRBatchDispatcher.h"
 #include <atomic>
 
-MRStats::MRStats()
-{
-	nmaps = 0;
-	nemits = 0;
-	nreduces = 0;
-}
-
-MRStats& MRStats::operator+=(const MRStats &a)
-{
-	lock.lock();
-	nmaps += a.nmaps;
-	nemits += a.nemits;
-	nreduces += a.nreduces;
-	lock.unlock();
-	return *this;
-}
-
-MRStats& MRStats::operator=(const MRStats &a)
-{
-	nmaps = a.nmaps;
-	nemits = a.nemits;
-	nreduces = a.nreduces;
-	return *this;
-}
-
 BatchMapper::BatchMapper(BatchAccessor* batch, 
                         MapReduce *MR,
                         boost::function<void(std::shared_ptr<EmitHash>,int)> onBatchFinished,
@@ -66,14 +41,13 @@ BatchMapper::~BatchMapper()
 	m_emit_hash->clear();
 }
 
-
 void BatchMapper::emit(int64_t key, EmitType* emit_value)
 {
 	m_stats.nemits++;
+	m_stats.nreduces++;
 	std::unordered_map<int64_t, EmitType* >::iterator it = m_emit_hash->find(key);
 	if (it != m_emit_hash->end())
 	{
-		m_stats.nreduces++;
 		it->second = m_MR->reduce(key, it->second, emit_value);
 	}
 	else
@@ -87,27 +61,7 @@ MRStats BatchMapper::getStats()
     return m_stats;
 }
 
-NodeReducer::NodeReducer(int64_t key, 
-					std::shared_ptr<EmitQueue> emit_queue, 
-					MapReduce* MR)
-{
-    while (emit_queue->size()!=1)
-    {
-        m_stats.nreduces++;
-        EmitType *a = emit_queue->front();
-        emit_queue->pop();
-        EmitType *b = emit_queue->front();
-        emit_queue->pop();
-        emit_queue->push(MR->reduce(key, a, b)); 
-    }
-}
-
-MRStats NodeReducer::getStats()
-{
-    return m_stats;
-}
-
-void MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
+bool MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 {
 	BatchMapper *mapper = new BatchMapper(batch, 
 									m_MR, 
@@ -117,6 +71,7 @@ void MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 	m_stats += mapper->getStats();
 	delete mapper;
 	delete batch;
+	return 0;
 }
 
 void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid)
@@ -125,86 +80,55 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	EmitHash::iterator end = emit_hash->end();
 
 	std::cout << "batch finished. flushing \n";
+	char filename[50];
+	sprintf(filename, "batch%d", batchid);
+	MRInterResultPtr inter(new MRInterResult(filename, m_emit_dumper, m_flush_launcher));
+
 	while (it != end)
 	{
-		reducer->addReduceResult(it->second, batchid); 
-		//delete it->second;
+		inter->addEmit(it->first, it->second);
 		it++;
 	}
 
 	emit_hash->clear();
-	std::cout << "flushing finished\n";
-	// atom
-	//m_nbatches_finished++;
+	//std::cout << "MRBatchDispatcher::onBatchFinished inter->waitFlushFinished ";
 	
-
-	/*
-	if (m_nbatches_finished.load() == m_nbatches)
-	{
-		if (finish_lock.trylock())
-		{
-			if (finished) return;
-			finished = 1;
-			std::cout << "Batching finished\n";
-			std::cout << "maps: " << m_stats.nmaps << std::endl; 
-			std::cout << "emits: " << m_stats.nemits << std::endl;
-			reducer->start();
-			finish_lock.unlock();
-		}
-	}*/
+	//std::cout << "OK\n";
+	m_onGotResult(inter);
 }
 
-void MRBatchDispatcher::onBatchingFinished()
+MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
+									EmitDumper *dumper,
+									hThreadPool *pool,
+									size_t nbatch_threads,
+									TaskLauncher &flush_launcher,
+									boost::function<void(MRInterResultPtr)> onGotResult,
+									boost::function<void()> onBatchingFinished):
+		m_batch_tasks_launcher(pool,
+							nbatch_threads,
+							onBatchingFinished),
+		m_onGotResult(onGotResult),
+		m_MR(MR),
+		m_emit_dumper(dumper),
+		m_pool(pool),
+		m_flush_launcher(flush_launcher),
+		m_nbatches(0)
 {
-	std::cout << "_______Batching finished\n";
-	reducer->start();
+
 }
 
-MRBatchDispatcher::MRBatchDispatcher(MapReduce* MR,
-								EmitDumper *dumper,
-                               hThreadPool *pool, 
-                               boost::function<void()> onAllReducesFinished):
-	batch_tasks_counter(pool,
-						4,
-						boost::bind(&MRBatchDispatcher::onBatchingFinished, this))
+void MRBatchDispatcher::addBatch(BatchAccessor* batch)
 {
-	m_nbatches = 0;
-	//m_nbatches_launched = 0;
-	//m_nbatches_finished = 0;
-
-	finished = 0;
-
-	m_MR = MR;
-	m_emit_dumper = dumper;
-//	emit_queue_hash = new EmitQueueHash;
-	m_pool = pool;
-	m_onAllReducesFinished = onAllReducesFinished;
-	//m_nreduces_launched =  0;
-	//m_nreduces_finished = 0;
-	reducer = new ReduceDispatcher(pool, MR, dumper);
+	std::cout << "add batch to scheduler\n";
+	int batchid = m_nbatches.fetch_add(1);
+	std::cout << "NEW BATCH: " << batchid << std::endl;
+	m_batch_tasks_launcher.addTask(new boost::function<bool()>(
+		boost::bind(&MRBatchDispatcher::mapBatchTask, this, batch, batchid)));
 }
 
-void MRBatchDispatcher::proceedBatches(
-	std::shared_ptr< std::vector<BatchAccessor*> > batches)
+void MRBatchDispatcher::noMore()
 {
-	const int max_running_batchings = 1;
-	
-	m_nbatches = batches->size();
-	for (int i = 0; i<batches->size(); i++)
-	{
-		//while (batch_tasks_counter.countRunning()>=max_running_batchings)
-		{
-		//	sleep(1);
-		}
-		//std::cout << "launch batch \n";
-		//m_nbatches_launched++;
-		//m_pool->
-		std::cout << "add batch to scheduler\n";
-		batch_tasks_counter.addTask(new boost::function<void()>(
-			boost::bind(&MRBatchDispatcher::mapBatchTask, this, batches->at(i), i)));
-	}
-	batch_tasks_counter.setNoMoreTasks();
-	//batches->clear();
+	m_batch_tasks_launcher.setNoMoreTasks();
 }
 
 MRStats MRBatchDispatcher::getStats()
