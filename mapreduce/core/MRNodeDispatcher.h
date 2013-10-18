@@ -49,8 +49,8 @@ public:
 					size_t nreduce_threads = 6,
 					size_t npreaload_threads = 1,
 					size_t nflush_threads = 1,
-					size_t preload_buffer_size = 500000,
-					size_t flush_buffer_size = 500000);
+					size_t preload_buffer_size = 50000,
+					size_t flush_buffer_size = 50000);
 	
 	bool reduceTask(MRInterResultPtr a, MRInterResultPtr b);
 	void onAddResult(MRInterResultPtr inter_result); // from batcher

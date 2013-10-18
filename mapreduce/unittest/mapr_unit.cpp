@@ -355,7 +355,6 @@ void MaprTests::testNodeDispatcher()
 	node->noMoreBatches();
 	
 	pool->join();
-	
 }
 
 int main(int argc, char **argv)

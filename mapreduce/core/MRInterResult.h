@@ -42,7 +42,7 @@ public:
 	MRInterResult(std::string filename,
 				EmitDumper* dumper,
 				TaskLauncher &flush_launcher,
-				const size_t max_buffer_size = 100000);
+				const size_t max_buffer_size = 50000);
 	
 	~MRInterResult();
 	

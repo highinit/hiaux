@@ -94,17 +94,14 @@ bool MRInterResult::flushBuffer()
 	{
 		if (no_more_writes)
 		{
-		//	std::cout << "||||||||||||||||";
 			wbuffer_lock.unlock();
 			
-	    	//std::cout << "MRInterResult::flushBuffer flush_finish_lock.lock ";
 			flush_finish_lock.lock();
-		//	std::cout << "OK\n";
 			flush_finished = 1;
 			flush_finish_lock.kick();
 			flush_finish_lock.unlock();
 	
-			return 0;
+			return 0; // dont repeat
 		}
 	}
 	wbuffer_lock.unlock();
@@ -207,7 +204,7 @@ void MRInterResult::preload(int64_t key, bool cid)
 EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 {
 	if (cid==false)
-	{	
+	{
 		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
 
 		if (cache_it != m_emit_cache0.end())
