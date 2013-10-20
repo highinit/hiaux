@@ -19,7 +19,9 @@ MRInterResult::MRInterResult(std::string filename,
 	no_more_writes(0),
 	m_max_buffer_size(max_buffer_size),
 	flush_finished(0),
-	flush_finish_lock(boost::bind(&MRInterResult::FlushFinished, this))
+	flush_finish_lock(boost::bind(&MRInterResult::FlushFinished, this)),
+	mode(IR_WRITING),
+	m_filename(filename)
 {
 	m_fd = open(filename.c_str(),  O_RDWR | O_CREAT | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -72,10 +74,7 @@ void MRInterResult::flush(std::pair<int64_t, std::string> dump)
 
 bool MRInterResult::flushBuffer()
 {
-	//std::cout << ".";
-	//std::cout << "MRInterResult::flushBuffer wbuffer_lock.lock ";
 	wbuffer_lock.lock();
-	//std::cout << "OK\n";
 
 	if (write_buffer.size()>m_max_buffer_size)
 	{
@@ -110,22 +109,11 @@ bool MRInterResult::flushBuffer()
 
 void MRInterResult::waitFlushFinished()
 {
-	//std::cout << "MRInterResult::wbuffer_lock ";
-	wbuffer_lock.lock();
-	//std::cout << "OK\n";
-	
+	wbuffer_lock.lock();	
 	no_more_writes = 1;
-	/*if (write_buffer.size()==0)
-	{
-		flush_finished = 1;
-		wbuffer_lock.unlock();
-		return;
-	}*/
 	wbuffer_lock.unlock();
 	
-//	std::cout << "MRInterResult::flush_finish_lock.wait ";
 	flush_finish_lock.wait();
-	//std::cout << "OK\n";
 }
 
 bool MRInterResult::checkCacheReady(bool cid)
@@ -142,17 +130,18 @@ bool MRInterResult::checkCacheReady(bool cid)
 
 void MRInterResult::addEmit(int64_t key, EmitType *emit)
 {
+	if (mode!=IR_WRITING)
+	{
+		throw "MRInterResult::addEmit error mode!=IR_WRITING";
+	}
 	std::string dump = m_dumper->dump(emit);
 	delete emit;
 
-	//m_write_buffer_empty.lock();
 	wbuffer_lock.lock();
 	write_buffer.push(std::pair<int64_t, std::string>(key, dump));
 	wbuffer_lock.unlock();
-	//m_write_buffer_empty.kick();
-	//m_write_buffer_empty.unlock();
 }
-
+/*
 EmitType *MRInterResult::restore(off_t offset)
 {
 	lseek(m_fd, offset, SEEK_SET);
@@ -177,19 +166,28 @@ EmitType *MRInterResult::restore(off_t offset)
 	EmitType *emit = m_dumper->restore(bf);
 	return emit;
 }
+ */
+
+void MRInterResult::setModeReading()
+{
+	mode = IR_READING;
+	::close(m_fd);
+	m_reader = new InterResultLoader(m_filename, m_dumper);
+}
 
 void MRInterResult::preload(int64_t key, bool cid)
 {
+	if (mode!=IR_READING)
+	{
+		throw "MRInterResult::preload error mode!=IR_READING";
+	}
 	auto it = m_file_map.find(key);
 	if (it==m_file_map.end())
 	{
-		//std::cout << "no key in filemap\n";
-		//exit(0);
 		return;
-		//throw "MRInterResult::preload: No such key";
 	}
 	
-	EmitType *emit = restore(it->second);
+	EmitType *emit = m_reader->readEmit(it->second);//restore(it->second);
 	
 	if (cid==false)
 	{
@@ -203,6 +201,10 @@ void MRInterResult::preload(int64_t key, bool cid)
 
 EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 {
+	if (mode!=IR_READING)
+	{
+		throw "MRInterResult::getEmit error mode!=IR_READING";
+	}
 	if (cid==false)
 	{
 		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
@@ -216,7 +218,6 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 		else
 		{
 			return NULL;
-			//throw "MRInterResult::getEmit Not in cache";
 		}
 	}
 	else
@@ -231,7 +232,6 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 		}
 		else
 		{
-			//throw "MRInterResult::getEmit Not in cache";
 			return NULL;
 		}
 	}
@@ -239,11 +239,11 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 
 void MRInterResult::condWaitCache(bool cid)
 {
-	if (!cid)// && !m_cache0_ready.load())
+	if (!cid)
 	{
 		m_cache0_ready_lock.wait();
 	}
-	else if (cid)// && !m_cache1_ready.load())
+	else if (cid)
 	{
 		m_cache1_ready_lock.wait();
 	}

@@ -18,6 +18,7 @@ class MaprTests
 	
 	MRBatchDispatcher *mr_disp;
 public:	
+	std::string m_path;
 	
 	void testInvLineDumper();
 	void testMRInterResult();

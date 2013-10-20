@@ -4,14 +4,23 @@
 #include "mapreduce.h"
 #include "../../threadpool/threadpool.h"
 #include "../../threadpool/tasklauncher.h"
+#include "../core/InterResultReader.h"
 
 typedef std::vector<int64_t> Int64Vec;
 typedef boost::shared_ptr< std::vector<int64_t> > Int64VecPtr;
 
+#define IR_WRITING 0
+#define IR_READING 1
+
 class MRInterResult
 {
+	bool mode;
+	
+	std::string m_filename;
 	int m_fd;
 	EmitDumper* m_dumper;
+	InterResultLoader *m_reader;
+	
 	// key, offset
 	std::unordered_map<int64_t, off_t> m_file_map;
 	
@@ -34,7 +43,7 @@ class MRInterResult
 	size_t m_max_buffer_size;
 	
 	// not thread safe
-	EmitType *restore(off_t offset);
+	//EmitType *restore(off_t offset);
 	
 	void flush(std::pair<int64_t, std::string> dump);
 public:
@@ -57,6 +66,7 @@ public:
 	void waitFlushFinished();
 	Int64VecPtr getKeys();
 	
+	void setModeReading();
 	// preload & getEmit thread safe when cid's are different
 	void preload(int64_t key, bool cid); 
 	void condWaitCache(bool cid);

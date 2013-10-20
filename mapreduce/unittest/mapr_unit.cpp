@@ -224,11 +224,11 @@ void MaprTests::testMRInterMerger()
 
 	TaskLauncher flush_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	
-	MRInterResultPtr inter1 (new MRInterResult("inter1", new InvertLineDumper, flush_tasks_launcher));
-	MRInterResultPtr inter2 (new MRInterResult("inter2", new InvertLineDumper, flush_tasks_launcher));
-	MRInterResultPtr inter3 (new MRInterResult("inter3", new InvertLineDumper, flush_tasks_launcher));
+	MRInterResultPtr inter1 (new MRInterResult(m_path+"inter1", new InvertLineDumper, flush_tasks_launcher));
+	MRInterResultPtr inter2 (new MRInterResult(m_path+"inter2", new InvertLineDumper, flush_tasks_launcher));
+	MRInterResultPtr inter3 (new MRInterResult(m_path+"inter3", new InvertLineDumper, flush_tasks_launcher));
 	
-	int nkeys = 1000000;
+	int nkeys = 10000000;
 	int keys_in_cache = 100000;
 	
 	for (int64_t i = 1; i<=2*nkeys/3; i++)
@@ -251,6 +251,9 @@ void MaprTests::testMRInterMerger()
 	
 	inter1->waitFlushFinished();
 	inter2->waitFlushFinished();
+	
+	inter1->setModeReading();
+	inter2->setModeReading();
 	
 	TaskLauncher preload_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
@@ -360,12 +363,13 @@ void MaprTests::testNodeDispatcher()
 int main(int argc, char **argv)
 {
 	MaprTests tests;
+	tests.m_path = "/Volumes/seagate/";
 	//tests.testInvLineDumper();
 	//tests.testMRInterResult();
 	//tests.testMRInterResultAsync();
-	//tests.testMRInterMerger();
+	tests.testMRInterMerger();
 	//tests.testBatcher();
-	tests.testNodeDispatcher();
+	//tests.testNodeDispatcher();
 	
 	std::cout << "all tests ended\n";
 	return 0;

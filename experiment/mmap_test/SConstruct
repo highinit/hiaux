@@ -1,0 +1,26 @@
+import sys
+import os
+import glob
+import subprocess
+
+platform = sys.platform
+print "PLATFORM:"+platform
+
+_CCFLAGS = '-g '
+_CXX = ''
+_LINKFLAGS = '-g '
+
+#LINUX
+if platform[:5]=="linux":
+	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++'
+	_CXX += ' clang++'
+	_LINKFLAGS += ' -lprotobuf -lpthread'
+#MACOSX
+if platform=="darwin":
+	_CCFLAGS += ' -std=c++11 -stdlib=libc++ -Wno-c++98-compat'
+	_CXX += ' clang++'
+	_LINKFLAGS += ' -lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread'
+
+env = Environment()
+Program('mmap_test', 
+['mmap_test.cpp'], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)
