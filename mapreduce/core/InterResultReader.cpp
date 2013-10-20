@@ -27,13 +27,13 @@ InterResultLoader::~InterResultLoader()
 	close(m_fd);
 }
 
-EmitType *InterResultLoader::readEmit(size_t offset)
+EmitType *InterResultLoader::readEmit(off_t offset)
 {
 	uint8_t *data = p+offset;
 	int64_t key = *((int64_t*)data);
 	int64_t size = *((int64_t*)(data+8));
 	char bf[size+1];
-	memcpy(bf, (data+8+8), size);
+	memcpy(bf, (data+16), size);
 	bf[size] = '\0';
 	
 	return m_dumper->restore(std::string(bf));

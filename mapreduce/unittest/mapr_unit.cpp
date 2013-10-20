@@ -252,14 +252,15 @@ void MaprTests::testMRInterMerger()
 	inter1->waitFlushFinished();
 	inter2->waitFlushFinished();
 	
-	inter1->setModeReading();
-	inter2->setModeReading();
+	//inter1->setModeReading();
+	//inter2->setModeReading();
 	
 	TaskLauncher preload_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
 	MRInterMerger::merge(preload_tasks_launcher, inter1, inter2, inter3, MR, keys_in_cache);
 	
 	inter3->waitFlushFinished();
+	//std::cout << "result keys:" << inter3->getKeys()->size() << std::endl;
 	std::cout << "time took " << time(0) - ts_start << std::endl; 
 	// 40 sec, 500mb
 	
@@ -302,6 +303,7 @@ void MaprTests::testBatcher()
 									pool,
 									1,
 									*flush_launcher,
+									m_path,
 									boost::bind(&MaprTests::onGotResult, this, _1),
 									boost::bind(&MaprTests::onBatchingFinished, this));
 
@@ -331,16 +333,19 @@ void MaprTests::testBatcher()
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
-	hThreadPool *pool = new hThreadPool(8);
+	hThreadPool *pool = new hThreadPool(4);
 	pool->run();
 	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
-												new MapReduceInvertIndex,
-												new InvertLineDumper);
+											new MapReduceInvertIndex,
+											new InvertLineDumper,
+											m_path,
+											2,
+											2);
 	
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 1000000;
+	const int input_size = 100000;
 //	int nemits = 4000000; //4000000
 	
 	for (int i = 0; i<=input_size; i++)
@@ -362,16 +367,23 @@ void MaprTests::testNodeDispatcher()
 
 int main(int argc, char **argv)
 {
-	MaprTests tests;
-	tests.m_path = "/Volumes/seagate/";
-	//tests.testInvLineDumper();
-	//tests.testMRInterResult();
-	//tests.testMRInterResultAsync();
-	tests.testMRInterMerger();
-	//tests.testBatcher();
-	//tests.testNodeDispatcher();
-	
-	std::cout << "all tests ended\n";
+	try
+	{
+		MaprTests tests;
+		tests.m_path = "/Volumes/seagate/";
+		//tests.testInvLineDumper();
+		//tests.testMRInterResult();
+		//tests.testMRInterResultAsync();
+		//tests.testMRInterMerger();
+		//tests.testBatcher();
+		tests.testNodeDispatcher();
+
+		std::cout << "all tests ended\n";
+	} catch (const char *a)
+	{
+		std::cout << "EX: " << a << std::endl;
+	} 
+		
 	return 0;
 }
 

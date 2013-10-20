@@ -57,6 +57,8 @@ class MRBatchDispatcher
 	
 	std::atomic<size_t> m_nbatches;
 	
+	std::string m_path;
+	
     boost::function<void(MRInterResultPtr)> m_onGotResult;
 
 public:
@@ -66,6 +68,7 @@ public:
 					hThreadPool *pool,
 					size_t nbatch_threads,
 					TaskLauncher &flush_launcher,
+					std::string path,
 					boost::function<void(MRInterResultPtr)> onGotResult,
 					boost::function<void()> onBatchingFinished);
 

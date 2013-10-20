@@ -22,7 +22,7 @@ class MRInterResult
 	InterResultLoader *m_reader;
 	
 	// key, offset
-	std::unordered_map<int64_t, off_t> m_file_map;
+	std::unordered_map<int64_t, int64_t> m_file_map;
 	
 	std::unordered_map<int64_t, EmitType*> m_emit_cache0;
 	std::unordered_map<int64_t, EmitType*> m_emit_cache1;
@@ -33,29 +33,34 @@ class MRInterResult
 	hCondWaiter m_cache1_ready_lock;
 	
 	// key / dump
-	std::queue< std::pair<int64_t, std::string> > write_buffer;
-	hLock wbuffer_lock;
+	//std::queue< std::pair<int64_t, std::string> > write_queue;
+	boost::lockfree::queue< std::pair<int64_t, std::string>* > write_queue;
+	void *wbuffer;
+	size_t m_wbuffer_size; // offset in wbuffer
+	size_t m_wbuffer_cap;
+	size_t w_offset; // offset in file
+	
+	//hLock wbuffer_lock;
 	std::atomic<bool> no_more_writes;
 	
 	bool flush_finished; // buffer empty && nomore
 	hCondWaiter flush_finish_lock;
 	
-	size_t m_max_buffer_size;
-	
 	// not thread safe
-	//EmitType *restore(off_t offset);
+	EmitType *restore(off_t offset);
 	
 	void flush(std::pair<int64_t, std::string> dump);
+	void flush_wbuffer();
 public:
 	
 	MRInterResult(std::string filename,
 				EmitDumper* dumper,
 				TaskLauncher &flush_launcher,
-				const size_t max_buffer_size = 50000);
+				const size_t wbuffer_cap = 50000000);
 	
 	~MRInterResult();
 	
-	bool checkWriteBufferNotEmpty();
+	//bool checkWriteBufferNotEmpty();
 	bool flushBuffer();
 	
 	bool checkCacheReady(bool cid);
@@ -66,7 +71,6 @@ public:
 	void waitFlushFinished();
 	Int64VecPtr getKeys();
 	
-	void setModeReading();
 	// preload & getEmit thread safe when cid's are different
 	void preload(int64_t key, bool cid); 
 	void condWaitCache(bool cid);

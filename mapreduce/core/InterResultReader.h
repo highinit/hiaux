@@ -17,7 +17,7 @@ public:
 	InterResultLoader(std::string filename, EmitDumper *dumper);
 	~InterResultLoader();
 	
-	EmitType *readEmit(size_t offset);
+	EmitType *readEmit(off_t offset);
 };
 
 #endif

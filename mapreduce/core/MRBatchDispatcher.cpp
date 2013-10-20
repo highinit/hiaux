@@ -82,7 +82,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	std::cout << "batch finished. flushing \n";
 	char filename[50];
 	sprintf(filename, "batch%d", batchid);
-	MRInterResultPtr inter(new MRInterResult(filename, m_emit_dumper, m_flush_launcher));
+	MRInterResultPtr inter(new MRInterResult(m_path+filename, m_emit_dumper, m_flush_launcher));
 
 	while (it != end)
 	{
@@ -102,6 +102,7 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
 									hThreadPool *pool,
 									size_t nbatch_threads,
 									TaskLauncher &flush_launcher,
+									std::string path,
 									boost::function<void(MRInterResultPtr)> onGotResult,
 									boost::function<void()> onBatchingFinished):
 		m_batch_tasks_launcher(pool,
@@ -112,7 +113,8 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
 		m_emit_dumper(dumper),
 		m_pool(pool),
 		m_flush_launcher(flush_launcher),
-		m_nbatches(0)
+		m_nbatches(0),
+		m_path(path)
 {
 
 }

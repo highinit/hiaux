@@ -36,6 +36,7 @@ class MRNodeDispatcher
 	bool nomore_batches;
 	bool nomore_inter;
 	
+	std::string m_path;
 public:
 
 	void onPreloadFinished();
@@ -45,12 +46,13 @@ public:
 	MRNodeDispatcher(hThreadPool *pool,
 					MapReduce *MR,
 					EmitDumper *dumper,
+					std::string path,
 					size_t nbatch_threads = 6,
 					size_t nreduce_threads = 6,
 					size_t npreaload_threads = 1,
 					size_t nflush_threads = 1,
 					size_t preload_buffer_size = 50000,
-					size_t flush_buffer_size = 50000);
+					size_t flush_buffer_size = 50000000);
 	
 	bool reduceTask(MRInterResultPtr a, MRInterResultPtr b);
 	void onAddResult(MRInterResultPtr inter_result); // from batcher
