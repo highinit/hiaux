@@ -6,8 +6,8 @@
 #include "../../threadpool/tasklauncher.h"
 #include "../core/InterResultReader.h"
 
-typedef std::vector<int64_t> Int64Vec;
-typedef boost::shared_ptr< std::vector<int64_t> > Int64VecPtr;
+typedef std::vector<uint64_t> Int64Vec;
+typedef boost::shared_ptr< std::vector<uint64_t> > Int64VecPtr;
 
 #define IR_WRITING 0
 #define IR_READING 1
@@ -22,10 +22,10 @@ class MRInterResult
 	InterResultLoader *m_reader;
 	
 	// key, offset
-	std::unordered_map<int64_t, int64_t> m_file_map;
+	std::unordered_map<uint64_t, uint64_t> m_file_map;
 	
-	std::unordered_map<int64_t, EmitType*> m_emit_cache0;
-	std::unordered_map<int64_t, EmitType*> m_emit_cache1;
+	std::unordered_map<uint64_t, EmitType*> m_emit_cache0;
+	std::unordered_map<uint64_t, EmitType*> m_emit_cache1;
 	
 	std::atomic<bool> m_cache0_ready;
 	std::atomic<bool> m_cache1_ready;
@@ -34,7 +34,7 @@ class MRInterResult
 	
 	// key / dump
 	//std::queue< std::pair<int64_t, std::string> > write_queue;
-	boost::lockfree::queue< std::pair<int64_t, std::string>* > write_queue;
+	boost::lockfree::queue< std::pair<uint64_t, std::string>* > write_queue;
 	void *wbuffer;
 	size_t m_wbuffer_size; // offset in wbuffer
 	size_t m_wbuffer_cap;
@@ -49,7 +49,7 @@ class MRInterResult
 	// not thread safe
 	EmitType *restore(off_t offset);
 	
-	void flush(std::pair<int64_t, std::string> dump);
+	void flush(std::pair<uint64_t, std::string> dump);
 	void flush_wbuffer();
 public:
 	
@@ -67,15 +67,15 @@ public:
 	bool FlushFinished();
 	
 	// add to m_file_map and dump. not thread safe with itself and other methods
-	void addEmit(int64_t key, EmitType *emitvec);
+	void addEmit(uint64_t key, EmitType *emitvec);
 	void waitFlushFinished();
 	Int64VecPtr getKeys();
 	
 	// preload & getEmit thread safe when cid's are different
-	void preload(int64_t key, bool cid); 
+	void preload(uint64_t key, bool cid); 
 	void condWaitCache(bool cid);
 	// get emit from cache
-	EmitType* getEmit(int64_t key, bool cid);
+	EmitType* getEmit(uint64_t key, bool cid);
 	
 	void clearCache(bool cid);
 	void setCacheReady(bool cid);

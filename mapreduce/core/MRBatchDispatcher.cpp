@@ -41,18 +41,18 @@ BatchMapper::~BatchMapper()
 	m_emit_hash->clear();
 }
 
-void BatchMapper::emit(int64_t key, EmitType* emit_value)
+void BatchMapper::emit(uint64_t key, EmitType* emit_value)
 {
 	m_stats.nemits++;
 	m_stats.nreduces++;
-	std::unordered_map<int64_t, EmitType* >::iterator it = m_emit_hash->find(key);
+	std::unordered_map<uint64_t, EmitType* >::iterator it = m_emit_hash->find(key);
 	if (it != m_emit_hash->end())
 	{
 		it->second = m_MR->reduce(key, it->second, emit_value);
 	}
 	else
 	{
-		m_emit_hash->insert(std::pair<int64_t, EmitType* >(key, emit_value));
+		m_emit_hash->insert(std::pair<uint64_t, EmitType* >(key, emit_value));
 	}
 }
 

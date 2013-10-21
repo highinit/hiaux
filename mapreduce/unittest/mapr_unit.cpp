@@ -231,7 +231,7 @@ void MaprTests::testMRInterMerger()
 	int nkeys = 10000000;
 	int keys_in_cache = 100000;
 	
-	for (int64_t i = 1; i<=2*nkeys/3; i++)
+	for (uint64_t i = 1; i<=2*nkeys/3; i++)
 	{
 		InvertLine* line = new InvertLine(i);
 		for (int j = i; j<i+50; j++)
@@ -239,7 +239,7 @@ void MaprTests::testMRInterMerger()
 		inter1->addEmit(i, line);
 	}
 	
-	for (int64_t i = nkeys/3; i<=nkeys; i++)
+	for (uint64_t i = nkeys/3; i<=nkeys; i++)
 	{
 		InvertLine* line = new InvertLine(i);
 		for (int j = i; j<i+50; j++)
@@ -333,26 +333,26 @@ void MaprTests::testBatcher()
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
-	hThreadPool *pool = new hThreadPool(4);
+	hThreadPool *pool = new hThreadPool(8);
 	pool->run();
 	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
 											new MapReduceInvertIndex,
 											new InvertLineDumper,
 											m_path,
-											2,
-											2);
+											6,
+											6);
 	
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 100000;
+	const int input_size = 1000000;
 //	int nemits = 4000000; //4000000
 	
-	for (int i = 0; i<=input_size; i++)
+	for (int i = 1; i<=input_size; i++)
 	{
 		Document *doc = new Document(i, i+1000, i);
 		docs.push_back( doc );
-		if (i%(input_size/40) ==0)
+		if (i%(input_size/200) ==0)
 		{
 			DocumentBatch *batch = new DocumentBatch(docs);
 			docs.clear();
@@ -370,7 +370,7 @@ int main(int argc, char **argv)
 	try
 	{
 		MaprTests tests;
-		tests.m_path = "/Volumes/seagate/";
+		tests.m_path = "";
 		//tests.testInvLineDumper();
 		//tests.testMRInterResult();
 		//tests.testMRInterResultAsync();
@@ -379,12 +379,11 @@ int main(int argc, char **argv)
 		tests.testNodeDispatcher();
 
 		std::cout << "all tests ended\n";
-	} catch (const char *a)
+	}
+	catch (const char *a)
 	{
 		std::cout << "EX: " << a << std::endl;
 	} 
-		
+	
 	return 0;
 }
-
-

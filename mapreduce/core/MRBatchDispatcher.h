@@ -40,7 +40,7 @@ public:
 	    boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
 		int batchid);
 	~BatchMapper();
-    void emit(int64_t key, EmitType* emit_value);
+    void emit(uint64_t key, EmitType* emit_value);
     MRStats getStats();
 };
 

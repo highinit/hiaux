@@ -14,7 +14,7 @@ class Document
 	int m_e;
 public:
 	int64_t id;
-	std::vector<int64_t> words;
+	std::vector<uint64_t> words;
 	
 	void fill();
 	Document(int b, int e, int id);
@@ -41,7 +41,7 @@ public:
 	MapReduceInvertIndex();
 
 	virtual void map(InputType* object);    
-	virtual EmitType* reduce(int64_t emit_key, EmitType* _a, EmitType* _b);
+	virtual EmitType* reduce(uint64_t emit_key, EmitType* _a, EmitType* _b);
 	virtual void finilize(EmitType* result);
 	virtual MapReduce *copy();
 	
@@ -51,9 +51,9 @@ public:
 class InvertLine : public EmitType
 {
 public:
-	std::vector<int64_t> pages;
+	std::vector<uint64_t> pages;
 
-	InvertLine(int64_t _key)
+	InvertLine(uint64_t _key)
 	{
 		key = _key;
 	}

@@ -7,7 +7,7 @@ Int64VecPtr MRInterMerger::mergeKeys(Int64VecPtr a, Int64VecPtr b)
 //	std::cout << "merge keys: " << a->size() << ", " << b->size() << std::endl;
 	Int64VecPtr keys_vec(new Int64Vec);
 	
-	std::unordered_map<int64_t, int> keys_map;
+	std::unordered_map<uint64_t, int> keys_map;
 	
 	for (int i = 0; i<a->size(); i++)
 	{

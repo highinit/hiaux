@@ -70,7 +70,7 @@ void MapReduceInvertIndex::map(InputType* object)
 	delete in_obj;
 }
 
-EmitType* MapReduceInvertIndex::reduce(int64_t emit_key, EmitType* _a, EmitType* _b)
+EmitType* MapReduceInvertIndex::reduce(uint64_t emit_key, EmitType* _a, EmitType* _b)
 {
 	InvertLine *a = (InvertLine*) _a;
 	InvertLine *b = (InvertLine*) _b;

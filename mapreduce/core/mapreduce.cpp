@@ -61,7 +61,7 @@ MapReduce::MapReduce()
 
 }
 
-void MapReduce::setEmitF(boost::function<void(int64_t, EmitType*)> emitf)
+void MapReduce::setEmitF(boost::function<void(uint64_t, EmitType*)> emitf)
 {
     emit = emitf;
 }

@@ -79,12 +79,8 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 												flush_tasks_launcher,
 												m_flush_buffer_size));
 	
-	//std::cout << "MRNodeDispatcher::reduceTask a->waitFlushFinished ";
-	a->waitFlushFinished();
-	//std::cout << "OK\n";
-	//std::cout << "MRNodeDispatcher::reduceTask b->waitFlushFinished ";
-	b->waitFlushFinished();
-	//std::cout << "OK\n";
+	//a->waitFlushFinished();
+	//b->waitFlushFinished();
 	m_stats += MRInterMerger::merge(preload_tasks_launcher,
 									a,
 									b,
@@ -99,6 +95,7 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 
 void MRNodeDispatcher::onAddResult(MRInterResultPtr inter_result)
 {
+	inter_result->waitFlushFinished();
 	//std::cout << "MRNodeDispatcher::onAddResultk inter_results.lock() ";
 	inter_results.lock();
 	//std::cout << "OK\n";

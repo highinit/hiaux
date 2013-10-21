@@ -43,31 +43,22 @@ MRInterResult::~MRInterResult()
 	m_emit_cache1.clear();
 }
 
-/*
-bool MRInterResult::checkWriteBufferNotEmpty()
-{
-//	wbuffer_lock.lock();
-	bool notempty = (write_queue.size()==0);
-//	wbuffer_lock.lock();
-	return notempty;
-}*/
-
 bool MRInterResult::FlushFinished()
 {
 	return flush_finished;
 }
 
-void MRInterResult::flush(std::pair<int64_t, std::string> dump)
+void MRInterResult::flush(std::pair<uint64_t, std::string> dump)
 {
 	off_t offset = lseek(m_fd, 0, SEEK_END);
-	int64_t size = dump.second.size();
+	uint64_t size = dump.second.size();
 
 	iovec atom[3];
 	atom[0].iov_base =  &dump.first;
-	atom[0].iov_len = sizeof(int64_t);
+	atom[0].iov_len = sizeof(uint64_t);
 
 	atom[1].iov_base =  &size;
-	atom[1].iov_len = sizeof(int64_t);
+	atom[1].iov_len = sizeof(uint64_t);
 
 	atom[2].iov_base = (void*)dump.second.data();
 	atom[2].iov_len = size;
@@ -75,7 +66,7 @@ void MRInterResult::flush(std::pair<int64_t, std::string> dump)
 	writev(m_fd, atom, 3);
 	dump.second.clear();
 	
-	m_file_map.insert(std::pair<int64_t, int64_t>(dump.first, offset));
+	m_file_map.insert(std::pair<uint64_t, uint64_t>(dump.first, offset));
 }
 
 void MRInterResult::flush_wbuffer()
@@ -92,94 +83,39 @@ void MRInterResult::flush_wbuffer()
 
 bool MRInterResult::flushBuffer()
 {
-	//wbuffer_lock.lock();
-	
-/*
-	while (write_buffer.size()!=0)
-	{
-		flush(write_buffer.front());
-		write_buffer.pop();
-	}
-
-*/	
-/*	
-	if (write_queue.size()!=0)
-	{
-		//lseek(m_fd, 0, SEEK_END);
-		iovec atom[3*write_queue.size()];
-		std::vector<std::pair<int64_t, std::string> > dumps(write_queue.size());
-		std::vector<int64_t> sizes(write_queue.size());
-		
-		int atom_i = 0;
-		int dump_i = 0;
-
-		while (write_queue.size()!=0)
+	while (!write_queue.empty())
+	{				
+		std::pair<uint64_t, std::string>* kv;
+		if (!write_queue.pop(kv))
 		{
-			//flush(write_buffer.front());
-			dumps[dump_i] = write_queue.front();
-			write_queue.pop();
-			sizes[dump_i] = dumps[dump_i].second.size();
-
-			atom[atom_i].iov_base = &dumps[dump_i].first;
-			atom[atom_i].iov_len = sizeof(int64_t);
-
-			atom[atom_i+1].iov_base =  &sizes[dump_i];
-			atom[atom_i+1].iov_len = sizeof(int64_t);
-
-			atom[atom_i+2].iov_base = (void*)dumps[dump_i].second.data();
-			atom[atom_i+2].iov_len = sizes[dump_i];
-
-			
-			m_file_map.insert(std::pair<int64_t, int64_t>(dumps[dump_i].first, w_offset));
-			w_offset += sizeof(int64_t)+sizeof(int64_t)+sizes[dump_i];
-			atom_i+=3;
-			dump_i++;
+			break;
 		}
-		//std::cout << dumps.size();
-		writev(m_fd, atom, atom_i);
-		dumps.clear();
-		sizes.clear();
-	}
-*/
 
-	//if (write_queue.size()!=0)
-	{	
-		while (!write_queue.empty())//(write_queue.size()!=0)
-		{				
-			std::pair<int64_t, std::string>* kv;
-			if (!write_queue.pop(kv))
-			{
-				break;
-			}
-			
-			int64_t key = kv->first;
-			std::string dump = kv->second;
-			int64_t size = dump.size();
-			//wbuffer_lock.unlock();
-			delete kv;
-			
-			if (2*sizeof(int64_t)+size > m_wbuffer_cap-m_wbuffer_size)
-			{
-				flush_wbuffer();
-			}
-			
-			memcpy((void*)( (uint8_t*)wbuffer+m_wbuffer_size), &key, sizeof(int64_t));
-			m_wbuffer_size +=  sizeof(int64_t);
-			memcpy((void*)( (uint8_t*)wbuffer+m_wbuffer_size), &size, sizeof(int64_t));
-			m_wbuffer_size +=  sizeof(int64_t);
-			memcpy((void*)( (uint8_t*)wbuffer+m_wbuffer_size), dump.data(), size);
-			m_wbuffer_size += size;
-			
-			m_file_map.insert(std::pair<int64_t, int64_t>(key, w_offset));
-			w_offset += 2*sizeof(int64_t)+size;
-			//wbuffer_lock.lock();
+		uint64_t key = kv->first;
+		std::string dump = kv->second;
+		uint64_t size = dump.size();
+
+		delete kv;
+
+		if (2*sizeof(uint64_t)+size > m_wbuffer_cap-m_wbuffer_size)
+		{
+			flush_wbuffer();
 		}
+
+		memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), &key, sizeof(uint64_t));
+		m_wbuffer_size +=  sizeof(uint64_t);
+		memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), &size, sizeof(uint64_t));
+		m_wbuffer_size +=  sizeof(uint64_t);
+		memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), dump.data(), size);
+		m_wbuffer_size += size;
+
+		m_file_map.insert(std::pair<uint64_t, uint64_t>(key, w_offset));
+		w_offset += 2*sizeof(uint64_t)+size;
 	}
 	
 	if (no_more_writes.load())
 	{
 		flush_wbuffer();
-		//wbuffer_lock.unlock();
 		std::cout << "no more writes: " << m_filename.c_str() << std::endl;
 		mode = IR_READING;
 		::close(m_fd);
@@ -192,15 +128,13 @@ bool MRInterResult::flushBuffer()
 
 		return 0; // dont repeat
 	}
-	//wbuffer_lock.unlock();
+
 	return 1; // repeat
 }
 
 void MRInterResult::waitFlushFinished()
 {
-//	wbuffer_lock.lock();	
 	no_more_writes = 1;
-//	wbuffer_lock.unlock();
 	std::cout << "waiting flush finished\n";
 	flush_finish_lock.wait();
 	std::cout << "flush finished\n";
@@ -218,7 +152,7 @@ bool MRInterResult::checkCacheReady(bool cid)
 	}
 }
 
-void MRInterResult::addEmit(int64_t key, EmitType *emit)
+void MRInterResult::addEmit(uint64_t key, EmitType *emit)
 {
 	if (mode!=IR_WRITING)
 	{
@@ -227,22 +161,20 @@ void MRInterResult::addEmit(int64_t key, EmitType *emit)
 	std::string dump = m_dumper->dump(emit);
 	delete emit;
 
-	//wbuffer_lock.lock();
-	write_queue.push(new std::pair<int64_t, std::string>(key, dump));
-	//wbuffer_lock.unlock();
+	write_queue.push(new std::pair<uint64_t, std::string>(key, dump));
 }
 
 EmitType *MRInterResult::restore(off_t offset)
 {
 	lseek(m_fd, offset, SEEK_SET);
-	int64_t size;
-	int64_t key;
-	if (read(m_fd, &key, sizeof(int64_t))!=sizeof(int64_t))
+	uint64_t size;
+	uint64_t key;
+	if (read(m_fd, &key, sizeof(uint64_t))!=sizeof(uint64_t))
 	{
 		throw "MRInterResult::preload: READ ERROR\n";
 	}
 	
-	if (read(m_fd, &size, sizeof(int64_t))!=sizeof(int64_t))
+	if (read(m_fd, &size, sizeof(uint64_t))!=sizeof(uint64_t))
 	{
 		throw "MRInterResult::preload: READ ERROR\n";
 	}
@@ -252,12 +184,12 @@ EmitType *MRInterResult::restore(off_t offset)
 		throw "MRInterResult::preload: READ ERROR\n";
 	}
 	bf[size] = '\0';
-	//std::cout << "restored key: " << key << std::endl; 
+
 	EmitType *emit = m_dumper->restore(bf);
 	return emit;
 }
 
-void MRInterResult::preload(int64_t key, bool cid)
+void MRInterResult::preload(uint64_t key, bool cid)
 {
 	if (mode!=IR_READING)
 	{
@@ -274,24 +206,23 @@ void MRInterResult::preload(int64_t key, bool cid)
 	
 	if (cid==false)
 	{
-		m_emit_cache0.insert(std::pair<int64_t, EmitType*>(key, emit));
+		m_emit_cache0.insert(std::pair<uint64_t, EmitType*>(key, emit));
 	}
 	else
 	{
-		m_emit_cache1.insert(std::pair<int64_t, EmitType*>(key, emit));
+		m_emit_cache1.insert(std::pair<uint64_t, EmitType*>(key, emit));
 	}
 }
 
-EmitType* MRInterResult::getEmit(int64_t key, bool cid)
+EmitType* MRInterResult::getEmit(uint64_t key, bool cid)
 {
-//	throw "123";
 	if (mode!=IR_READING)
 	{
 		throw "MRInterResult::getEmit error mode!=IR_READING";
 	}
 	if (cid==false)
 	{
-		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
+		std::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
 
 		if (cache_it != m_emit_cache0.end())
 		{
@@ -306,7 +237,7 @@ EmitType* MRInterResult::getEmit(int64_t key, bool cid)
 	}
 	else
 	{
-		std::unordered_map<int64_t, EmitType*>::iterator cache_it = m_emit_cache1.find(key);
+		std::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache1.find(key);
 
 		if (cache_it != m_emit_cache1.end())
 		{
@@ -369,7 +300,7 @@ void MRInterResult::setCacheReady(bool cid)
 
 Int64VecPtr MRInterResult::getKeys()
 {
-	Int64VecPtr keys( new std::vector<int64_t> );
+	Int64VecPtr keys( new std::vector<uint64_t> );
 	auto filemap_it = m_file_map.begin();
 	auto filemap_end = m_file_map.end();
 	

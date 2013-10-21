@@ -30,10 +30,10 @@ InterResultLoader::~InterResultLoader()
 EmitType *InterResultLoader::readEmit(off_t offset)
 {
 	uint8_t *data = p+offset;
-	int64_t key = *((int64_t*)data);
-	int64_t size = *((int64_t*)(data+8));
+	uint64_t key = *((uint64_t*)data);
+	uint64_t size = *((uint64_t*)(data+sizeof(uint64_t)));
 	char bf[size+1];
-	memcpy(bf, (data+16), size);
+	memcpy(bf, (data+2*sizeof(uint64_t)), size);
 	bf[size] = '\0';
 	
 	return m_dumper->restore(std::string(bf));
