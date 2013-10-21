@@ -98,7 +98,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 }
 
 MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
-									EmitDumper *dumper,
+									EmitDumperPtr dumper,
 									hThreadPool *pool,
 									size_t nbatch_threads,
 									TaskLauncher &flush_launcher,

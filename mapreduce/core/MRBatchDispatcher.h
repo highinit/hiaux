@@ -47,7 +47,7 @@ public:
 class MRBatchDispatcher
 {
     MapReduce *m_MR;
-	EmitDumper *m_emit_dumper;
+	EmitDumperPtr m_emit_dumper;
 	
     hThreadPool* m_pool;
 
@@ -63,8 +63,8 @@ class MRBatchDispatcher
 
 public:
 
-    MRBatchDispatcher(MapReduce *MR,
-					EmitDumper *dumper,
+	MRBatchDispatcher(MapReduce *MR,
+					EmitDumperPtr dumper,
 					hThreadPool *pool,
 					size_t nbatch_threads,
 					TaskLauncher &flush_launcher,
@@ -72,13 +72,13 @@ public:
 					boost::function<void(MRInterResultPtr)> onGotResult,
 					boost::function<void()> onBatchingFinished);
 
-    bool mapBatchTask(BatchAccessor* batch, int batchid);   
+	bool mapBatchTask(BatchAccessor* batch, int batchid);   
 
-    void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
-    void addBatch(BatchAccessor* batch);
+	void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
+	void addBatch(BatchAccessor* batch);
 	void noMore();
-	
-    MRStats getStats();
+
+	MRStats getStats();
 };
 
 #endif

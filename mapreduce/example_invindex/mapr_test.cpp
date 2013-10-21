@@ -9,8 +9,6 @@
 #include "../core/mapreduce.h"
 #include "../core/MRBatchDispatcher.h"
 
-#include "../core/ReduceDispatcher.h"
-
 #include "mapr_test.h"
 #include <iostream>
 
@@ -24,7 +22,6 @@ std::string InvertLineDumper::dump(EmitType *emit)
 	//std::cout << "dump line->pages.size(): " << line->pages.size() << std::endl;
 	mapr_test::InvertLine pb_line;
 	
-	pb_line.set_key(line->key);
 	for (int i = 0; i<line->pages.size(); i++)
 		pb_line.add_pages(line->pages[i]);
 
@@ -35,11 +32,10 @@ std::string InvertLineDumper::dump(EmitType *emit)
 
 EmitType* InvertLineDumper::restore(std::string dumped)
 {
-	InvertLine *line = new InvertLine(0);
+	InvertLine *line = new InvertLine();
 	mapr_test::InvertLine pb_line;
 	pb_line.ParseFromString(dumped);
 	
-	line->key = pb_line.key();
 	for (int i = 0; i<pb_line.pages_size(); i++)
 	{
 		line->pages.push_back(pb_line.pages(i));
@@ -63,14 +59,14 @@ void MapReduceInvertIndex::map(InputType* object)
 
 	for (int i = 0; i<in_obj->words.size(); i++)
 	{
-		InvertLine *line = new InvertLine(in_obj->words[i]);
+		InvertLine *line = new InvertLine();
 		line->pages.push_back(in_obj->id);
 		emit(in_obj->words[i], line);
 	}
 	delete in_obj;
 }
 
-EmitType* MapReduceInvertIndex::reduce(uint64_t emit_key, EmitType* _a, EmitType* _b)
+EmitType* MapReduceInvertIndex::reduce(uint64_t key, EmitType* _a, EmitType* _b)
 {
 	InvertLine *a = (InvertLine*) _a;
 	InvertLine *b = (InvertLine*) _b;

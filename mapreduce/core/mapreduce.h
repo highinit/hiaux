@@ -43,15 +43,14 @@ public:
 class InputType
 {
 public:
-    virtual ~InputType() { }
+	virtual ~InputType() { }
 };
+
 
 class EmitType
 {
-public:
-  uint64_t key;
- 
-  virtual ~EmitType() { } 
+public: 
+	virtual ~EmitType() { } 
 };
 
 class EmitDumper
@@ -60,6 +59,8 @@ public:
 	virtual std::string dump(EmitType *emit) = 0;
 	virtual EmitType* restore(std::string dumped) = 0;
 };
+
+typedef boost::shared_ptr<EmitDumper> EmitDumperPtr;
 
 typedef std::vector<EmitType*> EmitVec;
 //typedef std::shared_ptr<EmitVec> EmitVecPtr;
@@ -71,11 +72,12 @@ class BatchAccessor
 {
 public:
 	BatchAccessor() { }
-    virtual bool end() = 0;
-    virtual InputType *getNextInput() = 0;
+	virtual bool end() = 0;
+	virtual InputType *getNextInput() = 0;
 	virtual ~BatchAccessor() { }
 };
 
+//template <typename Key, typename EmitType, typename InputType>
 class MapReduce
 {   
   //  std::string m_job_name;
@@ -89,13 +91,14 @@ public:
 
 	void setEmitF(boost::function<void(uint64_t, EmitType*)> emitf);
 	virtual void map(InputType* object) = 0;   
-	virtual EmitType* reduce(uint64_t emit_key, EmitType* a, EmitType* b) = 0;
+	virtual EmitType* reduce(uint64_t key, EmitType* a, EmitType* b) = 0;
 	virtual void finilize(EmitType*) = 0;
 	virtual MapReduce *copy() = 0;
 
 	virtual ~MapReduce() { } 
 };
 
+/*
 class EmitTypeAccessor
 {
 	EmitType *m_emit;
@@ -109,7 +112,7 @@ public:
 	void restore(EmitDumper *dumper, int read_fd);
 	EmitType *getEmit();
 };
-
+*/
 
 
 #endif

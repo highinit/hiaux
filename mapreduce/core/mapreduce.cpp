@@ -66,6 +66,7 @@ void MapReduce::setEmitF(boost::function<void(uint64_t, EmitType*)> emitf)
     emit = emitf;
 }
 
+/*
 EmitTypeAccessor::EmitTypeAccessor(EmitType *emit, EmitDumper *dumper, int append_fd, int emitter_id):
 	m_emit(emit),
 	m_emitter_id(emitter_id)
@@ -119,3 +120,4 @@ EmitType *EmitTypeAccessor::getEmit()
 {
 	return m_emit;
 }
+*/

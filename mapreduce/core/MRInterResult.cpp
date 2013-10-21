@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 MRInterResult::MRInterResult(std::string filename,
-							EmitDumper* dumper,
+							EmitDumperPtr dumper,
 							TaskLauncher &flush_launcher,
 							const size_t wbuffer_cap):
 	m_dumper(dumper),
@@ -25,7 +25,7 @@ MRInterResult::MRInterResult(std::string filename,
 	w_offset(0),
 	write_queue(100000)
 {
-	wbuffer = (void*) new uint8_t [wbuffer_cap];
+	wbuffer = new uint8_t [wbuffer_cap];
 	m_wbuffer_size = 0;
 	
 	m_fd = open(filename.c_str(),  O_RDWR | O_CREAT | O_TRUNC,
@@ -37,7 +37,8 @@ MRInterResult::MRInterResult(std::string filename,
 
 MRInterResult::~MRInterResult()
 {
-	close(m_fd);
+	delete m_reader;
+	delete [] wbuffer;
 	m_file_map.clear();
 	m_emit_cache0.clear();
 	m_emit_cache1.clear();

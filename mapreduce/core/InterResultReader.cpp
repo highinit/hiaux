@@ -11,7 +11,7 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
-InterResultLoader::InterResultLoader(std::string filename, EmitDumper *dumper):
+InterResultLoader::InterResultLoader(std::string filename, EmitDumperPtr dumper):
 	m_dumper(dumper)
 {
 	m_fd = open(filename.c_str(),  O_RDONLY,

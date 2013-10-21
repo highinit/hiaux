@@ -18,7 +18,7 @@ class MRInterResult
 	
 	std::string m_filename;
 	int m_fd;
-	EmitDumper* m_dumper;
+	EmitDumperPtr m_dumper;
 	InterResultLoader *m_reader;
 	
 	// key, offset
@@ -35,7 +35,7 @@ class MRInterResult
 	// key / dump
 	//std::queue< std::pair<int64_t, std::string> > write_queue;
 	boost::lockfree::queue< std::pair<uint64_t, std::string>* > write_queue;
-	void *wbuffer;
+	uint8_t *wbuffer;
 	size_t m_wbuffer_size; // offset in wbuffer
 	size_t m_wbuffer_cap;
 	size_t w_offset; // offset in file
@@ -54,7 +54,7 @@ class MRInterResult
 public:
 	
 	MRInterResult(std::string filename,
-				EmitDumper* dumper,
+				EmitDumperPtr dumper,
 				TaskLauncher &flush_launcher,
 				const size_t wbuffer_cap = 50000000);
 	

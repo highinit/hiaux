@@ -34,28 +34,14 @@ public:
 	~DocumentBatch();
 };
 
-class MapReduceInvertIndex : public MapReduce
-{
-public:
-
-	MapReduceInvertIndex();
-
-	virtual void map(InputType* object);    
-	virtual EmitType* reduce(uint64_t emit_key, EmitType* _a, EmitType* _b);
-	virtual void finilize(EmitType* result);
-	virtual MapReduce *copy();
-	
-	~MapReduceInvertIndex() { } 
-};
-
 class InvertLine : public EmitType
 {
 public:
 	std::vector<uint64_t> pages;
 
-	InvertLine(uint64_t _key)
+	InvertLine()
 	{
-		key = _key;
+		
 	}
 	
 	~InvertLine()
@@ -73,6 +59,20 @@ public:
 		std::cout << std::endl;
 	}
 
+};
+
+class MapReduceInvertIndex : public MapReduce
+{
+public:
+
+	MapReduceInvertIndex();
+
+	virtual void map(InputType* object);    
+	virtual EmitType* reduce(uint64_t emit_key, EmitType* _a, EmitType* _b);
+	virtual void finilize(EmitType* result);
+	virtual MapReduce *copy();
+	
+	~MapReduceInvertIndex() { } 
 };
 
 class InvertLineDumper : public EmitDumper

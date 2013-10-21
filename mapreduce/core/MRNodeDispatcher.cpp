@@ -36,7 +36,7 @@ void MRNodeDispatcher::onReducesFinished()
 
 MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									MapReduce *MR,
-									EmitDumper *dumper,
+									EmitDumperPtr dumper,
 									std::string path,
 									size_t nbatch_threads,
 									size_t nreduce_threads,
