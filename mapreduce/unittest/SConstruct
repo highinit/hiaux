@@ -6,18 +6,27 @@ import subprocess
 platform = sys.platform
 print "PLATFORM:"+platform
 
-_CCFLAGS = '-g '
+_CCFLAGS = '-g -I/usr/local/include/c++/v1 -I/usr/local/include'
 _CXX = ''
 _LINKFLAGS = '-g '
+
+
 
 #LINUX
 if platform[:5]=="linux":
 	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++'
 	_CXX += ' clang++'
 	_LINKFLAGS += ' -lprotobuf -lpthread'
+
+#FREEBSD9
+if platform[:8]=="freebsd9":
+	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++ '
+	_CXX += ' clang++'
+	_LINKFLAGS += ' -lprotobuf -lpthread -lc++ -lc++abi -lstdc++'
+
 #MACOSX
 if platform=="darwin":
-	_CCFLAGS += ' -std=c++11 -stdlib=libc++ -Wno-c++98-compat'
+	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++ -Wno-c++98-compat'
 	_CXX += ' clang++'
 	_LINKFLAGS += ' -lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread'
 
