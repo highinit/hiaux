@@ -40,6 +40,7 @@ public:
     MRStats& operator=(const MRStats &a);
 };
 
+
 class InputType
 {
 public:
@@ -53,21 +54,24 @@ public:
 	virtual ~EmitType() { } 
 };
 
+
+/*
 class EmitDumper
 {
 public:
 	virtual std::string dump(EmitType *emit) = 0;
 	virtual EmitType* restore(std::string dumped) = 0;
 };
+*/
+//typedef boost::shared_ptr<EmitDumper> EmitDumperPtr;
 
-typedef boost::shared_ptr<EmitDumper> EmitDumperPtr;
-
-typedef std::vector<EmitType*> EmitVec;
+//typedef std::vector<EmitType*> EmitVec;
 //typedef std::shared_ptr<EmitVec> EmitVecPtr;
 
 typedef std::unordered_map<uint64_t, EmitType*> EmitHash;
-typedef std::queue<EmitType*> EmitQueue;
+//typedef std::queue<EmitType*> EmitQueue;
 
+//template <typename InputType>
 class BatchAccessor
 {
 public:
@@ -77,7 +81,7 @@ public:
 	virtual ~BatchAccessor() { }
 };
 
-//template <typename Key, typename EmitType, typename InputType>
+//template <typename EmitType>//<typename Key, typename EmitType, typename InputType>
 class MapReduce
 {   
 protected:
@@ -86,13 +90,20 @@ protected:
 public:
     
 	MapReduce ();
-
 	void setEmitF(boost::function<void(uint64_t, EmitType*)> emitf);
+	
 	virtual void map(InputType* object) = 0;
 	virtual EmitType* reduce(uint64_t key, EmitType* a, EmitType* b) = 0;
 	virtual void finilize(EmitType*) = 0;
-	virtual MapReduce *copy() = 0;
-
+	
+	virtual std::string dumpEmit(EmitType *emit) = 0;
+	virtual EmitType* restoreEmit(std::string dump) = 0;
+	
+	//virtual std::string dumpKey(uint64_t key) = 0;
+	//virtual uint64_t restoreKey(std::string dump) = 0;
+	
+	
+	virtual MapReduce *create() = 0;
 	virtual ~MapReduce() { }
 };
 

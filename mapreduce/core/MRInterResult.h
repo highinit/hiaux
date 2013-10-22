@@ -12,20 +12,24 @@ typedef boost::shared_ptr< std::vector<uint64_t> > Int64VecPtr;
 #define IR_WRITING 0
 #define IR_READING 1
 
+#define KeyType uint64_t
+//template <class KeyType>
 class MRInterResult
 {
 	bool mode;
 	
 	std::string m_filename;
 	int m_fd;
-	EmitDumperPtr m_dumper;
+
+	MapReduce *m_MR;
+	
 	InterResultLoader *m_reader;
 	
 	// key, offset
-	std::unordered_map<uint64_t, uint64_t> m_file_map;
+	std::unordered_map<KeyType, uint64_t> m_file_map;
 	
-	std::unordered_map<uint64_t, EmitType*> m_emit_cache0;
-	std::unordered_map<uint64_t, EmitType*> m_emit_cache1;
+	std::unordered_map<KeyType, EmitType*> m_emit_cache0;
+	std::unordered_map<KeyType, EmitType*> m_emit_cache1;
 	
 	std::atomic<bool> m_cache0_ready;
 	std::atomic<bool> m_cache1_ready;
@@ -34,7 +38,7 @@ class MRInterResult
 	
 	// key / dump
 	//std::queue< std::pair<int64_t, std::string> > write_queue;
-	boost::lockfree::queue< std::pair<uint64_t, std::string>* > write_queue;
+	boost::lockfree::queue< std::pair<KeyType, std::string>* > write_queue;
 	uint8_t *wbuffer;
 	size_t m_wbuffer_size; // offset in wbuffer
 	size_t m_wbuffer_cap;
@@ -49,12 +53,12 @@ class MRInterResult
 	// not thread safe
 	EmitType *restore(off_t offset);
 	
-	void flush(std::pair<uint64_t, std::string> dump);
+	//void flush(std::pair<uint64_t, std::string> dump);
 	void flush_wbuffer();
 public:
 	
 	MRInterResult(std::string filename,
-				EmitDumperPtr dumper,
+				MapReduce *MR,
 				TaskLauncher &flush_launcher,
 				const size_t wbuffer_cap = 50000000);
 	

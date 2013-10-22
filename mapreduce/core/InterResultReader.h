@@ -8,13 +8,13 @@ class InterResultLoader
 	int m_fd; 
 	size_t m_len;
 	uint8_t *p;
-	EmitDumperPtr m_dumper;
+	MapReduce *m_MR;
 	
 	InterResultLoader();
 	InterResultLoader(InterResultLoader&);
 	InterResultLoader& operator=(InterResultLoader&);
 public:
-	InterResultLoader(std::string filename, EmitDumperPtr dumper);
+	InterResultLoader(std::string filename, MapReduce *MR);
 	~InterResultLoader();
 	
 	EmitType *readEmit(off_t offset);

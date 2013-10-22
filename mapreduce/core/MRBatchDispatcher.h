@@ -46,25 +46,23 @@ public:
 
 class MRBatchDispatcher
 {
-    MapReduce *m_MR;
-	EmitDumperPtr m_emit_dumper;
+	MapReduce *m_MR;
 	
-    hThreadPool* m_pool;
+	hThreadPool* m_pool;
 
-    MRStats m_stats;
+	MRStats m_stats;
 	TaskLauncher m_batch_tasks_launcher;
 	TaskLauncher &m_flush_launcher;
-	
+
 	std::atomic<size_t> m_nbatches;
-	
+
 	std::string m_path;
-	
-    boost::function<void(MRInterResultPtr)> m_onGotResult;
+
+	boost::function<void(MRInterResultPtr)> m_onGotResult;
 
 public:
 
 	MRBatchDispatcher(MapReduce *MR,
-					EmitDumperPtr dumper,
 					hThreadPool *pool,
 					size_t nbatch_threads,
 					TaskLauncher &flush_launcher,

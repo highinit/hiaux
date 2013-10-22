@@ -24,7 +24,7 @@ BatchMapper::BatchMapper(BatchAccessor* batch,
 						int batchid)
 {
 	m_batch = batch;
-	m_MR = MR->copy();
+	m_MR = MR->create();
 	m_MR->setEmitF(boost::bind(&BatchMapper::emit, this, _1, _2));
 	m_emit_hash.reset(new EmitHash);
 
@@ -82,7 +82,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	std::cout << "batch finished. flushing \n";
 	char filename[50];
 	sprintf(filename, "batch%d", batchid);
-	MRInterResultPtr inter(new MRInterResult(m_path+filename, m_emit_dumper, m_flush_launcher));
+	MRInterResultPtr inter(new MRInterResult(m_path+filename, m_MR, m_flush_launcher));
 
 	while (it != end)
 	{
@@ -98,7 +98,6 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 }
 
 MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
-									EmitDumperPtr dumper,
 									hThreadPool *pool,
 									size_t nbatch_threads,
 									TaskLauncher &flush_launcher,
@@ -110,7 +109,6 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
 							onBatchingFinished),
 		m_onGotResult(onGotResult),
 		m_MR(MR),
-		m_emit_dumper(dumper),
 		m_pool(pool),
 		m_flush_launcher(flush_launcher),
 		m_nbatches(0),

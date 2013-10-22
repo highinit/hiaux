@@ -11,8 +11,8 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
-InterResultLoader::InterResultLoader(std::string filename, EmitDumperPtr dumper):
-	m_dumper(dumper)
+InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
+	m_MR(MR)
 {
 	m_fd = open(filename.c_str(),  O_RDONLY,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -36,5 +36,5 @@ EmitType *InterResultLoader::readEmit(off_t offset)
 	memcpy(bf, (data+2*sizeof(uint64_t)), size);
 	bf[size] = '\0';
 	
-	return m_dumper->restore(std::string(bf));
+	return m_MR->restoreEmit(std::string(bf));
 }

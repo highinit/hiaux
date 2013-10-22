@@ -15,7 +15,6 @@ class MRNodeDispatcher
 	InterResultQueue inter_results;
 	hThreadPool *pool;
 	
-	EmitDumperPtr m_dumper;
 	MapReduce *m_MR;
 	
 	std::atomic<size_t> nmerge;
@@ -47,7 +46,6 @@ public:
 	
 	MRNodeDispatcher(hThreadPool *pool,
 					MapReduce *MR,
-					EmitDumperPtr dumper,
 					std::string path,
 					boost::function<void()> onFinished,
 					size_t nbatch_threads = 6,

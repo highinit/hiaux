@@ -23,7 +23,7 @@ void MRNodeDispatcher::onReducesFinished()
 	inter_results.unlock();
 	
 	//std::cout << "MRNodeDispatcher::onReducesFinished result->waitFlushFinished ";
-	result->waitFlushFinished();
+	//result->waitFlushFinished();
 	//std::cout << "OK\n";
 	
 	m_stats += batch_dispatcher->getStats();
@@ -36,7 +36,6 @@ void MRNodeDispatcher::onReducesFinished()
 
 MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									MapReduce *MR,
-									EmitDumperPtr dumper,
 									std::string path,
 									boost::function<void()> onFinished,
 									size_t nbatch_threads,
@@ -47,7 +46,6 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									size_t flush_buffer_size):
 	nmerge(0),
 	m_MR(MR),
-	m_dumper(dumper),
 	m_preload_buffer_size(preload_buffer_size),
 	m_flush_buffer_size(flush_buffer_size),
 	preload_tasks_launcher(pool, npreaload_threads, boost::bind(&MRNodeDispatcher::onPreloadFinished, this)),
@@ -58,7 +56,6 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 	m_path(path),
 	m_onFinished(onFinished),
 	batch_dispatcher (new MRBatchDispatcher(MR,
-											dumper,
 											pool,
 											nbatch_threads,
 											flush_tasks_launcher,
@@ -76,7 +73,7 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 	char filename[50];
 	sprintf(filename, "merge%d", (int)nmerge.fetch_add(1));
 	MRInterResultPtr result ( new MRInterResult(m_path+filename,
-												m_dumper,
+												m_MR,
 												flush_tasks_launcher,
 												m_flush_buffer_size));
 	

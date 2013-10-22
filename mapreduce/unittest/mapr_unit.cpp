@@ -18,26 +18,30 @@
 
 void MaprTests::testInvLineDumper()
 {
+	/*
 	std::cout << "MaprTests::testInvLineDumper()\n";
-	InvertLineDumper* dumper = new InvertLineDumper;
-	int fd = open("dumptest",  O_RDWR | O_CREAT,
+		int fd = open("dumptest",  O_RDWR | O_CREAT,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	InvertLine* line = new InvertLine();
 	line->pages.push_back(0);
 
 	InvertLine* line2 = (InvertLine*)dumper->restore( dumper->dump(line) );
+	 */
+	 
 	/*if (line2->key != line->key)
 	{
 		std::cout << "MaprTests::testInvLineDumper keys different\n"; 
 		exit(0);
 	}*/
 
+	/*
 	if (line2->pages[0] != line->pages[0])
 	{
 		std::cout << "MaprTests::testInvLineDumper pages different\n"; 
 		exit(0);
 	}
+	 * */
 }
 
 void MaprTests::testMRInterResult()
@@ -131,7 +135,7 @@ void MaprTests::testMRInterResultAsync()
 	TaskLauncher flush_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	
 	MRInterResult *inter = new MRInterResult("testMRInterResultAsync",
-						EmitDumperPtr(new InvertLineDumper),
+						new MapReduceInvertIndex,
 						flush_tasks_launcher);
 	
 	const int nemits = 100;
@@ -225,10 +229,12 @@ void MaprTests::testMRInterMerger()
 	pool->run();
 
 	TaskLauncher flush_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
-	EmitDumperPtr dumper_ptr(new InvertLineDumper);
-	MRInterResultPtr inter1 (new MRInterResult(m_path+"inter1", dumper_ptr, flush_tasks_launcher));
-	MRInterResultPtr inter2 (new MRInterResult(m_path+"inter2", dumper_ptr, flush_tasks_launcher));
-	MRInterResultPtr inter3 (new MRInterResult(m_path+"inter3", dumper_ptr, flush_tasks_launcher));
+
+	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
+	
+	MRInterResultPtr inter1 (new MRInterResult(m_path+"inter1", MR, flush_tasks_launcher));
+	MRInterResultPtr inter2 (new MRInterResult(m_path+"inter2", MR, flush_tasks_launcher));
+	MRInterResultPtr inter3 (new MRInterResult(m_path+"inter3", MR, flush_tasks_launcher));
 	
 	int nkeys = 10000000;
 	int keys_in_cache = 100000;
@@ -258,7 +264,7 @@ void MaprTests::testMRInterMerger()
 	//inter2->setModeReading();
 	
 	TaskLauncher preload_tasks_launcher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
-	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
+	
 	MRInterMerger::merge(preload_tasks_launcher, inter1, inter2, inter3, MR, keys_in_cache);
 	
 	inter3->waitFlushFinished();
@@ -301,7 +307,6 @@ void MaprTests::testBatcher()
 			new TaskLauncher(pool, 1, boost::bind(&MaprTests::onMRInterMergerFinished, this));
 	
 	mr_disp = new MRBatchDispatcher(MR, 
-									EmitDumperPtr(new InvertLineDumper),
 									pool,
 									1,
 									*flush_launcher,
@@ -336,12 +341,13 @@ void testNodeDispatcherFinished()
 {
 //	return;
 	std::cout << "testNodeDispatcherFinished\n";
+	//exit(0);
 	int fd = open("merge8", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	
 	uint64_t key;
 	uint64_t size;
 	
-	InvertLineDumper *dumper = new InvertLineDumper;
+	MapReduceInvertIndex *MR = new MapReduceInvertIndex();
 	
 	while (1)
 	{
@@ -354,7 +360,7 @@ void testNodeDispatcherFinished()
 		read(fd, bf, size);
 		bf[size] = '\0';
 		
-		InvertLine *line = (InvertLine*)dumper->restore(std::string(bf));
+		InvertLine *line = (InvertLine*)MR->restoreEmit(std::string(bf));
 		if (line->pages[0] != key)
 		std::cout << line->pages[0] << " ";
 	}
@@ -364,15 +370,14 @@ void testNodeDispatcherFinished()
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
-	hThreadPool *pool = new hThreadPool(8);
+	hThreadPool *pool = new hThreadPool(4);
 	pool->run();
 	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
 											new MapReduceInvertIndex,
-											EmitDumperPtr(new InvertLineDumper),
 											m_path,
 											boost::bind(&testNodeDispatcherFinished),
-											6,
-											6);
+											2,
+											2);
 	
 	std::vector<Document*> docs;
 	

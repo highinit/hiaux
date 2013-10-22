@@ -16,6 +16,7 @@
 
 using namespace std;
 
+/*
 std::string InvertLineDumper::dump(EmitType *emit)
 {
 	InvertLine *line = (InvertLine*) emit;
@@ -45,7 +46,7 @@ EmitType* InvertLineDumper::restore(std::string dumped)
 //			<< " " << line->pages[0]
 //			<< std::endl;
 	return (EmitType*) line;
-}
+}*/
 
 MapReduceInvertIndex::MapReduceInvertIndex() 
    //     MapReduce(job_name, node_name)
@@ -85,10 +86,41 @@ void MapReduceInvertIndex::finilize(EmitType* result)
     
 }
 
-MapReduce *MapReduceInvertIndex::copy()
+MapReduce *MapReduceInvertIndex::create()
 {
 	return new MapReduceInvertIndex(*this);
 }
+
+std::string MapReduceInvertIndex::dumpEmit(EmitType *emit)
+{
+	InvertLine *line = (InvertLine*) emit;
+	//std::cout << "dump line->pages.size(): " << line->pages.size() << std::endl;
+	mapr_test::InvertLine pb_line;
+	
+	for (int i = 0; i<line->pages.size(); i++)
+		pb_line.add_pages(line->pages[i]);
+
+	std::string ret =  pb_line.SerializeAsString();
+	pb_line.Clear();
+	return ret;
+}
+
+EmitType* MapReduceInvertIndex::restoreEmit(std::string dumped)
+{
+	InvertLine *line = new InvertLine();
+	mapr_test::InvertLine pb_line;
+	pb_line.ParseFromString(dumped);
+	
+	for (int i = 0; i<pb_line.pages_size(); i++)
+	{
+		line->pages.push_back(pb_line.pages(i));
+	}
+	pb_line.Clear();
+//	std::cout << "restore line->pages.size(): " << line->pages.size() 
+//			<< " " << line->pages[0]
+//			<< std::endl;
+	return (EmitType*) line;
+}	
 
 DocumentBatch::DocumentBatch(std::vector < Document*> &docs)
 {

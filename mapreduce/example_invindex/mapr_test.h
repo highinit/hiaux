@@ -70,18 +70,23 @@ public:
 	virtual void map(InputType* object);    
 	virtual EmitType* reduce(uint64_t emit_key, EmitType* _a, EmitType* _b);
 	virtual void finilize(EmitType* result);
-	virtual MapReduce *copy();
+	
+	virtual std::string dumpEmit(EmitType *emit);
+	virtual EmitType* restoreEmit(std::string dump);
+	
+	virtual MapReduce *create();
 	
 	~MapReduceInvertIndex() { } 
 };
 
+/*
 class InvertLineDumper : public EmitDumper
 {
 public:
 	virtual std::string dump(EmitType *emit);
 	virtual EmitType* restore(std::string dumped);
 };
-
+*/
 void onAllBatchesFinished();
 
 
