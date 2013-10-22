@@ -37,6 +37,8 @@ class MRNodeDispatcher
 	bool nomore_inter;
 	
 	std::string m_path;
+	
+	boost::function<void()> m_onFinished;
 public:
 
 	void onPreloadFinished();
@@ -47,6 +49,7 @@ public:
 					MapReduce *MR,
 					EmitDumperPtr dumper,
 					std::string path,
+					boost::function<void()> onFinished,
 					size_t nbatch_threads = 6,
 					size_t nreduce_threads = 6,
 					size_t npreaload_threads = 1,

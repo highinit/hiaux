@@ -332,6 +332,35 @@ void MaprTests::testBatcher()
 	pool->join();
 }
 
+void testNodeDispatcherFinished()
+{
+//	return;
+	std::cout << "testNodeDispatcherFinished\n";
+	int fd = open("merge8", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	
+	uint64_t key;
+	uint64_t size;
+	
+	InvertLineDumper *dumper = new InvertLineDumper;
+	
+	while (1)
+	{
+		if (read(fd, &key, sizeof(uint64_t)) != sizeof(uint64_t))
+		{
+			exit(0);
+		}
+		read(fd, &size, sizeof(uint64_t));
+		char bf[size+1];
+		read(fd, bf, size);
+		bf[size] = '\0';
+		
+		InvertLine *line = (InvertLine*)dumper->restore(std::string(bf));
+		if (line->pages[0] != key)
+		std::cout << line->pages[0] << " ";
+	}
+	
+}
+
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
@@ -341,6 +370,7 @@ void MaprTests::testNodeDispatcher()
 											new MapReduceInvertIndex,
 											EmitDumperPtr(new InvertLineDumper),
 											m_path,
+											boost::bind(&testNodeDispatcherFinished),
 											6,
 											6);
 	
@@ -350,6 +380,7 @@ void MaprTests::testNodeDispatcher()
 	const int input_size = 100;
 //	int nemits = 4000000; //4000000
 	
+	/*
 	for (int i = 1; i<=input_size; i++)
 	{
 		Document *doc = new Document(i, i+1000, i);
@@ -362,6 +393,20 @@ void MaprTests::testNodeDispatcher()
 			node->addBatch(batch);
 		}
 	}
+	 */
+	for (int i = 1; i<=input_size; i++)
+	{
+		Document *doc = new Document(i, i+1, i);
+		docs.push_back( doc );
+		if (i%(input_size/10) ==0)
+		{
+			DocumentBatch *batch = new DocumentBatch(docs);
+			docs.clear();
+			//batches->push_back(batch);
+			node->addBatch(batch);
+		}
+	}
+	
 	node->noMoreBatches();
 	
 	pool->join();

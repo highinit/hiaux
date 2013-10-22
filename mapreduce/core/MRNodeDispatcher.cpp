@@ -30,14 +30,15 @@ void MRNodeDispatcher::onReducesFinished()
 	std::cout << "maps: " << m_stats.nmaps << std::endl;
 	std::cout << "emits: " << m_stats.nemits << std::endl;
 	std::cout << "reduces: " << m_stats.nreduces << std::endl;
-	
-	exit(0);
+
+	m_onFinished();
 }
 
 MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									MapReduce *MR,
 									EmitDumperPtr dumper,
 									std::string path,
+									boost::function<void()> onFinished,
 									size_t nbatch_threads,
 									size_t nreduce_threads,
 									size_t npreaload_threads,
@@ -55,6 +56,7 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 	nomore_inter(0),
 	nomore_batches(0),
 	m_path(path),
+	m_onFinished(onFinished),
 	batch_dispatcher (new MRBatchDispatcher(MR,
 											dumper,
 											pool,
@@ -67,7 +69,6 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 	)
 {
 	
-
 }
 
 bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)

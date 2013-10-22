@@ -84,7 +84,7 @@ class MapReduce
  //   std::string m_node_name;
 protected:
 	boost::function<void(uint64_t, EmitType*)> emit; 
-    
+
 public:
     
 	MapReduce ();
