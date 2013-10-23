@@ -111,6 +111,8 @@ bool MRInterResult::flushBuffer()
 		{
 			flush_wbuffer();
 		}
+
+		//std::cout << "k: " << key << " v: " << dump << std::endl;
 		
 		//memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), key.data(), key.size());
 		memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), &key, sizeof(uint64_t));

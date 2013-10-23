@@ -45,6 +45,7 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									size_t preload_buffer_size,
 									size_t flush_buffer_size):
 	nmerge(0),
+	nbatches(0),
 	m_MR(MR),
 	m_preload_buffer_size(preload_buffer_size),
 	m_flush_buffer_size(flush_buffer_size),
@@ -96,6 +97,7 @@ void MRNodeDispatcher::onAddResult(MRInterResultPtr inter_result)
 	inter_result->waitFlushFinished();
 	//std::cout << "MRNodeDispatcher::onAddResultk inter_results.lock() ";
 	inter_results.lock();
+	nbatches++;
 	//std::cout << "OK\n";
 	//std::cout << "MRNodeDispatcher::onAddResult inter_result->waitFlushFinished() ";
 	//inter_result->waitFlushFinished();
@@ -135,6 +137,8 @@ void MRNodeDispatcher::onGotResult(MRInterResultPtr inter_result)
 	}*/
 	
 	inter_results.unlock();
+	
+	//std::cout << "NBATCHES" << nbatches.load() << std::endl;
 }
 
 void MRNodeDispatcher::noMoreInter()
@@ -160,12 +164,19 @@ void MRNodeDispatcher::noMoreInter()
 	}
 	
 	inter_results.unlock();
+	
+	if (nbatches.load()==1 && nomore_inter)
+	{
+		onReducesFinished();
+	}
+	
 }
 
 void MRNodeDispatcher::noMoreBatches()
 {
 	std::cout << "no more batches\n";
 	batch_dispatcher->noMore();
+	
 }
 
 void MRNodeDispatcher::addBatch(BatchAccessor* batch)

@@ -31,7 +31,9 @@ BatchMapper::BatchMapper(BatchAccessor* batch,
 	while (!m_batch->end())
 	{
 		m_stats.nmaps++;
-		m_MR->map(m_batch->getNextInput());
+		InputType *input = m_batch->getNextInput();
+		if (input!=NULL)
+		m_MR->map(input);
 	}
 	onBatchFinished(m_emit_hash, batchid);
 }

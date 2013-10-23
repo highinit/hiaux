@@ -206,11 +206,25 @@ public:
 class hThread;
 
 //boost::lockfree::queue
-typedef boost::shared_ptr<boost::lockfree::queue< boost::function<void()>* > > CallBackQueue; 
-typedef boost::shared_ptr<boost::lockfree::queue<hThread*> > ThreadQueue;
+//typedef boost::shared_ptr<boost::lockfree::queue< boost::function<void()>* > > CallBackQueue; 
+//typedef boost::shared_ptr<boost::lockfree::queue<hThread*> > ThreadQueue;
 
-//typedef boost::shared_ptr<std::queue< boost::function<void()> > > CallBackQueue; 
-//typedef boost::shared_ptr<std::queue<hThread*> > ThreadQueue;
+class CallBackQueue: public std::queue< boost::function<void()>* >,
+		public hLock
+{
+
+};
+
+typedef boost::shared_ptr<CallBackQueue> CallBackQueuePtr;
+
+class ThreadQueue: public std::queue<hThread*>,
+		public hLock
+{
+
+};
+
+typedef boost::shared_ptr<ThreadQueue> ThreadQueuePtr;
+
 /*
 class CallBackQueue: public boost::shared_ptr<std::queue<boost::function<void()>*> >,
 		public hLock
@@ -226,10 +240,10 @@ class ThreadQueue: public boost::shared_ptr<std::queue<hThread*> >,
 
 class hThread
 {
-    CallBackQueue task_queue;
-    CallBackQueue local_task_queue;
+    CallBackQueuePtr task_queue;
+    CallBackQueuePtr local_task_queue;
     
-    ThreadQueue waiting_threads;
+    ThreadQueuePtr waiting_threads;
     
     pthread_t *m_th;
     
@@ -237,7 +251,7 @@ public:
     
 	hCondWaiter local_queue_notempty;
 	
-    hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th);
+    hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th);
     void run();
     
     bool queueNotEmpty();
@@ -249,10 +263,10 @@ public:
 
 class hThreadPool
 {
-    CallBackQueue task_queue;
+    CallBackQueuePtr task_queue;
     
     hLock waiting_threads_lock;
-    ThreadQueue waiting_threads;
+    ThreadQueuePtr waiting_threads;
     std::vector<hThread*> threads;
     size_t nthreads;
 public:

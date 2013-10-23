@@ -17,11 +17,11 @@
 
 #include "threadpool.h"
 
-hThread::hThread(CallBackQueue task_queue, ThreadQueue waiting_threads, pthread_t *th):
+hThread::hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th):
 	local_queue_notempty(boost::bind(&hThread::queueNotEmpty, this))
 {
     this->waiting_threads = waiting_threads;
-    this->local_task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(100) );
+    this->local_task_queue = CallBackQueuePtr (new CallBackQueue);//new boost::lockfree::queue< boost::function<void()>* >(100) );
     this->task_queue = task_queue;
 	m_th = th;
 }
@@ -32,19 +32,27 @@ void hThread::run()
     while (1)
     {
         // local
-        while (local_task_queue->pop(f))
+		local_task_queue->lock();
+        while (!local_task_queue->empty())
         {
-            (*f)();
+			f = local_task_queue->front();
+			(*f)();
+			local_task_queue->pop();
             delete f;
         }
-        
+        local_task_queue->unlock();
+		
         // global
-        while (task_queue->pop(f))
+        task_queue->lock();
+		while (!task_queue->empty())
         {
-            (*f)();
+			f = task_queue->front();
+			(*f)();
+			task_queue->pop();
             delete f;
         }    
-        
+        task_queue->unlock();
+		
         waiting_threads->push(this);
         local_queue_notempty.wait();     
     }
@@ -52,12 +60,17 @@ void hThread::run()
 
 bool hThread::queueNotEmpty()
 {
-    return !local_task_queue->empty();
+	local_task_queue->lock();
+    bool notempty = !local_task_queue->empty();
+	local_task_queue->unlock();
+	return notempty;
 }
 
 void hThread::addTask(boost::function<void()> *f)
 {
+	local_task_queue->lock();
     local_task_queue->push(f);
+	local_task_queue->unlock();
 }
 
 void hThread::kick()
@@ -74,16 +87,21 @@ void hThread::join()
 hThreadPool::hThreadPool(int nthreads)
 {
     this->nthreads = nthreads;
-    this->task_queue = CallBackQueue (new boost::lockfree::queue< boost::function<void()>* >(100000));
-    this->waiting_threads = ThreadQueue (new boost::lockfree::queue<hThread*>(100000));
+    this->task_queue = CallBackQueuePtr (new CallBackQueue);//new boost::lockfree::queue< boost::function<void()>* >(100000));
+    this->waiting_threads = ThreadQueuePtr (new ThreadQueue);//new boost::lockfree::queue<hThread*>(100000));
 }
 
 void hThreadPool::addTask(boost::function<void()> *f)
 {
     hThread *thread;
 
-    if (waiting_threads->pop(thread))
+	waiting_threads->lock();
+    if (!waiting_threads->empty())
     {
+		hThread *thread = waiting_threads->front();
+		waiting_threads->pop();
+		waiting_threads->unlock();
+		
 		thread->local_queue_notempty.lock();
         thread->addTask(f);
         thread->kick();
@@ -91,7 +109,9 @@ void hThreadPool::addTask(boost::function<void()> *f)
     }
     else
     {
+		task_queue->lock();
         task_queue->push(f);
+		task_queue->unlock();
     }  
 }
 
