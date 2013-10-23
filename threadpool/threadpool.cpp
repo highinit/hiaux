@@ -36,9 +36,12 @@ void hThread::run()
         while (!local_task_queue->empty())
         {
 			f = local_task_queue->front();
-			(*f)();
 			local_task_queue->pop();
+			local_task_queue->unlock();
+			
+			(*f)();
             delete f;
+			local_task_queue->lock();
         }
         local_task_queue->unlock();
 		
@@ -47,13 +50,18 @@ void hThread::run()
 		while (!task_queue->empty())
         {
 			f = task_queue->front();
-			(*f)();
 			task_queue->pop();
+			task_queue->unlock();
+			
+			(*f)();
             delete f;
+			task_queue->lock();
         }    
         task_queue->unlock();
 		
+		waiting_threads->lock();
         waiting_threads->push(this);
+		waiting_threads->unlock();
         local_queue_notempty.wait();     
     }
 }
@@ -109,6 +117,8 @@ void hThreadPool::addTask(boost::function<void()> *f)
     }
     else
     {
+		waiting_threads->unlock();
+		
 		task_queue->lock();
         task_queue->push(f);
 		task_queue->unlock();

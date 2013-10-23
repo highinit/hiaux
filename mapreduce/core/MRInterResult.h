@@ -9,6 +9,11 @@
 typedef std::vector<uint64_t> Int64Vec;
 typedef boost::shared_ptr< std::vector<uint64_t> > Int64VecPtr;
 
+class WriteQueue: public std::queue< std::pair<uint64_t, std::string> >,
+		public hLock
+{
+};
+
 #define IR_WRITING 0
 #define IR_READING 1
 
@@ -38,7 +43,8 @@ class MRInterResult
 	
 	// key / dump
 	//std::queue< std::pair<int64_t, std::string> > write_queue;
-	boost::lockfree::queue< std::pair<KeyType, std::string>* > write_queue;
+	//boost::lockfree::queue< std::pair<KeyType, std::string>* > write_queue;
+	WriteQueue write_queue;
 	uint8_t *wbuffer;
 	size_t m_wbuffer_size; // offset in wbuffer
 	size_t m_wbuffer_cap;

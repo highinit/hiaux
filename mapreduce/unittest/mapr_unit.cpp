@@ -370,14 +370,14 @@ void testNodeDispatcherFinished()
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
-	hThreadPool *pool = new hThreadPool(4);
+	hThreadPool *pool = new hThreadPool(8);
 	pool->run();
 	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
 											new MapReduceInvertIndex,
 											m_path,
 											boost::bind(&testNodeDispatcherFinished),
-											2,
-											2);
+											6,
+											6);
 	
 	std::vector<Document*> docs;
 	

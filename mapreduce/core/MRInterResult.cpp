@@ -22,8 +22,7 @@ MRInterResult::MRInterResult(std::string filename,
 	flush_finish_lock(boost::bind(&MRInterResult::FlushFinished, this)),
 	mode(IR_WRITING),
 	m_filename(filename),
-	w_offset(0),
-	write_queue(100000)
+	w_offset(0)
 {
 	wbuffer = new uint8_t [wbuffer_cap];
 	m_wbuffer_size = 0;
@@ -88,18 +87,21 @@ bool MRInterResult::flushBuffer()
 {
 	while (!write_queue.empty())
 	{				
-		std::pair<uint64_t, std::string>* kv;
-		if (!write_queue.pop(kv))
+		if (write_queue.empty())
 		{
 			break;
 		}
-
+		
+		write_queue.lock();
+		std::pair<uint64_t, std::string> kv = write_queue.front();
+		write_queue.pop();
+		write_queue.unlock();
+				
 		//KeyType key = kv->first;
-		uint64_t key = kv->first;
-		std::string dump = kv->second;
+		uint64_t key = kv.first;
+		std::string dump = kv.second;
 		uint64_t size = dump.size();
 
-		delete kv;
 
 		/*
 		if (sizeof(uint64_t)+key.size()+size > m_wbuffer_cap-m_wbuffer_size)
@@ -174,7 +176,9 @@ void MRInterResult::addEmit(KeyType key, EmitType *emit)
 	std::string dump = m_MR->dumpEmit(emit);
 	delete emit;
 
-	write_queue.push(new std::pair<KeyType, std::string>(key, dump));
+	write_queue.lock();
+	write_queue.push(std::pair<KeyType, std::string>(key, dump));
+	write_queue.unlock();
 }
 
 EmitType *MRInterResult::restore(off_t offset)
