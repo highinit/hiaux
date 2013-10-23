@@ -19,7 +19,7 @@
 #define  THREADPOOL_H
 
 #include <boost/shared_ptr.hpp>
-#include <boost/lockfree/queue.hpp>
+//#include <boost/lockfree/queue.hpp>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <vector>
