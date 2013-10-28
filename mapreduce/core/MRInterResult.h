@@ -28,7 +28,7 @@ class MRInterResult
 
 	MapReduce *m_MR;
 	
-	InterResultLoader *m_reader;
+	InterResultLoaderPtr m_reader;
 	
 	// key, offset
 	FileMapPtr m_file_map;

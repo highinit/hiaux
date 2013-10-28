@@ -55,7 +55,7 @@ class MRBatchDispatcher
 	TaskLauncher &m_flush_launcher;
 
 	std::atomic<size_t> m_nbatches;
-
+	std::atomic<bool> m_nomore;
 	std::string m_path;
 
 	boost::function<void(MRInterResultPtr)> m_onGotResult;
@@ -76,6 +76,7 @@ public:
 	void addBatch(BatchAccessor* batch);
 	void noMore();
 
+	float getFinishPercentage();
 	MRStats getStats();
 };
 

@@ -14,6 +14,8 @@
 
 #include <boost/bind.hpp>
 
+#include <iomanip>
+
 #include "../../threadpool/threadpool.h"
 
 void MaprTests::testInvLineDumper()
@@ -260,6 +262,9 @@ void MaprTests::testMRInterMerger()
 	inter1->waitFlushFinished();
 	inter2->waitFlushFinished();
 	
+	inter1->waitInitReading();
+	inter2->waitInitReading();
+	
 	//inter1->setModeReading();
 	//inter2->setModeReading();
 	
@@ -367,6 +372,14 @@ void testNodeDispatcherFinished()
 	
 }
 
+void showProgress(MRProgressBar bar)
+{
+	
+	std::cout << "PROGRESS: " << bar.map_p << " REDUCE: " 
+			<< setiosflags(std::ios::fixed) <<
+			std::setprecision(1) << bar.red_p << std::endl;
+}
+
 void MaprTests::testNodeDispatcher()
 {
 	std::cout << "MaprTests::testNodeDispatcher\n";
@@ -379,10 +392,12 @@ void MaprTests::testNodeDispatcher()
 											6,
 											6);
 	
+	node->setProgressBar(boost::bind(&showProgress, _1));
+	
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 1000;
+	const int input_size = 1000000;
 //	int nemits = 4000000; //4000000
 	
 	/*
@@ -403,7 +418,7 @@ void MaprTests::testNodeDispatcher()
 	{
 		Document *doc = new Document(i, i+1, i);
 		docs.push_back( doc );
-		if (i%(input_size/20) ==0)
+		if (i%(input_size/2000) ==0)
 		{
 			DocumentBatch *batch = new DocumentBatch(docs);
 			docs.clear();

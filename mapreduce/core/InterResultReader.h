@@ -27,4 +27,6 @@ public:
 	void deleteFile();
 };
 
+typedef boost::shared_ptr<InterResultLoader> InterResultLoaderPtr; 
+
 #endif

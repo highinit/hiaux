@@ -1,5 +1,6 @@
 #include "MRNodeDispatcher.h"
 #include "MRInterMerger.h"
+#include <iomanip>
 
 void MRNodeDispatcher::onPreloadFinished()
 {
@@ -23,7 +24,7 @@ void MRNodeDispatcher::onReducesFinished()
 	inter_results.unlock();
 	
 	result->waitInitReading();
-	
+	CallProgressBar();
 	//std::cout << "MRNodeDispatcher::onReducesFinished result->waitFlushFinished ";
 	//result->waitFlushFinished();
 	//std::cout << "OK\n";
@@ -46,6 +47,8 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									size_t nflush_threads,
 									size_t preload_buffer_size,
 									size_t flush_buffer_size):
+	progress_bar_updated_ts(0),
+	show_progress(1),
 	nmerge(0),
 	nbatches(0),
 	m_MR(MR),
@@ -71,6 +74,55 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 	
 }
 
+void MRNodeDispatcher::setProgressBar(boost::function<void(MRProgressBar)> showProgress)
+{
+	m_showProgress = showProgress;
+	show_progress = 1;
+}
+
+void MRNodeDispatcher::CallProgressBar()
+{
+	if (!show_progress) return;
+	uint64_t now = time(0);
+	
+	if (now-progress_bar_updated_ts < 1)
+		return;
+	
+	progress_bar_updated_ts = now;
+	
+	float red_p = 0;
+	
+	uint32_t ngens = log2((double)nbatches);
+	float ngen = 0;
+	float mer_in_gen = (float)nbatches;
+	float mer_before = 0;
+	size_t nmerges = nmerge.load();
+	while (mer_in_gen>=1 && nmerges > mer_before)
+	{
+		ngen++;
+		mer_in_gen /= 2;
+		mer_before += mer_in_gen;
+	}
+	
+	MRProgressBar bar;
+	float map_p = batch_dispatcher->getFinishPercentage();
+	if (map_p<=99.999f)
+	{
+		bar.red_p = 0;
+	}
+	else
+	{
+		bar.red_p = (100* (ngen-1 + (nmerges-mer_before+mer_in_gen)/mer_in_gen) / ngens);
+	}
+	if (bar.red_p > 100) 
+		bar.red_p = 100;
+	
+	m_showProgress(bar);
+	
+	//std::cout << "REDUCE PROGRESS: " << setiosflags(std::ios::fixed) <<
+	//		std::setprecision(1) << bar.red_p << std::endl;
+}
+
 bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 {
 	char filename[50];
@@ -92,12 +144,15 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 	b->deleteFile();
 	result->waitFlushFinished();
 	onGotResult(result);
+	
+	CallProgressBar();
 	return 0;
 }
 
 void MRNodeDispatcher::onAddResult(MRInterResultPtr inter_result)
 {
 	inter_result->waitFlushFinished();
+	CallProgressBar();
 	//std::cout << "MRNodeDispatcher::onAddResultk inter_results.lock() ";
 	inter_results.lock();
 	nbatches++;

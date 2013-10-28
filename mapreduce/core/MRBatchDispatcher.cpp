@@ -81,7 +81,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	EmitHash::iterator it = emit_hash->begin();
 	EmitHash::iterator end = emit_hash->end();
 
-	std::cout << "batch finished. flushing \n";
+	//std::cout << "batch finished. flushing \n";
 	char filename[50];
 	sprintf(filename, "batch%d", batchid);
 	MRInterResultPtr inter(new MRInterResult(m_path+filename, m_MR, m_flush_launcher));
@@ -114,16 +114,17 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
 		m_pool(pool),
 		m_flush_launcher(flush_launcher),
 		m_nbatches(0),
-		m_path(path)
+		m_path(path),
+		m_nomore(false)
 {
 
 }
 
 void MRBatchDispatcher::addBatch(BatchAccessor* batch)
 {
-	std::cout << "add batch to scheduler\n";
+	//std::cout << "add batch to scheduler\n";
 	int batchid = m_nbatches.fetch_add(1);
-	std::cout << "NEW BATCH: " << batchid << std::endl;
+	//std::cout << "NEW BATCH: " << batchid << std::endl;
 	m_batch_tasks_launcher.addTask(new boost::function<bool()>(
 		boost::bind(&MRBatchDispatcher::mapBatchTask, this, batch, batchid)));
 }
@@ -131,6 +132,19 @@ void MRBatchDispatcher::addBatch(BatchAccessor* batch)
 void MRBatchDispatcher::noMore()
 {
 	m_batch_tasks_launcher.setNoMoreTasks();
+	m_nomore = true;
+}
+
+float MRBatchDispatcher::getFinishPercentage()
+{
+	if (m_nomore.load())
+	{
+		return 100.0f * m_batch_tasks_launcher.countFinished()/float(m_nbatches.load());
+	}
+	else
+	{
+		return 0.0f;
+	}
 }
 
 MRStats MRBatchDispatcher::getStats()

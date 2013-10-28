@@ -9,6 +9,23 @@ class InterResultQueue: public std::queue<MRInterResultPtr>, public hLock
 	
 };
 
+class MRProgressBar
+{
+public:
+	float map_p;
+	float red_p;
+
+	MRProgressBar()
+	{
+	
+	}
+	MRProgressBar(float m, float p):
+		map_p(m),
+		red_p(p)
+	{
+	}
+};
+
 class MRNodeDispatcher
 {
 	boost::shared_ptr<MRBatchDispatcher> batch_dispatcher;
@@ -39,6 +56,10 @@ class MRNodeDispatcher
 	std::string m_path;
 	
 	boost::function<void()> m_onFinished;
+	uint64_t progress_bar_updated_ts;
+	bool show_progress;
+	boost::function<void(MRProgressBar)> m_showProgress;
+	void CallProgressBar();
 public:
 
 	void onPreloadFinished();
@@ -55,6 +76,8 @@ public:
 					size_t nflush_threads = 1,
 					size_t preload_buffer_size = 500000,
 					size_t flush_buffer_size = 5000000);
+	
+	void setProgressBar(boost::function<void(MRProgressBar)> showProgress);
 	
 	bool reduceTask(MRInterResultPtr a, MRInterResultPtr b);
 	void onAddResult(MRInterResultPtr inter_result); // from batcher

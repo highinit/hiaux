@@ -36,7 +36,6 @@ MRInterResult::MRInterResult(std::string filename,
 
 MRInterResult::~MRInterResult()
 {
-	delete m_reader;
 //	delete [] wbuffer;
 //	m_file_map->clear();
 	m_emit_cache0.clear();
@@ -136,7 +135,7 @@ bool MRInterResult::flushBuffer()
 	if (no_more_writes.load())
 	{
 		flush_wbuffer();
-		std::cout << "no more writes: " << m_filename.c_str() << std::endl;
+		//std::cout << "no more writes: " << m_filename.c_str() << std::endl;
 		mode = IR_READING;
 		::close(m_fd);
 		delete [] wbuffer;
@@ -157,14 +156,14 @@ bool MRInterResult::flushBuffer()
 void MRInterResult::waitFlushFinished()
 {
 	no_more_writes = 1;
-	std::cout << "waiting flush finished\n";
+	//std::cout << "waiting flush finished\n";
 	flush_finish_lock.wait();
-	std::cout << "flush finished\n";
+	//std::cout << "flush finished\n";
 }
 
 void MRInterResult::waitInitReading()
 {
-	m_reader = new InterResultLoader(m_filename, m_MR);
+	m_reader.reset(new InterResultLoader(m_filename, m_MR));
 	m_file_map = m_reader->getFileMap();
 }
 
