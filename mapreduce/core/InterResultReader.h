@@ -3,6 +3,9 @@
 
 #include "mapreduce.h"
 
+typedef std::unordered_map<uint64_t, uint64_t> FileMap;
+typedef boost::shared_ptr<FileMap> FileMapPtr;
+
 class InterResultLoader
 {
 	int m_fd; 
@@ -17,6 +20,7 @@ public:
 	InterResultLoader(std::string filename, MapReduce *MR);
 	~InterResultLoader();
 	
+	FileMapPtr getFileMap();
 	EmitType *readEmit(off_t offset);
 };
 

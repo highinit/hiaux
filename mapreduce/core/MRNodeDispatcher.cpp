@@ -22,6 +22,8 @@ void MRNodeDispatcher::onReducesFinished()
 	inter_results.pop();
 	inter_results.unlock();
 	
+	result->waitInitReading();
+	
 	//std::cout << "MRNodeDispatcher::onReducesFinished result->waitFlushFinished ";
 	//result->waitFlushFinished();
 	//std::cout << "OK\n";
@@ -78,8 +80,8 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 												flush_tasks_launcher,
 												m_flush_buffer_size));
 	
-	//a->waitFlushFinished();
-	//b->waitFlushFinished();
+	a->waitInitReading();
+	b->waitInitReading();
 	m_stats += MRInterMerger::merge(preload_tasks_launcher,
 									a,
 									b,

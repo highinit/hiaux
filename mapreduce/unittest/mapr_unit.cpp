@@ -382,7 +382,7 @@ void MaprTests::testNodeDispatcher()
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 100;
+	const int input_size = 1000;
 //	int nemits = 4000000; //4000000
 	
 	/*

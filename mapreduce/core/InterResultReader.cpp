@@ -27,6 +27,25 @@ InterResultLoader::~InterResultLoader()
 	close(m_fd);
 }
 
+FileMapPtr InterResultLoader::getFileMap()
+{
+	FileMapPtr filemap(new FileMap);
+	uint8_t *data = p;
+	uint64_t off = 0;
+	
+	while (off < m_len)
+	{
+		uint64_t key = *((uint64_t*)data);
+		
+		filemap->insert(std::pair<uint64_t, uint64_t>(key, off));
+		
+		uint64_t size = *((uint64_t*)(data+sizeof(uint64_t)));
+		off += 2*sizeof(uint64_t)+size;
+		data += 2*sizeof(uint64_t)+size;
+	}
+	return filemap;
+}
+
 EmitType *InterResultLoader::readEmit(off_t offset)
 {
 	uint8_t *data = p+offset;

@@ -37,8 +37,8 @@ MRInterResult::MRInterResult(std::string filename,
 MRInterResult::~MRInterResult()
 {
 	delete m_reader;
-	delete [] wbuffer;
-	m_file_map.clear();
+//	delete [] wbuffer;
+//	m_file_map->clear();
 	m_emit_cache0.clear();
 	m_emit_cache1.clear();
 }
@@ -124,7 +124,7 @@ bool MRInterResult::flushBuffer()
 		memcpy((void*)((uint8_t*)wbuffer+m_wbuffer_size), dump.data(), size);
 		m_wbuffer_size += size;
 
-		m_file_map.insert(std::pair<uint64_t, uint64_t>(key, w_offset));
+		//m_file_map.insert(std::pair<uint64_t, uint64_t>(key, w_offset));
 		w_offset +=  sizeof(uint64_t)+sizeof(uint64_t)+size;
 	}
 	
@@ -134,8 +134,10 @@ bool MRInterResult::flushBuffer()
 		std::cout << "no more writes: " << m_filename.c_str() << std::endl;
 		mode = IR_READING;
 		::close(m_fd);
-		m_reader = new InterResultLoader(m_filename, m_MR);
+		delete [] wbuffer;
 
+		//m_file_map.clear();
+		
 		flush_finish_lock.lock();
 		flush_finished = 1;
 		flush_finish_lock.kick();
@@ -153,6 +155,12 @@ void MRInterResult::waitFlushFinished()
 	std::cout << "waiting flush finished\n";
 	flush_finish_lock.wait();
 	std::cout << "flush finished\n";
+}
+
+void MRInterResult::waitInitReading()
+{
+	m_reader = new InterResultLoader(m_filename, m_MR);
+	m_file_map = m_reader->getFileMap();
 }
 
 bool MRInterResult::checkCacheReady(bool cid)
@@ -212,8 +220,8 @@ void MRInterResult::preload(uint64_t key, bool cid)
 	{
 		throw "MRInterResult::preload error mode!=IR_READING";
 	}
-	auto it = m_file_map.find(key);
-	if (it==m_file_map.end())
+	auto it = m_file_map->find(key);
+	if (it==m_file_map->end())
 	{
 		return;
 	}
@@ -318,8 +326,8 @@ void MRInterResult::setCacheReady(bool cid)
 Int64VecPtr MRInterResult::getKeys()
 {
 	Int64VecPtr keys( new std::vector<uint64_t> );
-	auto filemap_it = m_file_map.begin();
-	auto filemap_end = m_file_map.end();
+	auto filemap_it = m_file_map->begin();
+	auto filemap_end = m_file_map->end();
 	
 	while (filemap_it != filemap_end)
 	{

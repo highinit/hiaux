@@ -31,7 +31,7 @@ class MRInterResult
 	InterResultLoader *m_reader;
 	
 	// key, offset
-	std::unordered_map<KeyType, uint64_t> m_file_map;
+	FileMapPtr m_file_map;
 	
 	std::unordered_map<KeyType, EmitType*> m_emit_cache0;
 	std::unordered_map<KeyType, EmitType*> m_emit_cache1;
@@ -66,7 +66,7 @@ public:
 	MRInterResult(std::string filename,
 				MapReduce *MR,
 				TaskLauncher &flush_launcher,
-				const size_t wbuffer_cap = 50000000);
+				const size_t wbuffer_cap = 5000000);
 	
 	~MRInterResult();
 	
@@ -79,6 +79,7 @@ public:
 	// add to m_file_map and dump. not thread safe with itself and other methods
 	void addEmit(uint64_t key, EmitType *emitvec);
 	void waitFlushFinished();
+	void waitInitReading();
 	Int64VecPtr getKeys();
 	
 	// preload & getEmit thread safe when cid's are different
