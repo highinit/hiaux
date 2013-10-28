@@ -43,6 +43,11 @@ MRInterResult::~MRInterResult()
 	m_emit_cache1.clear();
 }
 
+void MRInterResult::deleteFile()
+{
+	m_reader->deleteFile();
+}
+
 bool MRInterResult::FlushFinished()
 {
 	return flush_finished;

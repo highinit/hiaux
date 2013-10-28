@@ -403,7 +403,7 @@ void MaprTests::testNodeDispatcher()
 	{
 		Document *doc = new Document(i, i+1, i);
 		docs.push_back( doc );
-		if (i%(input_size/10) ==0)
+		if (i%(input_size/20) ==0)
 		{
 			DocumentBatch *batch = new DocumentBatch(docs);
 			docs.clear();

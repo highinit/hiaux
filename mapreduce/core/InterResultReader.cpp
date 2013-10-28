@@ -12,7 +12,9 @@
 #include <unistd.h>
 
 InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
-	m_MR(MR)
+	m_MR(MR),
+	closed(0),
+	m_filename(filename)
 {
 	m_fd = open(filename.c_str(),  O_RDONLY,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -23,8 +25,20 @@ InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
 
 InterResultLoader::~InterResultLoader()
 {
+	if (!closed)
+	{
+		munmap(p, m_len);
+		close(m_fd);
+	}
+}
+
+void InterResultLoader::deleteFile()
+{
 	munmap(p, m_len);
 	close(m_fd);
+	unlink(m_filename.c_str());
+	
+	closed = 1;
 }
 
 FileMapPtr InterResultLoader::getFileMap()

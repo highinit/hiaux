@@ -88,6 +88,7 @@ public:
 	// get emit from cache
 	EmitType* getEmit(uint64_t key, bool cid);
 	
+	void deleteFile();
 	void clearCache(bool cid);
 	void setCacheReady(bool cid);
 };

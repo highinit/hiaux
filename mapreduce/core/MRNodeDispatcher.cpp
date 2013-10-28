@@ -88,7 +88,8 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 									result,
 									m_MR,
 									m_preload_buffer_size);
-	
+	a->deleteFile();
+	b->deleteFile();
 	result->waitFlushFinished();
 	onGotResult(result);
 	return 0;

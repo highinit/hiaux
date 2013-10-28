@@ -12,6 +12,8 @@ class InterResultLoader
 	size_t m_len;
 	uint8_t *p;
 	MapReduce *m_MR;
+	bool closed;
+	std::string m_filename;
 	
 	InterResultLoader();
 	InterResultLoader(InterResultLoader&);
@@ -22,6 +24,7 @@ public:
 	
 	FileMapPtr getFileMap();
 	EmitType *readEmit(off_t offset);
+	void deleteFile();
 };
 
 #endif
