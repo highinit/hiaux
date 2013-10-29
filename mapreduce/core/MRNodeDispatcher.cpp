@@ -48,7 +48,7 @@ MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									size_t preload_buffer_size,
 									size_t flush_buffer_size):
 	progress_bar_updated_ts(0),
-	show_progress(1),
+	show_progress(0),
 	nmerge(0),
 	nbatches(0),
 	m_MR(MR),
