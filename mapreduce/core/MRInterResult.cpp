@@ -89,14 +89,15 @@ void MRInterResult::flush_wbuffer()
 
 bool MRInterResult::flushBuffer()
 {
+	write_queue.lock();
 	while (!write_queue.empty())
 	{				
-		if (write_queue.empty())
+		/*if (write_queue.empty())
 		{
 			break;
-		}
+		}*/
 		
-		write_queue.lock();
+		
 		std::pair<uint64_t, std::string> kv = write_queue.front();
 		write_queue.pop();
 		write_queue.unlock();
@@ -130,6 +131,7 @@ bool MRInterResult::flushBuffer()
 
 		//m_file_map.insert(std::pair<uint64_t, uint64_t>(key, w_offset));
 		w_offset +=  sizeof(uint64_t)+sizeof(uint64_t)+size;
+		write_queue.lock();
 	}
 	
 	if (no_more_writes.load())
@@ -146,10 +148,12 @@ bool MRInterResult::flushBuffer()
 		flush_finished = 1;
 		flush_finish_lock.kick();
 		flush_finish_lock.unlock();
-
+		
+		write_queue.unlock();
 		return 0; // dont repeat
 	}
 
+	write_queue.unlock();
 	return 1; // repeat
 }
 
