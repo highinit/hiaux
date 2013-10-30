@@ -397,7 +397,7 @@ void MaprTests::testNodeDispatcher()
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 1000000;
+	const int input_size = 100000;
 //	int nemits = 4000000; //4000000
 	
 	/*
@@ -414,11 +414,11 @@ void MaprTests::testNodeDispatcher()
 		}
 	}
 	 */
-	for (int i = 1; i<=input_size; i++)
+	for (int i = 0; i<=input_size; i++)
 	{
 		Document *doc = new Document(i, i+1, i);
 		docs.push_back( doc );
-		if (i%(input_size/2000) ==0)
+		if (i%(input_size/10) ==0)
 		{
 			DocumentBatch *batch = new DocumentBatch(docs);
 			docs.clear();

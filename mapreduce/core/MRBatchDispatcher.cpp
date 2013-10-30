@@ -86,6 +86,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	sprintf(filename, "batch%d", batchid);
 	MRInterResultPtr inter(new MRInterResult(m_path+filename, m_MR, m_flush_launcher));
 
+	//std::cout << "adding emits\n";
 	while (it != end)
 	{
 		inter->addEmit(it->first, it->second);
@@ -93,7 +94,7 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 	}
 
 	emit_hash->clear();
-	//std::cout << "MRBatchDispatcher::onBatchFinished inter->waitFlushFinished ";
+	//std::cout << "MRBatchDispatcher::onBatchFinished\n";
 	
 	//std::cout << "OK\n";
 	m_onGotResult(inter);

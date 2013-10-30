@@ -11,6 +11,8 @@
 #include <sys/uio.h> 
 #include <unistd.h>
 
+#include "../../common/hexception.h"
+
 InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
 	m_MR(MR),
 	closed(0),
@@ -18,25 +20,63 @@ InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
 {
 	m_fd = open(filename.c_str(),  O_RDONLY,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	if (m_fd == -1)
+	{
+		throw hExeption("InterResultLoader:: open "+std::string(strerror(errno)));
+	}
+	
 	m_len = lseek(m_fd, 0, SEEK_END);
-	lseek(m_fd, 0, SEEK_SET);
+	if (m_len == -1)
+	{
+		throw hExeption("InterResultLoader:: lseek "+std::string(strerror(errno)));
+	}
+	
+	if (lseek(m_fd, 0, SEEK_SET) == -1)
+	{
+		throw hExeption("InterResultLoader:: lseek "+std::string(strerror(errno)));
+	}
+	
 	p = (uint8_t *)mmap(0, m_len, PROT_READ, MAP_SHARED, m_fd, 0);
+	if ((void*)p == (void*)-1)
+	{
+		throw hExeption("InterResultLoader:: mmap "+std::string(strerror(errno)));
+	}
 }
 
 InterResultLoader::~InterResultLoader()
 {
 	if (!closed)
 	{
-		munmap(p, m_len);
-		close(m_fd);
+		if (munmap(p, m_len) == -1)
+		{
+			throw hExeption("InterResultLoader::~InterResultLoader:: munmap "
+					+std::string(strerror(errno)));
+		}
+		if (close(m_fd) == -1)
+		{
+			throw hExeption("InterResultLoader::~InterResultLoader:: close "
+					+std::string(strerror(errno)));
+		}
 	}
 }
 
 void InterResultLoader::deleteFile()
 {
-	munmap(p, m_len);
-	close(m_fd);
-	unlink(m_filename.c_str());
+	if (munmap(p, m_len) == -1)
+	{
+		throw hExeption("InterResultLoader::deleteFile:: munmap "+std::string(strerror(errno)));
+	}
+	
+	if (close(m_fd) == -1)
+	{
+		throw hExeption("InterResultLoader::deleteFile:: close "
+				+std::string(strerror(errno)));
+	}
+	
+	if (unlink(m_filename.c_str()) == -1)
+	{
+		throw hExeption("InterResultLoader::deleteFile:: unlink "+std::string(strerror(errno)));
+	}
 	
 	closed = 1;
 }
