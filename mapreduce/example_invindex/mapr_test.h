@@ -79,14 +79,6 @@ public:
 	virtual ~MapReduceInvertIndex() { } 
 };
 
-/*
-class InvertLineDumper : public EmitDumper
-{
-public:
-	virtual std::string dump(EmitType *emit);
-	virtual EmitType* restore(std::string dumped);
-};
-*/
 void onAllBatchesFinished();
 
 
