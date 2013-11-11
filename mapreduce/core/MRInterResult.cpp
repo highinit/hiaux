@@ -1,12 +1,12 @@
-#include "MRInterResult.h" 
+#include "MRInterResult.h"
 
 #include <sys/types.h>
 #include <dirent.h>
 
 #include <sys/uio.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/uio.h> 
+#include <sys/uio.h>
 #include <unistd.h>
 
 #include "../../common/hexception.h"

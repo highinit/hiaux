@@ -13,6 +13,7 @@ void MRNodeDispatcher::onFlushFinished()
 	std::cout << "MRNodeDispatcher::onFlushFinished \n";
 	exit(0);
 }
+
 void MRNodeDispatcher::onReducesFinished()
 {
 	std::cout << "REDUCING FINISHED\n";

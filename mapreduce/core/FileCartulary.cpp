@@ -4,9 +4,9 @@
 #include <dirent.h>
 
 #include <sys/uio.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/uio.h> 
+#include <sys/uio.h>
 #include <unistd.h>
 
 int ReadFileRent::getReadFile(int fileid)
@@ -57,7 +57,7 @@ int AppendFileDeposit::getAppendFile(int id)
 	}
 	else
 	{
-		int fd = open(m_filename_from_id(id).c_str(), O_WRONLY | O_CREAT | O_APPEND,   
+		int fd = open(m_filename_from_id(id).c_str(), O_WRONLY | O_CREAT | O_APPEND,
 					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		filecache.insert(std::pair<int, int>(id, fd));
 		return fd;

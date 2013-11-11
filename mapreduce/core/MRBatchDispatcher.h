@@ -29,19 +29,18 @@
 
 class BatchMapper
 {
-    MapReduce *m_MR;
-    std::shared_ptr<EmitHash> m_emit_hash;
-    BatchAccessor* m_batch;
-    MRStats m_stats;
+	MapReduce *m_MR;
+	std::shared_ptr<EmitHash> m_emit_hash;
+	BatchAccessor* m_batch;
+	MRStats m_stats;
 public:
-    
-    BatchMapper(BatchAccessor* batch,
-	    MapReduce *MR,
-	    boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
-		int batchid);
+	BatchMapper(BatchAccessor* batch,
+	MapReduce *MR,
+	boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
+	int batchid);
 	~BatchMapper();
-    void emit(uint64_t key, EmitType* emit_value);
-    MRStats getStats();
+	void emit(uint64_t key, EmitType* emit_value);
+	MRStats getStats();
 };
 
 class MRBatchDispatcher

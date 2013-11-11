@@ -21,9 +21,9 @@
 #include <dirent.h>
 
 #include <sys/uio.h>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
-#include <sys/uio.h> 
+#include <sys/uio.h>
 #include <unistd.h>
 
 MRStats::MRStats()
@@ -65,4 +65,3 @@ void MapReduce::setEmitF(boost::function<void(uint64_t, EmitType*)> emitf)
 {
     emit = emitf;
 }
-

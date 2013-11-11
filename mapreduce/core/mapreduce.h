@@ -31,13 +31,13 @@
 class MRStats
 {
 public:
-    std::atomic<size_t> nmaps;
-    std::atomic<size_t> nemits;
-    std::atomic<size_t> nreduces;
-    MRStats();
+	std::atomic<size_t> nmaps;
+	std::atomic<size_t> nemits;
+	std::atomic<size_t> nreduces;
+	MRStats();
 	MRStats(MRStats &a);
-    MRStats& operator+=(const MRStats &a);
-    MRStats& operator=(const MRStats &a);
+	MRStats& operator+=(const MRStats &a);
+	MRStats& operator=(const MRStats &a);
 };
 
 
@@ -88,7 +88,6 @@ protected:
 	boost::function<void(uint64_t, EmitType*)> emit; 
 
 public:
-    
 	MapReduce ();
 	void setEmitF(boost::function<void(uint64_t, EmitType*)> emitf);
 	

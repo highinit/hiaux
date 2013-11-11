@@ -18,10 +18,10 @@
 #include "MRBatchDispatcher.h"
 #include <atomic>
 
-BatchMapper::BatchMapper(BatchAccessor* batch, 
-                        MapReduce *MR,
-                        boost::function<void(std::shared_ptr<EmitHash>,int)> onBatchFinished,
-						int batchid)
+BatchMapper::BatchMapper(BatchAccessor* batch,
+			MapReduce *MR,
+			boost::function<void(std::shared_ptr<EmitHash>,int)> onBatchFinished,
+			int batchid)
 {
 	m_batch = batch;
 	m_MR = MR->create();
@@ -66,10 +66,11 @@ MRStats BatchMapper::getStats()
 bool MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 {
 	BatchMapper *mapper = new BatchMapper(batch, 
-									m_MR, 
-									boost::bind(&MRBatchDispatcher::onBatchFinished,
-												this,
-												_1, _2), batchid);
+						m_MR, 
+						boost::bind(&MRBatchDispatcher::onBatchFinished,
+								this,
+								_1, _2),
+						batchid);
 	m_stats += mapper->getStats();
 	delete mapper;
 	delete batch;
