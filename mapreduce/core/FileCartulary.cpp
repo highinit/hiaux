@@ -58,7 +58,7 @@ int AppendFileDeposit::getAppendFile(int id)
 	else
 	{
 		int fd = open(m_filename_from_id(id).c_str(), O_WRONLY | O_CREAT | O_APPEND,
-					   S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 		filecache.insert(std::pair<int, int>(id, fd));
 		return fd;
 	}
