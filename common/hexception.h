@@ -1,12 +1,16 @@
 #ifndef HEXCEPTION_H
 #define HEXCEPTION_H
 
-class hExeption : public std::exception
+#include <string>
+
+class hException : public std::exception
 {
 	std::string mess;
 	public:
-	hExeption(std::string _mess): mess(_mess) {}
-
+	hException(std::string _mess): mess(_mess) {}
+	
+	hException(const char* _mess): mess(std::string(_mess)) {}
+	
 	virtual const char* what() const noexcept
 	{
 		return mess.c_str();

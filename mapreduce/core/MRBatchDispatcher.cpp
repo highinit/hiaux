@@ -6,7 +6,7 @@
 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * BSD 2-Clause License for more details.
 
  * You should have received a copy of the BSD 2-Clause License
@@ -101,12 +101,12 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 }
 
 MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
-									hThreadPool *pool,
-									size_t nbatch_threads,
-									TaskLauncher &flush_launcher,
-									std::string path,
-									boost::function<void(MRInterResultPtr)> onGotResult,
-									boost::function<void()> onBatchingFinished):
+					hThreadPool *pool,
+					size_t nbatch_threads,
+					TaskLauncher &flush_launcher,
+					std::string path,
+					boost::function<void(MRInterResultPtr)> onGotResult,
+					boost::function<void()> onBatchingFinished):
 		m_batch_tasks_launcher(pool,
 							nbatch_threads,
 							onBatchingFinished),
@@ -140,7 +140,9 @@ float MRBatchDispatcher::getFinishPercentage()
 {
 	if (m_nomore.load())
 	{
-		return 100.0f * m_batch_tasks_launcher.countFinished()/float(m_nbatches.load());
+		if (m_nbatches.load()!=0)
+		    return 100.0f * m_batch_tasks_launcher.countFinished()/float(m_nbatches.load());
+		else return 0.0f;
 	}
 	else
 	{

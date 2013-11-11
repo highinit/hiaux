@@ -22,24 +22,24 @@ InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	if (m_fd == -1)
 	{
-		throw hExeption("InterResultLoader:: open "+std::string(strerror(errno)));
+		throw hException("InterResultLoader:: open "+std::string(strerror(errno)));
 	}
 	
 	m_len = lseek(m_fd, 0, SEEK_END);
 	if (m_len == -1)
 	{
-		throw hExeption("InterResultLoader:: lseek "+std::string(strerror(errno)));
+		throw hException("InterResultLoader:: lseek "+std::string(strerror(errno)));
 	}
 	
 	if (lseek(m_fd, 0, SEEK_SET) == -1)
 	{
-		throw hExeption("InterResultLoader:: lseek "+std::string(strerror(errno)));
+		throw hException("InterResultLoader:: lseek "+std::string(strerror(errno)));
 	}
 	
 	p = (uint8_t *)mmap(0, m_len, PROT_READ, MAP_SHARED, m_fd, 0);
 	if ((void*)p == (void*)-1)
 	{
-		throw hExeption("InterResultLoader:: mmap "+std::string(strerror(errno)));
+		throw hException("InterResultLoader:: mmap "+std::string(strerror(errno)));
 	}
 }
 
@@ -49,12 +49,12 @@ InterResultLoader::~InterResultLoader()
 	{
 		if (munmap(p, m_len) == -1)
 		{
-			throw hExeption("InterResultLoader::~InterResultLoader:: munmap "
+			throw hException("InterResultLoader::~InterResultLoader:: munmap "
 					+std::string(strerror(errno)));
 		}
 		if (close(m_fd) == -1)
 		{
-			throw hExeption("InterResultLoader::~InterResultLoader:: close "
+			throw hException("InterResultLoader::~InterResultLoader:: close "
 					+std::string(strerror(errno)));
 		}
 	}
@@ -64,18 +64,18 @@ void InterResultLoader::deleteFile()
 {
 	if (munmap(p, m_len) == -1)
 	{
-		throw hExeption("InterResultLoader::deleteFile:: munmap "+std::string(strerror(errno)));
+		throw hException("InterResultLoader::deleteFile:: munmap "+std::string(strerror(errno)));
 	}
 	
 	if (close(m_fd) == -1)
 	{
-		throw hExeption("InterResultLoader::deleteFile:: close "
+		throw hException("InterResultLoader::deleteFile:: close "
 				+std::string(strerror(errno)));
 	}
 	
 	if (unlink(m_filename.c_str()) == -1)
 	{
-		throw hExeption("InterResultLoader::deleteFile:: unlink "+std::string(strerror(errno)));
+		throw hException("InterResultLoader::deleteFile:: unlink "+std::string(strerror(errno)));
 	}
 	
 	closed = 1;

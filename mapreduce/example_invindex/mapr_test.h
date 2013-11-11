@@ -18,7 +18,7 @@ public:
 	
 	void fill();
 	Document(int b, int e, int id);
-	~Document();
+	virtual ~Document();
 };
 
 class DocumentBatch : public BatchAccessor
@@ -31,7 +31,7 @@ public:
 
 	virtual bool end();
 	virtual InputType* getNextInput();
-	~DocumentBatch();
+	virtual ~DocumentBatch();
 };
 
 class InvertLine : public EmitType
@@ -44,7 +44,7 @@ public:
 		
 	}
 	
-	~InvertLine()
+	virtual ~InvertLine()
 	{
 		pages.clear();
 	}
@@ -76,7 +76,7 @@ public:
 	
 	virtual MapReduce *create();
 	
-	~MapReduceInvertIndex() { } 
+	virtual ~MapReduceInvertIndex() { } 
 };
 
 /*

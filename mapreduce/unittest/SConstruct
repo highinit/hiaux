@@ -19,10 +19,10 @@ if platform[:5]=="linux":
 	_LINKFLAGS += ' -lprotobuf -lpthread'
 
 #FREEBSD9
-if platform[:8]=="freebsd9":
-	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++ '
-	_CXX += ' clang++'
-	_LINKFLAGS += ' -lprotobuf -lpthread -lc++ -lc++abi -lstdc++'
+if platform[:7]=="freebsd":
+	_CCFLAGS = '-g -std=c++11 -stdlib=libstdc++ -I/usr/local/include -I/usr/local/include/c++/v1'
+	_CXX = 'clang++'
+	_LINKFLAGS = ' -v -lpthread -lprotobuf  -lc++ -L../protobuf-2.5.0/src/.libs -Wl,-rpath=../protobuf-2.5.0/src/.libs'
 
 #MACOSX
 if platform=="darwin":

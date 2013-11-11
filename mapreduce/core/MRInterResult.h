@@ -91,6 +91,8 @@ public:
 	void deleteFile();
 	void clearCache(bool cid);
 	void setCacheReady(bool cid);
+	
+	std::string getFileName();
 };
 
 typedef boost::shared_ptr<MRInterResult> MRInterResultPtr;

@@ -55,7 +55,7 @@ class MRNodeDispatcher
 	
 	std::string m_path;
 	
-	boost::function<void()> m_onFinished;
+	boost::function<void(MRInterResultPtr)> m_onFinished;
 	uint64_t progress_bar_updated_ts;
 	bool show_progress;
 	boost::function<void(MRProgressBar)> m_showProgress;
@@ -69,7 +69,7 @@ public:
 	MRNodeDispatcher(hThreadPool *pool,
 					MapReduce *MR,
 					std::string path,
-					boost::function<void()> onFinished,
+					boost::function<void(MRInterResultPtr)> onFinished,
 					size_t nbatch_threads = 6,
 					size_t nreduce_threads = 6,
 					size_t npreaload_threads = 1,

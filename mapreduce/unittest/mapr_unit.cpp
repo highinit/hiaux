@@ -342,7 +342,7 @@ void MaprTests::testBatcher()
 	pool->join();
 }
 
-void testNodeDispatcherFinished()
+void testNodeDispatcherFinished(MRInterResultPtr result)
 {
 //	return;
 	std::cout << "testNodeDispatcherFinished\n";
@@ -375,8 +375,8 @@ void testNodeDispatcherFinished()
 void showProgress(MRProgressBar bar)
 {
 	
-	std::cout << "PROGRESS: " << bar.map_p << " REDUCE: " 
-			<< setiosflags(std::ios::fixed) <<
+	std::cout << "PROGRESS MAP: " << bar.map_p << " REDUCE: "
+			<< std::setiosflags(std::ios::fixed) <<
 			std::setprecision(1) << bar.red_p << std::endl;
 }
 
@@ -388,7 +388,7 @@ void MaprTests::testNodeDispatcher()
 	MRNodeDispatcher *node = new MRNodeDispatcher(pool, 
 											new MapReduceInvertIndex,
 											m_path,
-											boost::bind(&testNodeDispatcherFinished),
+											boost::bind(&testNodeDispatcherFinished, _1),
 											6,
 											6);
 	
@@ -397,7 +397,7 @@ void MaprTests::testNodeDispatcher()
 	std::vector<Document*> docs;
 	
 	// keys: 4000000
-	const int input_size = 100000;
+	const int input_size = 1000000;
 //	int nemits = 4000000; //4000000
 	
 	/*
@@ -418,7 +418,7 @@ void MaprTests::testNodeDispatcher()
 	{
 		Document *doc = new Document(i, i+1, i);
 		docs.push_back( doc );
-		if (i%(input_size/10) ==0)
+		if (i%(input_size/1000) ==0)
 		{
 			DocumentBatch *batch = new DocumentBatch(docs);
 			docs.clear();
@@ -428,7 +428,6 @@ void MaprTests::testNodeDispatcher()
 	}
 	
 	node->noMoreBatches();
-	
 	pool->join();
 }
 

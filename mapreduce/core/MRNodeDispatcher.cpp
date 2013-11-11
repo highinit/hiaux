@@ -34,13 +34,13 @@ void MRNodeDispatcher::onReducesFinished()
 	std::cout << "emits: " << m_stats.nemits << std::endl;
 	std::cout << "reduces: " << m_stats.nreduces << std::endl;
 
-	m_onFinished();
+	m_onFinished(result);
 }
 
 MRNodeDispatcher::MRNodeDispatcher(hThreadPool *pool,
 									MapReduce *MR,
 									std::string path,
-									boost::function<void()> onFinished,
+									boost::function<void(MRInterResultPtr)> onFinished,
 									size_t nbatch_threads,
 									size_t nreduce_threads,
 									size_t npreaload_threads,
@@ -105,8 +105,8 @@ void MRNodeDispatcher::CallProgressBar()
 	}
 	
 	MRProgressBar bar;
-	float map_p = batch_dispatcher->getFinishPercentage();
-	if (map_p<=99.999f)
+	bar.map_p = batch_dispatcher->getFinishPercentage();
+	if (bar.map_p<=99.999f)
 	{
 		bar.red_p = 0;
 	}

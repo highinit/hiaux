@@ -86,7 +86,7 @@ void MRInterResult::flush_wbuffer()
 	atom[0].iov_len = m_wbuffer_size;
 	if (writev(m_fd, atom, 1)!=m_wbuffer_size)
 	{
-		throw hExeption("flush_wbuffer:: cant writev"+std::string(strerror(errno)));
+		throw hException("flush_wbuffer:: cant writev"+std::string(strerror(errno)));
 	}
 	m_wbuffer_size = 0;
 }
@@ -192,7 +192,7 @@ void MRInterResult::addEmit(KeyType key, EmitType *emit)
 {
 	if (mode!=IR_WRITING)
 	{
-		throw hExeption("MRInterResult::addEmit error mode!=IR_WRITING");
+		throw hException("MRInterResult::addEmit error mode!=IR_WRITING");
 	}
 	std::string dump = m_MR->dumpEmit(emit);
 	delete emit;
@@ -209,17 +209,17 @@ EmitType *MRInterResult::restore(off_t offset)
 	KeyType key;
 	if (read(m_fd, &key, sizeof(uint64_t))!=sizeof(uint64_t))
 	{
-		throw hExeption("MRInterResult::preload: READ ERROR\n");
+		throw hException("MRInterResult::preload: READ ERROR\n");
 	}
 	
 	if (read(m_fd, &size, sizeof(uint64_t))!=sizeof(uint64_t))
 	{
-		throw hExeption("MRInterResult::preload: READ ERROR\n");
+		throw hException("MRInterResult::preload: READ ERROR\n");
 	}
 	char bf[size+1];
 	if (read(m_fd, bf, size)!=size)
 	{
-		throw hExeption("MRInterResult::preload: READ ERROR\n");
+		throw hException("MRInterResult::preload: READ ERROR\n");
 	}
 	bf[size] = '\0';
 
@@ -231,7 +231,7 @@ void MRInterResult::preload(uint64_t key, bool cid)
 {
 	if (mode!=IR_READING)
 	{
-		throw hExeption("MRInterResult::preload error mode!=IR_READING");
+		throw hException("MRInterResult::preload error mode!=IR_READING");
 	}
 	auto it = m_file_map->find(key);
 	if (it==m_file_map->end())
@@ -256,7 +256,7 @@ EmitType* MRInterResult::getEmit(uint64_t key, bool cid)
 {
 	if (mode!=IR_READING)
 	{
-		throw hExeption("MRInterResult::getEmit error mode!=IR_READING");
+		throw hException("MRInterResult::getEmit error mode!=IR_READING");
 	}
 	if (cid==false)
 	{
@@ -348,4 +348,9 @@ Int64VecPtr MRInterResult::getKeys()
 		filemap_it++;
 	}
 	return keys;
+}
+
+std::string MRInterResult::getFileName()
+{
+	return m_filename;
 }
