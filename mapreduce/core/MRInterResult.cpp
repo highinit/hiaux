@@ -91,7 +91,6 @@ void MRInterResult::flush_wbuffer()
 	m_wbuffer_size = 0;
 }
 
-
 bool MRInterResult::flushBuffer()
 {
 	write_queue.lock();

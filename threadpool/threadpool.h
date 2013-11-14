@@ -30,39 +30,39 @@
 
 class hLock
 {
-    pthread_mutex_t m;
-    
-    hLock &operator=(const hLock &a)
-    { 
+	pthread_mutex_t m;
+
+	hLock &operator=(const hLock &a)
+	{ 
 		return *this;
 	}
-    
+
 public:
-    hLock()
-    {
-        pthread_mutex_init(&m, 0);
-    }
-    
-    void lock()
-    {
-        pthread_mutex_lock(&m);
-    }
-    
-    bool trylock()
-    {
-        return pthread_mutex_trylock(&m) == 0;
-    }
-    
-    void unlock()
-    {
-        pthread_mutex_unlock(&m);
-    }
+	hLock()
+	{
+		pthread_mutex_init(&m, 0);
+	}
+
+	void lock()
+	{
+		pthread_mutex_lock(&m);
+	}
+
+	bool trylock()
+	{
+		return pthread_mutex_trylock(&m) == 0;
+	}
+
+	void unlock()
+	{
+		pthread_mutex_unlock(&m);
+	}
 };
 
 class hCondWaiter
 {
-    pthread_mutex_t m_lock;
-    pthread_cond_t cond;
+	pthread_mutex_t m_lock;
+	pthread_cond_t cond;
 	boost::function<bool()> m_state_ok;
 	
 	hCondWaiter();
@@ -78,8 +78,8 @@ public:
 		m_state_ok = stateReachedFunc;
 	}
 
-    void wait()
-    {
+	void wait()
+	{
 		pthread_mutex_lock(&m_lock);
 
 	/*	if (m_state_ok())
@@ -92,14 +92,13 @@ public:
 		{
 			pthread_cond_wait(&cond, &m_lock);
 		}
-		
-		
-	    pthread_cond_destroy(&cond);
+
+		pthread_cond_destroy(&cond);
 		pthread_cond_init(&cond, 0);
-		
+
 		pthread_mutex_unlock(&m_lock);
-    }
-    
+	}
+
 	void lock()
 	{
 		pthread_mutex_lock(&m_lock);
@@ -110,97 +109,96 @@ public:
 		pthread_mutex_unlock(&m_lock);
 	}
 	
-    void kick()
-    {
-        pthread_cond_signal(&cond);
-    }
+	void kick()
+	{
+		pthread_cond_signal(&cond);
+	}
 };
 
 class hRWLockRead
 {
-    pthread_rwlock_t *m_lock;
+	pthread_rwlock_t *m_lock;
 public:
-    
-    hRWLockRead(pthread_rwlock_t *lock)
-    {
-        m_lock = lock;
-        pthread_rwlock_rdlock(m_lock);
-    }
-    
-    ~hRWLockRead()
-    {
-        pthread_rwlock_unlock(m_lock);
-    }
-    
-    hRWLockRead(const hRWLockRead &a)
-    {
-        this->m_lock = a.m_lock;
-    }
-    
-    void unlock()
-    {
-        pthread_rwlock_unlock(m_lock);
-    }
+
+	hRWLockRead(pthread_rwlock_t *lock)
+	{
+		m_lock = lock;
+		pthread_rwlock_rdlock(m_lock);
+	}
+
+	~hRWLockRead()
+	{
+		pthread_rwlock_unlock(m_lock);
+	}
+
+	hRWLockRead(const hRWLockRead &a)
+	{
+		this->m_lock = a.m_lock;
+	}
+
+	void unlock()
+	{
+		pthread_rwlock_unlock(m_lock);
+	}
 };
 
 class hRWLockWrite
 {
-    pthread_rwlock_t *m_lock;
-    std::atomic<int> m_locked;
+	pthread_rwlock_t *m_lock;
+	std::atomic<int> m_locked;
 public:
-    
-    hRWLockWrite(pthread_rwlock_t *lock)
-    {
-	m_lock = lock;
-	m_locked = 1;
-	pthread_rwlock_wrlock(m_lock);
-    }
 
-    ~hRWLockWrite()
-    {
-	if (m_locked.load())
-	pthread_rwlock_unlock(m_lock);
-    }
+	hRWLockWrite(pthread_rwlock_t *lock)
+	{
+		m_lock = lock;
+		m_locked = 1;
+		pthread_rwlock_wrlock(m_lock);
+	}
 
-    hRWLockWrite(const hRWLockWrite &a)
-    {
-	m_lock = a.m_lock;
-	m_locked = a.m_locked.load();
-    }
+	~hRWLockWrite()
+	{
+		if (m_locked.load())
+		pthread_rwlock_unlock(m_lock);
+	}
 
-    void unlock()
-    {
-	m_locked = 0;
-	pthread_rwlock_unlock(m_lock);
-    }
+	hRWLockWrite(const hRWLockWrite &a)
+	{
+		m_lock = a.m_lock;
+		m_locked = a.m_locked.load();
+	}
+
+	void unlock()
+	{
+		m_locked = 0;
+		pthread_rwlock_unlock(m_lock);
+	}
 };
 
 class hRWLock
 {
-    pthread_rwlock_t *m_lock;
+	pthread_rwlock_t *m_lock;
 public:
-    
-    hRWLock()
-    {
-        m_lock = new pthread_rwlock_t;
-        pthread_rwlock_init(m_lock, 0);
-    }
-    
-    ~hRWLock()
-    {
-        delete m_lock;
-    }
-    
-    hRWLockRead read()
-    {
-        return hRWLockRead(m_lock);
-    }
-    
-    hRWLockWrite write()
-    {
-        return hRWLockWrite(m_lock);
-    }
-    
+
+	hRWLock()
+	{
+		m_lock = new pthread_rwlock_t;
+		pthread_rwlock_init(m_lock, 0);
+	}
+
+	~hRWLock()
+	{
+		delete m_lock;
+	}
+
+	hRWLockRead read()
+	{
+		return hRWLockRead(m_lock);
+	}
+
+	hRWLockWrite write()
+	{
+		return hRWLockWrite(m_lock);
+	}
 };
 
 class hThread;
@@ -240,42 +238,42 @@ class ThreadQueue: public boost::shared_ptr<std::queue<hThread*> >,
 
 class hThread
 {
-    CallBackQueuePtr task_queue;
-    CallBackQueuePtr local_task_queue;
-    
-    ThreadQueuePtr waiting_threads;
-    
-    pthread_t *m_th;
-    
+	CallBackQueuePtr task_queue;
+	CallBackQueuePtr local_task_queue;
+
+	ThreadQueuePtr waiting_threads;
+
+	pthread_t *m_th;
+
 public:
-    
+
 	hCondWaiter local_queue_notempty;
 	
-    hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th);
-    void run();
-    
-    bool queueNotEmpty();
-    
-    void addTask(boost::function<void()> *f);
-    void kick();
-    void join();
+	hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th);
+	void run();
+
+	bool queueNotEmpty();
+
+	void addTask(boost::function<void()> *f);
+	void kick();
+	void join();
 };
 
 class hThreadPool
 {
-    CallBackQueuePtr task_queue;
-    
-    hLock waiting_threads_lock;
-    ThreadQueuePtr waiting_threads;
-    std::vector<hThread*> threads;
-    size_t nthreads;
+	CallBackQueuePtr task_queue;
+
+	hLock waiting_threads_lock;
+	ThreadQueuePtr waiting_threads;
+	std::vector<hThread*> threads;
+	size_t nthreads;
 public:
-    
-    hThreadPool(int nthreads);
-    // boost::function<void()> f = boost::bind(&hTaskHandler::calc, &handler);
-    void addTask(boost::function<void()>* f);
-    void run();
-    void join();
+
+	hThreadPool(int nthreads);
+	// boost::function<void()> f = boost::bind(&hTaskHandler::calc, &handler);
+	void addTask(boost::function<void()>* f);
+	void run();
+	void join();
 };
 
 #endif

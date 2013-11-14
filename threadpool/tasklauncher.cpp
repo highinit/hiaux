@@ -75,8 +75,6 @@ void TaskLauncher::incLaunched()
 
 void TaskLauncher::checkFinished()
 {
-	
-
 	if (tasks_launched.load() == tasks_finished.load() && no_more_tasks.load() && task_q.empty())
 	{
 		std::cout << "______TaskLauncher::finished\n";
