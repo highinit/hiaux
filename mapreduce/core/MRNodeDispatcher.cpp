@@ -153,8 +153,11 @@ void MRNodeDispatcher::onAddResult(MRInterResultPtr inter_result)
 	CallProgressBar();
 	inter_results.lock();
 	nbatches++;
-
-	inter_results.push(inter_result);
+	
+	if (inter_result->size()!=0)
+	{
+		inter_results.push(inter_result);
+	}
 	inter_results.unlock();
 }
 

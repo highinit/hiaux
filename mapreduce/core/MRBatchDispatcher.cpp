@@ -91,7 +91,6 @@ void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int
 		inter->addEmit(it->first, it->second);
 		it++;
 	}
-
 	emit_hash->clear();
 	m_onGotResult(inter);
 }

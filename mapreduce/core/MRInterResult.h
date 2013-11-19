@@ -50,6 +50,8 @@ class MRInterResult
 	size_t m_wbuffer_cap;
 	size_t w_offset; // offset in file
 	
+	size_t m_size;
+	
 	//hLock wbuffer_lock;
 	std::atomic<bool> no_more_writes;
 	
@@ -93,6 +95,7 @@ public:
 	void setCacheReady(bool cid);
 	
 	std::string getFileName();
+	size_t size();
 };
 
 typedef boost::shared_ptr<MRInterResult> MRInterResultPtr;

@@ -24,7 +24,8 @@ MRInterResult::MRInterResult(std::string filename,
 	flush_finish_lock(boost::bind(&MRInterResult::FlushFinished, this)),
 	mode(IR_WRITING),
 	m_filename(filename),
-	w_offset(0)
+	w_offset(0),
+	m_size(0)
 {
 	wbuffer = new uint8_t [wbuffer_cap];
 	m_wbuffer_size = 0;
@@ -197,6 +198,7 @@ void MRInterResult::addEmit(KeyType key, EmitType *emit)
 	delete emit;
 
 	write_queue.lock();
+	m_size++;
 	write_queue.push(std::pair<KeyType, std::string>(key, dump));
 	write_queue.unlock();
 }
@@ -353,3 +355,9 @@ std::string MRInterResult::getFileName()
 {
 	return m_filename;
 }
+
+size_t MRInterResult::size()
+{
+	return m_size;
+}
+
