@@ -1,0 +1,39 @@
+import sys
+import os
+import glob
+import subprocess
+
+platform = sys.platform
+print "PLATFORM:"+platform
+
+_CCFLAGS = '-g 	-c -Wall -D_REENTRANT -DHAVE_NETINET_IN_H -I/opt/hypertable/current/include \
+       -I/opt/hypertable/current/include/thrift \
+		-I/opt/hypertable/current/include/ThriftBroker/gen-cpp'
+_CXX = ''
+_LINKFLAGS = '-g -v -rdynamic -L/opt/hypertable/current/lib -lHyperThrift \
+        -lHyperCommon -lHypertable -lthrift -levent -llog4cpp -lHyperSpace \
+		-lboost_system-mt'
+
+#LINUX
+if platform[:5]=="linux":
+	_CCFLAGS += ' -std=c++11 -stdlib=libstdc++'
+	_CXX += ' clang++'
+	_LINKFLAGS += ' -lprotobuf -lpthread'
+
+#FREEBSD9
+if platform[:7]=="freebsd":
+	_CCFLAGS = '-g -std=c++11 -stdlib=libstdc++ -I/usr/local/include -I/usr/local/include/c++/v1'
+	_CXX = 'clang++'
+	_LINKFLAGS = ' -v -lpthread -lprotobuf  -lc++ -L../protobuf-2.5.0/src/.libs -Wl,-rpath=../protobuf-2.5.0/src/.libs'
+
+#MACOSX
+if platform=="darwin":
+	_CCFLAGS += '  -I/usr/local/include '
+#				  -std=c++11 -stdlib=libc++' #-Wno-c++98-compat'
+	_CXX += ' clang++'
+	_LINKFLAGS += ' -lprotobuf -lprotobuf-lite -lc++ -lc++abi -lpthread '
+
+env = Environment()
+Program('ht_test',
+['main.cpp'
+], LIBS=[], LIBPATH='.', CCFLAGS=_CCFLAGS, CXX=_CXX, LINKFLAGS=_LINKFLAGS)
