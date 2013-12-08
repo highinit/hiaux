@@ -1,14 +1,14 @@
 #ifndef READFILECARTUALRY_H
 #define READFILECARTUALRY_H
 
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include <string>
 
 #include <boost/function.hpp>
 
 class ReadFileRent
 {
-	std::unordered_map<int, int> filecache;
+	std::tr1::unordered_map<int, int> filecache;
 	boost::function<std::string(int id)> m_filename_from_id;
 public:
 	int getReadFile(int fileid);
@@ -18,7 +18,7 @@ public:
 
 class AppendFileDeposit
 {
-	std::unordered_map<int, int> filecache;
+	std::tr1::unordered_map<int, int> filecache;
 	boost::function<std::string(int)> m_filename_from_id;
 public:
 	

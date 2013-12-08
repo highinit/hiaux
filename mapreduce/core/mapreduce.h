@@ -19,21 +19,21 @@
 #define  MAPREDUCE_H
 
 #include <vector>
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include <queue>
 
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <atomic>
+#include <boost/atomic.hpp>
 
 class MRStats
 {
 public:
-	std::atomic<size_t> nmaps;
-	std::atomic<size_t> nemits;
-	std::atomic<size_t> nreduces;
+	boost::atomic<size_t> nmaps;
+	boost::atomic<size_t> nemits;
+	boost::atomic<size_t> nreduces;
 	MRStats();
 	MRStats(MRStats &a);
 	MRStats& operator+=(const MRStats &a);
@@ -54,7 +54,7 @@ public:
 	virtual ~EmitType() { } 
 };
 
-typedef std::unordered_map<uint64_t, EmitType*> EmitHash;
+typedef std::tr1::unordered_map<uint64_t, EmitType*> EmitHash;
 
 class BatchAccessor
 {

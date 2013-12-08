@@ -33,11 +33,11 @@ class MRInterResult
 	// key, offset
 	FileMapPtr m_file_map;
 	
-	std::unordered_map<KeyType, EmitType*> m_emit_cache0;
-	std::unordered_map<KeyType, EmitType*> m_emit_cache1;
+	std::tr1::unordered_map<KeyType, EmitType*> m_emit_cache0;
+	std::tr1::unordered_map<KeyType, EmitType*> m_emit_cache1;
 	
-	std::atomic<bool> m_cache0_ready;
-	std::atomic<bool> m_cache1_ready;
+	boost::atomic<bool> m_cache0_ready;
+	boost::atomic<bool> m_cache1_ready;
 	hCondWaiter m_cache0_ready_lock;
 	hCondWaiter m_cache1_ready_lock;
 	
@@ -53,7 +53,7 @@ class MRInterResult
 	size_t m_size;
 	
 	//hLock wbuffer_lock;
-	std::atomic<bool> no_more_writes;
+	boost::atomic<bool> no_more_writes;
 	
 	bool flush_finished; // buffer empty && nomore
 	hCondWaiter flush_finish_lock;

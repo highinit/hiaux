@@ -13,6 +13,8 @@
 
 #include "../../common/hexception.h"
 
+extern int errno;
+
 InterResultLoader::InterResultLoader(std::string filename, MapReduce *MR):
 	m_MR(MR),
 	closed(0),

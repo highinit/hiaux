@@ -25,7 +25,7 @@
 #include <vector>
 #include <pthread.h>
 #include <queue>
-#include <atomic>
+#include <boost/atomic.hpp>
 //#include <pthread_rwlock.h>
 
 class hLock
@@ -145,7 +145,7 @@ public:
 class hRWLockWrite
 {
 	pthread_rwlock_t *m_lock;
-	std::atomic<int> m_locked;
+	boost::atomic<int> m_locked;
 public:
 
 	hRWLockWrite(pthread_rwlock_t *lock)

@@ -16,11 +16,11 @@
 */
 
 #include "MRBatchDispatcher.h"
-#include <atomic>
+#include <boost/atomic.hpp>
 
 BatchMapper::BatchMapper(BatchAccessor* batch,
 			MapReduce *MR,
-			boost::function<void(std::shared_ptr<EmitHash>,int)> onBatchFinished,
+			boost::function<void(boost::shared_ptr<EmitHash>,int)> onBatchFinished,
 			int batchid)
 {
 	m_batch = batch;
@@ -47,7 +47,7 @@ void BatchMapper::emit(uint64_t key, EmitType* emit_value)
 {
 	m_stats.nemits++;
 	m_stats.nreduces++;
-	std::unordered_map<uint64_t, EmitType* >::iterator it = m_emit_hash->find(key);
+	std::tr1::unordered_map<uint64_t, EmitType* >::iterator it = m_emit_hash->find(key);
 	if (it != m_emit_hash->end())
 	{
 		it->second = m_MR->reduce(key, it->second, emit_value);
@@ -77,7 +77,7 @@ bool MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 	return 0;
 }
 
-void MRBatchDispatcher::onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid)
+void MRBatchDispatcher::onBatchFinished(boost::shared_ptr<EmitHash> emit_hash, int batchid)
 {
 	EmitHash::iterator it = emit_hash->begin();
 	EmitHash::iterator end = emit_hash->end();

@@ -9,6 +9,8 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
+#include <errno.h>
+
 #include "../../common/hexception.h"
 
 MRInterResult::MRInterResult(std::string filename,
@@ -261,7 +263,7 @@ EmitType* MRInterResult::getEmit(uint64_t key, bool cid)
 	}
 	if (cid==false)
 	{
-		std::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
+		std::tr1::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache0.find(key);
 
 		if (cache_it != m_emit_cache0.end())
 		{
@@ -276,7 +278,7 @@ EmitType* MRInterResult::getEmit(uint64_t key, bool cid)
 	}
 	else
 	{
-		std::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache1.find(key);
+		std::tr1::unordered_map<uint64_t, EmitType*>::iterator cache_it = m_emit_cache1.find(key);
 
 		if (cache_it != m_emit_cache1.end())
 		{

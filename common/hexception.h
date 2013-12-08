@@ -2,6 +2,7 @@
 #define HEXCEPTION_H
 
 #include <string>
+#include <exception>  
 
 class hException : public std::exception
 {
@@ -11,9 +12,13 @@ class hException : public std::exception
 	
 	hException(const char* _mess): mess(std::string(_mess)) {}
 	
-	virtual const char* what() const noexcept
+	virtual const char* what() throw()
 	{
 		return mess.c_str();
+	}
+	virtual ~hException() throw()
+	{
+	
 	}
 };
 

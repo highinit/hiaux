@@ -11,7 +11,7 @@
 
 int ReadFileRent::getReadFile(int fileid)
 {
-	std::unordered_map<int, int>::iterator it = filecache.find(fileid);
+	std::tr1::unordered_map<int, int>::iterator it = filecache.find(fileid);
 	if (it != filecache.end())
 	{
 		return it->second;
@@ -33,7 +33,7 @@ ReadFileRent::ReadFileRent(boost::function<std::string(int id)> filename_from_id
 
 ReadFileRent::~ReadFileRent()
 {
-	std::unordered_map<int, int>::iterator it = filecache.begin();
+	std::tr1::unordered_map<int, int>::iterator it = filecache.begin();
 	while (it != filecache.end())
 	{
 		close(it->second);
@@ -50,7 +50,7 @@ AppendFileDeposit::AppendFileDeposit(boost::function<std::string(int id)> \
 
 int AppendFileDeposit::getAppendFile(int id)
 {
-	std::unordered_map<int, int>::iterator it = filecache.find(id);
+	std::tr1::unordered_map<int, int>::iterator it = filecache.find(id);
 	if (it != filecache.end())
 	{
 		return it->second;
@@ -66,7 +66,7 @@ int AppendFileDeposit::getAppendFile(int id)
 
 void AppendFileDeposit::close()
 {
-	std::unordered_map<int, int>::iterator it = filecache.begin();
+	std::tr1::unordered_map<int, int>::iterator it = filecache.begin();
 	while (it != filecache.end())
 	{
 		::close(it->second);

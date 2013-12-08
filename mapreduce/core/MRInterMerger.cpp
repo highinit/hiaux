@@ -1,13 +1,13 @@
 #include "MRInterMerger.h"
 
-#include <unordered_map>
+#include <tr1/unordered_map>
 
 Int64VecPtr MRInterMerger::mergeKeys(Int64VecPtr a, Int64VecPtr b)
 {
 //	std::cout << "merge keys: " << a->size() << ", " << b->size() << std::endl;
 	Int64VecPtr keys_vec(new Int64Vec);
 
-	std::unordered_map<uint64_t, int> keys_map;
+	std::tr1::unordered_map<uint64_t, int> keys_map;
 
 	for (int i = 0; i<a->size(); i++)
 	{

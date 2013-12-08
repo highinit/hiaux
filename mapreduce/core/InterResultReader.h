@@ -3,7 +3,7 @@
 
 #include "mapreduce.h"
 
-typedef std::unordered_map<uint64_t, uint64_t> FileMap;
+typedef std::tr1::unordered_map<uint64_t, uint64_t> FileMap;
 typedef boost::shared_ptr<FileMap> FileMapPtr;
 
 class InterResultLoader

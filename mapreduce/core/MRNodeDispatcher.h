@@ -34,8 +34,8 @@ class MRNodeDispatcher
 
 	MapReduce *m_MR;
 
-	std::atomic<size_t> nmerge;
-	std::atomic<size_t> nbatches;
+	boost::atomic<size_t> nmerge;
+	boost::atomic<size_t> nbatches;
 
 	TaskLauncher preload_tasks_launcher;
 	TaskLauncher reduce_tasks_launcher;

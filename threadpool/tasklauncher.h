@@ -16,11 +16,11 @@ class TaskLauncher
 	hThreadPool *m_pool;
 	TaskQueue task_q;
 	
-	std::atomic<size_t> tasks_launched;
-	std::atomic<size_t> tasks_finished;
-	std::atomic<bool> all_tasks_finished;
-	std::atomic<bool> all_tasks_launched;
-	std::atomic<bool> no_more_tasks;
+	boost::atomic<size_t> tasks_launched;
+	boost::atomic<size_t> tasks_finished;
+	boost::atomic<bool> all_tasks_finished;
+	boost::atomic<bool> all_tasks_launched;
+	boost::atomic<bool> no_more_tasks;
 	
 	hLock finish_lock;
 	

@@ -18,25 +18,25 @@
 #ifndef MAPREDUCEDISPATCHER_H
 #define  MAPREDUCEDISPATCHER_H
 
-#include <unordered_map>
+#include <tr1/unordered_map>
 #include "../../threadpool/threadpool.h"
 #include "../../threadpool/tasklauncher.h"
 
 #include "mapreduce.h"
 #include "MRInterResult.h"
 #include <queue>
-#include <atomic>
+#include <boost/atomic.hpp>
 
 class BatchMapper
 {
 	MapReduce *m_MR;
-	std::shared_ptr<EmitHash> m_emit_hash;
+	boost::shared_ptr<EmitHash> m_emit_hash;
 	BatchAccessor* m_batch;
 	MRStats m_stats;
 public:
 	BatchMapper(BatchAccessor* batch,
 	MapReduce *MR,
-	boost::function<void(std::shared_ptr<EmitHash>, int)> onBatchFinished,
+	boost::function<void(boost::shared_ptr<EmitHash>, int)> onBatchFinished,
 	int batchid);
 	~BatchMapper();
 	void emit(uint64_t key, EmitType* emit_value);
@@ -53,8 +53,8 @@ class MRBatchDispatcher
 	TaskLauncher m_batch_tasks_launcher;
 	TaskLauncher &m_flush_launcher;
 
-	std::atomic<size_t> m_nbatches;
-	std::atomic<bool> m_nomore;
+	boost::atomic<size_t> m_nbatches;
+	boost::atomic<bool> m_nomore;
 	std::string m_path;
 
 	boost::function<void(MRInterResultPtr)> m_onGotResult;
@@ -71,7 +71,7 @@ public:
 
 	bool mapBatchTask(BatchAccessor* batch, int batchid);   
 
-	void onBatchFinished(std::shared_ptr<EmitHash> emit_hash, int batchid);
+	void onBatchFinished(boost::shared_ptr<EmitHash> emit_hash, int batchid);
 	void addBatch(BatchAccessor* batch);
 	void noMore();
 
