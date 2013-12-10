@@ -35,7 +35,8 @@ void test_error(Thrift::Client *client, std::ostream &out);
 
 int main(int argc, char** argv)
 {	
-	//Thrift::Client *client = new Thrift::Client("localhost", 38080);
+	Thrift::Client *client = new Thrift::Client("localhost", 38080);
+	run(client);
 	return 0;
 }
 
@@ -43,7 +44,7 @@ int main(int argc, char** argv)
 void run(Thrift::Client *client) {
   try {
     std::ostream &out = std::cout;
-    out << "running test_guid" << std::endl;
+/*    out << "running test_guid" << std::endl;
     test_guid(client, out);
     out << "running test_unique" << std::endl;
     test_unique(client, out);
@@ -51,9 +52,9 @@ void run(Thrift::Client *client) {
     test_hql(client, out);
     out << "running test_schema" << std::endl;
     test_schema(client, out);
-    out << "running test_scan" << std::endl;
+*/    out << "running test_scan" << std::endl;
     test_scan(client, out);
-    out << "running test_set" << std::endl;
+/*    out << "running test_set" << std::endl;
     test_set(client);
     out << "running test_put" << std::endl;
     test_put(client);
@@ -67,7 +68,7 @@ void run(Thrift::Client *client) {
     test_error(client, out);
     out << "running test_scan_keysonly" << std::endl;
     test_scan_keysonly(client, out);
-  }
+*/  }
   catch (ClientException &e) {
     std::cout << e << std::endl;
     exit(1);
@@ -181,11 +182,21 @@ void test_hql(Thrift::Client *client, std::ostream &out) {
             "('2008-11-11 11:11:11', 'k2', 'col', 'v2'), "
             "('2008-11-11 11:11:11', 'k3', 'col', 'v3')");
   client->hql_query(result, ns, "select * from thrift_test");
-  out << result << std::endl;
+  //out << result << std::endl;
 
   HqlResultAsArrays result_as_arrays;
   client->hql_query_as_arrays(result_as_arrays, ns, "select * from thrift_test");
   out << result_as_arrays << std::endl;
+  for (int i = 0; i<result_as_arrays.cells.size(); i++)
+  {
+	  out << "result: \n";
+	  for (int j = 0; j<result_as_arrays.cells[i].size(); j++)
+	  {
+		  out << " " << j << ": \'" <<  result_as_arrays.cells[i][j] << "\' ";
+	  }
+	  out << std::endl;
+  }
+  
   client->namespace_close(ns);
 }
 
@@ -193,18 +204,22 @@ void test_scan(Thrift::Client *client, std::ostream &out) {
   ScanSpec ss;
   Namespace ns = client->namespace_open("test");
 
-  Scanner s = client->open_scanner(ns, "thrift_test", ss);
+  Scanner s = client->open_scanner(ns, "pages", ss);
   std::vector<Hypertable::ThriftGen::Cell> cells;
 
   do {
     client->scanner_get_cells(cells, s);
     foreach_ht(const Hypertable::ThriftGen::Cell &cell, cells)
-      out << cell << std::endl;
+	{
+	//	out << cell << std::endl;
+       out << "row: " << cell.key.row << " col: " << cell.key.column_family 
+			   << " value: " << cell.value << std::endl;
+	}
   } while (cells.size());
 
   client->scanner_close(s);
 
-  ss.cell_limit=1;
+ /* ss.cell_limit=1;
   ss.__isset.cell_limit = true;
   ss.row_regexp = "k";
   ss.__isset.row_regexp = true;
@@ -217,8 +232,12 @@ void test_scan(Thrift::Client *client, std::ostream &out) {
   do {
     client->scanner_get_cells(cells, s);
     foreach_ht(const Hypertable::ThriftGen::Cell &cell, cells)
-      out << cell << std::endl;
+	{
+      out << "key: " << cell.key << " value: " << cell.value << std::endl; 
+	}
+	out << std::endl;
   } while (cells.size());
+  */ 
   client->namespace_close(ns);
 }
 
@@ -227,11 +246,12 @@ void test_scan_keysonly(Thrift::Client *client, std::ostream &out) {
   ScanSpec ss;
   ss.keys_only=true;
   ss.__isset.keys_only = true;
+  
   Namespace ns = client->namespace_open("test");
 
   Scanner s = client->open_scanner(ns, "thrift_test", ss);
   std::vector<Hypertable::ThriftGen::Cell> cells;
-
+  
   do {
     client->scanner_get_cells(cells, s);
     foreach_ht(const Hypertable::ThriftGen::Cell &cell, cells)
@@ -535,6 +555,7 @@ void test_async(Thrift::Client *client, std::ostream &out) {
   cp.column_family = "data";
   cp.__isset.column_family = true;
   cp.operation = ColumnPredicateOperation::PREFIX_MATCH;
+  
   cp.__isset.operation = true;
   cp.value = "red";
   cp.__isset.value = true;
