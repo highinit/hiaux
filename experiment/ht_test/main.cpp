@@ -303,6 +303,7 @@ void test_put(Thrift::Client *client) {
   MutateSpec mutate_spec;
   mutate_spec.appname = "test-cpp";
   mutate_spec.flush_interval = 1000;
+  
   Namespace ns = client->namespace_open("test");
 
   cells.push_back(make_cell("put1", "col", 0, "v1", "2008-11-11 22:22:22"));

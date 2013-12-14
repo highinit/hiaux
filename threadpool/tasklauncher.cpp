@@ -11,15 +11,14 @@ TaskLauncher::TaskLauncher(hThreadPool *pool,
 	m_max_parallel(max_parallel),
 	no_more_tasks(0),
 	m_pool(pool)
-{
-	
+{	
 }
 
-void TaskLauncher::Task(boost::function<bool()> *task)
+void TaskLauncher::Task(boost::function<TaskLauncher::TaskRet()> *task)
 {
-	bool relaunch = (*task)();
+	TaskLauncher::TaskRet ret = (*task)();
 	
-	if (relaunch)
+	if (ret == RELAUNCH)
 	{
 		addTask(task);
 	}
@@ -33,7 +32,7 @@ void TaskLauncher::Task(boost::function<bool()> *task)
 	checkFinished();
 }
 
-void TaskLauncher::launch(boost::function<bool()> *task)
+void TaskLauncher::launch(boost::function<TaskLauncher::TaskRet()> *task)
 {
 	tasks_launched++;
 	m_pool->addTask(new boost::function<void()>(boost::bind(&TaskLauncher::Task, this, task)));
@@ -43,7 +42,7 @@ void TaskLauncher::checkLaunch()
 {
 	while (countRunning() < m_max_parallel)
 	{	
-		boost::function<bool()>* f;
+		boost::function<TaskLauncher::TaskRet()>* f;
 		task_q.lock();
 		if (task_q.size()!=0)
 		{
@@ -60,7 +59,7 @@ void TaskLauncher::checkLaunch()
 	}
 }
 
-void TaskLauncher::addTask(boost::function<bool()> *task)
+void TaskLauncher::addTask(boost::function<TaskLauncher::TaskRet()> *task)
 {
 	task_q.lock();
 	task_q.push(task);

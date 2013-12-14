@@ -276,4 +276,6 @@ public:
 	void join();
 };
 
+typedef boost::shared_ptr<hThreadPool> hThreadPoolPtr;
+
 #endif

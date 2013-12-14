@@ -6,13 +6,20 @@
 
 //typedef boost::lockfree::queue<boost::function<bool()>*> TaskQueue;
 
-class TaskQueue: public std::queue<boost::function<bool()>*>, public hLock
-{
-
-};
-
 class TaskLauncher
 {
+public:
+	enum TaskRet
+	{
+		RELAUNCH,
+		NO_RELAUNCH
+	};
+private:
+	
+	class TaskQueue: public std::queue<boost::function<TaskLauncher::TaskRet()>*>, public hLock
+	{
+	};
+	
 	hThreadPool *m_pool;
 	TaskQueue task_q;
 	
@@ -31,16 +38,16 @@ class TaskLauncher
 	void checkFinished();
 	
 	void checkLaunch();
-	void launch(boost::function<bool()> *task);
+	void launch(boost::function<TaskLauncher::TaskRet()> *task);
 public:
 
-	void Task(boost::function<bool()> *task);
+	void Task(boost::function<TaskLauncher::TaskRet()> *task);
 	
 	TaskLauncher(hThreadPool *pool,
 				size_t max_parallel, 
 				boost::function<void()> onFinished);
 
-	void addTask(boost::function<bool()> *task);
+	void addTask(boost::function<TaskLauncher::TaskRet()> *task);
 
 	
 	void setMaxParallel(size_t max_parallel);
@@ -51,5 +58,7 @@ public:
 	size_t countFinished();
 	bool checkAllLaunched();
 };
+
+typedef boost::shared_ptr<TaskLauncher> TaskLauncherPtr;
 
 #endif
