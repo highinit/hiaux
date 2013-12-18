@@ -101,8 +101,6 @@ hThreadPool::hThreadPool(int nthreads)
 
 void hThreadPool::addTask(boost::function<void()> *f)
 {
-	hThread *thread;
-
 	waiting_threads->lock();
 	if (!waiting_threads->empty())
 	{
