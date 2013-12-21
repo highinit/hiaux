@@ -16,24 +16,34 @@
 typedef pthread_mutex_t pmutex;
 typedef boost::shared_ptr<pthread_mutex_t> pmutexPtr;
 
+class hAutoLock;
+
 class hLockTicket
 {
 	pmutexPtr m_lock;
 	boost::atomic<int> m_locked;
 public:
-	hLockTicket(pmutexPtr lock);
+	
+	friend hAutoLock;
+	
+	hLockTicket(pmutexPtr lock, bool locked);
 	hLockTicket(const hLockTicket &a);
 	~hLockTicket();
 	void unlock();
 };
 
+typedef boost::shared_ptr<hLockTicket> hLockTicketPtr;
+
 class hAutoLock
 {
 	pmutexPtr m_lock;
+	//hAutoLock(const hAutoLock&);
+	//hAutoLock& operator=(const hAutoLock &a);
 public:
 	hAutoLock();
 	~hAutoLock();
-	hLockTicket lock();
+	hLockTicketPtr lock();
+	hLockTicketPtr tryLock();
 };
 
 class hLock

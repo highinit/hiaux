@@ -2,10 +2,14 @@
 
 #include "locks.h"
 
-hLockTicket::hLockTicket(pmutexPtr lock)
+hLockTicket::hLockTicket(pmutexPtr lock, bool locked)
 {
 	m_lock = lock;
-	pthread_mutex_lock(m_lock.get());
+	if (!locked)
+	{
+		pthread_mutex_lock(m_lock.get());
+		m_locked = 1;
+	}
 }
 
 hLockTicket::hLockTicket(const hLockTicket &a)
@@ -38,9 +42,18 @@ hAutoLock::~hAutoLock()
 {
 }
 
-hLockTicket hAutoLock::lock()
+hLockTicketPtr hAutoLock::lock()
 {
-	return hLockTicket(m_lock);
+	return hLockTicketPtr(new hLockTicket(m_lock, false));
+}
+
+hLockTicketPtr hAutoLock::tryLock()
+{
+	if (pthread_mutex_trylock(m_lock.get()) == 0) {
+		return hLockTicketPtr(new hLockTicket (m_lock, true));
+	}
+	hLockTicketPtr empty_ticket;
+	return empty_ticket;
 }
 
 hLock& hLock::operator=(const hLock &a)
