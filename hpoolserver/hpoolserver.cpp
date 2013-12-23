@@ -5,67 +5,85 @@ using namespace std;
 
 class PoolException : public std::exception
 {
-    string m_message;
-    public:
-        
-    PoolException(string message)
-    {
-        m_message = message;
-    }
-    
-    string what()
-    {
-        return m_message;
-    }
-    
-    ~PoolException() throw()
-    {
-        m_message.clear();
-    }
-    
+	string m_message;
+	public:
+
+	PoolException(string message)
+	{
+		m_message = message;
+	}
+
+	string what()
+	{
+		return m_message;
+	}
+
+	~PoolException() throw()
+	{
+		m_message.clear();
+	}
 };
 
-hPoolServer::hPoolServer(boost::shared_ptr<hThreadPool> pool,
-		boost::function<void(hSockClientInfo)> serve_func)
+hPoolServer::ClientInfo::ClientInfo(std::string _ip, int _port, int _sock):
+		ip(_ip),
+		port(_port),
+		sock(_sock),
+		closing(false)
 {
-    m_pool = pool;
-    m_serve_func = serve_func;
 }
 
-boost::shared_ptr<hThreadPool> hPoolServer::getPool()
+std::string hPoolServer::ClientInfo::recv(std::string &_bf)
 {
-    return m_pool;
+
 }
 
-void hPoolServer::listenThread()
+std::string hPoolServer::ClientInfo::send(const std::string &_mess)
 {
-    while (m_isrun)
-    {
-       struct sockaddr_in cli_addr;
-       size_t clilen = sizeof(cli_addr);
-       int accepted_socket = accept(m_socket, 
-				(struct sockaddr *) &cli_addr, 
-				(socklen_t*)&clilen);
 
-       if (accepted_socket < 0) throw new PoolException("hsock_t::server: err accepting");
+}
 
-       hSockClientInfo clinet_info(inet_ntoa(cli_addr.sin_addr),
-				cli_addr.sin_port,
-				accepted_socket);
-       
-       m_pool->addTask(boost::bind(m_serve_func, clinet_info));
-    } 
+void hPoolServer::ClientInfo::close()
+{
+	closing = 1;
+}
+
+hPoolServer::hPoolServer(TaskLauncherPtr launcher, 
+					boost::function<TaskLauncher::TaskRet(hSockClientInfo)> handler)
+{
+    m_launcher = launcher;
+    m_handler = handler;
+}
+
+TaskLauncher::TaskRet hPoolServer::listenThread()
+{
+	while (m_isrunning)
+	{
+		struct sockaddr_in cli_addr;
+		size_t clilen = sizeof(cli_addr);
+		int accepted_socket = accept(m_listen_socket, 
+				 (struct sockaddr *) &cli_addr, 
+				 (socklen_t*)&clilen);
+
+		if (accepted_socket < 0) throw new PoolException("hsock_t::server: err accepting");
+
+		ClientInfo clinet_info(inet_ntoa(cli_addr.sin_addr),
+				 cli_addr.sin_port,
+				 accepted_socket);
+
+		m_launcher->addTask(boost::bind(m_handler, clinet_info));
+	}
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void hPoolServer::start(int port)
 {
-    m_isrun = 1;
-    m_socket = hSock::server(port);
-    m_pool->addTask(boost::bind(&hPoolServer::listenThread, this));
+    m_isrunning = true;
+    m_listen_socket = hSock::server(port);
+    m_launcher->addTask(boost::bind(&hPoolServer::listenThread, this));
 }
 
 void hPoolServer::stop()
 {
-    shutdown(m_socket, SHUT_RDWR);
-    m_isrun = 0;
+    shutdown(m_listen_socket, SHUT_RDWR);
+    m_isrunning = 0;
 }
