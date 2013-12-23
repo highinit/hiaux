@@ -5,6 +5,7 @@
 hLockTicket::hLockTicket(pmutexPtr lock, bool locked)
 {
 	m_lock = lock;
+	m_locked = locked;
 	if (!locked)
 	{
 		pthread_mutex_lock(m_lock.get());
@@ -14,14 +15,17 @@ hLockTicket::hLockTicket(pmutexPtr lock, bool locked)
 
 hLockTicket::hLockTicket(const hLockTicket &a)
 {
-	m_locked = 1;
+	m_locked = a.m_locked.load();
 	m_lock = a.m_lock; 
 }
 
 hLockTicket::~hLockTicket()
 {
 	if (m_locked.load())
+	{
+		//std::cout << "Realesing AutoLock\n";
 		pthread_mutex_unlock(m_lock.get());
+	}
 }
 
 void hLockTicket::unlock()
@@ -36,6 +40,7 @@ void hLockTicket::unlock()
 hAutoLock::hAutoLock()
 {
 	m_lock.reset(new pmutex);
+	pthread_mutex_init(m_lock.get(), 0);
 }
 
 hAutoLock::~hAutoLock()
@@ -50,8 +55,10 @@ hLockTicketPtr hAutoLock::lock()
 hLockTicketPtr hAutoLock::tryLock()
 {
 	if (pthread_mutex_trylock(m_lock.get()) == 0) {
+		//std::cout << "Taken AutoLock\n";
 		return hLockTicketPtr(new hLockTicket (m_lock, true));
 	}
+	//std::cout << "Lock not taken\n";
 	hLockTicketPtr empty_ticket;
 	return empty_ticket;
 }
