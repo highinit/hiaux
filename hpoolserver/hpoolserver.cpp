@@ -32,6 +32,11 @@ hPoolServer::ClientInfo::ClientInfo(std::string _ip, int _port, int _sock):
 {
 }
 
+uint64_t hPoolServer::ClientInfo::getChangeTs()
+{
+	return change_ts;
+}
+
 std::string hPoolServer::ClientInfo::recv(std::string &_bf)
 {
 
@@ -56,8 +61,7 @@ hPoolServer::hPoolServer(TaskLauncherPtr launcher,
 
 TaskLauncher::TaskRet hPoolServer::listenThread()
 {
-	while (m_isrunning)
-	{
+	while (m_isrunning) {
 		struct sockaddr_in cli_addr;
 		size_t clilen = sizeof(cli_addr);
 		int accepted_socket = accept(m_listen_socket, 
@@ -75,11 +79,22 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 	return TaskLauncher::NO_RELAUNCH;
 }
 
+TaskLauncher::TaskRet hPoolServer::closeClientsTask()
+{
+	for (int i = 0; i<m_clients.size(); i++) {
+		m_handler(m_clients[i]);
+		if (time(0) - m_clients[i].getChangeTs() > m_idle_timeout) {
+			// убиваем клиента
+		}
+	}
+}
+
 void hPoolServer::start(int port)
 {
-    m_isrunning = true;
-    m_listen_socket = hSock::server(port);
-    m_launcher->addTask(boost::bind(&hPoolServer::listenThread, this));
+	m_isrunning = true;
+	m_listen_socket = hSock::server(port);
+	m_launcher->addTask(boost::bind(&hPoolServer::listenThread, this));
+	m_launcher->addTask(boost::bind(&hPoolServer::closeClientsTask, this));
 }
 
 void hPoolServer::stop()
