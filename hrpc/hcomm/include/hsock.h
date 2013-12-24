@@ -72,11 +72,11 @@ class hSock
         char bf[255];
         struct sockaddr_in serv_addr;
 
-        int sockfd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
         if (sockfd < 0)
                 throw new std::string("hsock_t::server: ERROR opening server socket");
-        serv_addr.sin_family = PF_INET;
+        serv_addr.sin_family = AF_INET;
         serv_addr.sin_port = htons(port);
         serv_addr.sin_addr.s_addr = INADDR_ANY;
 
@@ -93,7 +93,7 @@ class hSock
                 exit(1);
         }
 
-        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))==0)
+        if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))<0)
         throw new std::string("hsock_t::server: Error server binding");
 
         listen(sockfd, CONN_QUEUE_SIZE);

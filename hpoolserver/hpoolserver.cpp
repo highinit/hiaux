@@ -1,5 +1,6 @@
 #include "hpoolserver.h"
 #include "../hrpc/hcomm/include/hsock.h"
+#include <boost/bind.hpp>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ class PoolException : public std::exception
 hPoolServer::ClientInfo::ClientInfo(std::string _ip, int _port, int _sock):
 		ip(_ip),
 		port(_port),
-		sock(_sock),
+		m_sock(_sock),
 		closing(false)
 {
 }
@@ -37,14 +38,20 @@ uint64_t hPoolServer::ClientInfo::getChangeTs()
 	return change_ts;
 }
 
-std::string hPoolServer::ClientInfo::recv(std::string &_bf)
+void hPoolServer::ClientInfo::recv(std::string &_bf)
 {
-
+	char bf[255];
+	size_t nread = ::recv(m_sock, bf, 255, MSG_DONTWAIT);
+	_bf.append(bf);
 }
 
-std::string hPoolServer::ClientInfo::send(const std::string &_mess)
+void hPoolServer::ClientInfo::send(const std::string &_mess)
 {
-
+	std::string bf = _mess; 
+	while (bf.size() != 0) {
+		size_t nsent = ::send(m_sock, bf.c_str(), bf.size(), MSG_DONTWAIT);
+		bf = bf.substr(nsent, bf.size()-nsent);
+	}
 }
 
 void hPoolServer::ClientInfo::close()
@@ -53,10 +60,23 @@ void hPoolServer::ClientInfo::close()
 }
 
 hPoolServer::hPoolServer(TaskLauncherPtr launcher, 
-					boost::function<TaskLauncher::TaskRet(hSockClientInfo)> handler)
+					boost::function<void(ClientInfoPtr)> handler)
 {
     m_launcher = launcher;
     m_handler = handler;
+}
+
+TaskLauncher::TaskRet hPoolServer::Handler(ClientInfoPtr client_info)
+{
+	m_handler(client_info);
+	
+	// check to kill client
+	if (client_info->closing) 
+		return TaskLauncher::NO_RELAUNCH;
+	// if timeout
+	
+	// ok, no kill
+	return TaskLauncher::RELAUNCH;
 }
 
 TaskLauncher::TaskRet hPoolServer::listenThread()
@@ -70,31 +90,23 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 
 		if (accepted_socket < 0) throw new PoolException("hsock_t::server: err accepting");
 
-		ClientInfo clinet_info(inet_ntoa(cli_addr.sin_addr),
+		ClientInfoPtr client_info(new ClientInfo(inet_ntoa(cli_addr.sin_addr),
 				 cli_addr.sin_port,
-				 accepted_socket);
+				 accepted_socket));
 
-		m_launcher->addTask(boost::bind(m_handler, clinet_info));
+		m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
+			boost::bind(&hPoolServer::Handler, this, client_info)));
 	}
 	return TaskLauncher::NO_RELAUNCH;
-}
-
-TaskLauncher::TaskRet hPoolServer::closeClientsTask()
-{
-	for (int i = 0; i<m_clients.size(); i++) {
-		m_handler(m_clients[i]);
-		if (time(0) - m_clients[i].getChangeTs() > m_idle_timeout) {
-			// убиваем клиента
-		}
-	}
 }
 
 void hPoolServer::start(int port)
 {
 	m_isrunning = true;
 	m_listen_socket = hSock::server(port);
-	m_launcher->addTask(boost::bind(&hPoolServer::listenThread, this));
-	m_launcher->addTask(boost::bind(&hPoolServer::closeClientsTask, this));
+	m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
+			boost::bind(&hPoolServer::listenThread, this)));
+	//m_launcher->addTask(boost::bind(&hPoolServer::closeClientsTask, this));
 }
 
 void hPoolServer::stop()

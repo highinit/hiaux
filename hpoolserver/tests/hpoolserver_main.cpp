@@ -5,6 +5,7 @@
 #endif
 
 #define _CXXTEST_HAVE_STD
+#define _CXXTEST_HAVE_EH
 #include <cxxtest/TestListener.h>
 #include <cxxtest/TestTracker.h>
 #include <cxxtest/TestRunner.h>
@@ -29,15 +30,21 @@ CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_
 
 static class TestDescription_suite_hPoolServerTests_testCheckInitConnection : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 37, "testCheckInitConnection" ) {}
+ TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 39, "testCheckInitConnection" ) {}
  void runTest() { suite_hPoolServerTests.testCheckInitConnection(); }
 } testDescription_suite_hPoolServerTests_testCheckInitConnection;
 
 static class TestDescription_suite_hPoolServerTests_testSendSimple : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 67, "testSendSimple" ) {}
+ TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 69, "testSendSimple" ) {}
  void runTest() { suite_hPoolServerTests.testSendSimple(); }
 } testDescription_suite_hPoolServerTests_testSendSimple;
+
+static class TestDescription_suite_hPoolServerTests_testPoolServer : public CxxTest::RealTestDescription {
+public:
+ TestDescription_suite_hPoolServerTests_testPoolServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 84, "testPoolServer" ) {}
+ void runTest() { suite_hPoolServerTests.testPoolServer(); }
+} testDescription_suite_hPoolServerTests_testPoolServer;
 
 #include <cxxtest/Root.cpp>
 const char* CxxTest::RealWorldDescription::_worldName = "cxxtest";

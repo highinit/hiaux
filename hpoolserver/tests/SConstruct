@@ -1,6 +1,13 @@
-env = Environment(CCFLAGS='-std=gnu++11 ')
+_CCFLAGS = '-c -Wall '
+
+_LINKFLAGS = '-g -v '
+
+_CXX = ' clang++'# -Wc++11-extensions'
+
 Program('threadpool_test', 
 ['../../threadpool/threadpool.cpp',
 '../hpoolserver.cpp',
 'hpoolserver_main.cpp',
-'../../hrpc/hcomm/src/sendchannel.cpp'], LIBS=['pthread'], LIBPATH='.', CPPPATH=['../../hrpc/hcomm/src/'], CCFLAGS='-g')
+'../../threadpool/tasklauncher.cpp',
+'../../threadpool/locks.cpp'], LIBS=['pthread'], 
+LIBPATH='.', CCFLAGS=_CCFLAGS, LINKFLAGS=_LINKFLAGS, CXX=_CXX)
