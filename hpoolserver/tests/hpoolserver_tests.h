@@ -2,6 +2,8 @@
 #include <cxxtest/TestSuite.h>
 
 #include "../hpoolserver.h"
+#include "../websocket/WebSocketSrv.h"
+
 #include "../../hrpc/hcomm/include/hsock.h"
 class hPoolServerTests : public CxxTest::TestSuite
 {    
@@ -76,12 +78,18 @@ public:
 	
 	}
 	
-	void poolServerHandler(hPoolServer::ClientInfoPtr conn)
+	void poolServerHandler(hPoolServer::ConnectionPtr conn)
 	{
+		std::string bf = "";
+		while (bf.find('\n')==std::string::npos)
+		{
+			conn->recv(bf);
+			std::cout << bf << std::endl;
+		}
 		conn->send("SERVER HEIL!");
 	}
 	
-	void testPoolServer()
+	void XtestPoolServer()
 	{
 		try {
 		hThreadPool *pool = new hThreadPool(10);
@@ -99,15 +107,31 @@ public:
 			for (int i = 0; i<10; i++) {
 				int cli = hSock::client("127.0.0.1", port);
 				char bf[255];
+				sprintf(bf, "CLIENT SIEG!\n");
+				::send(cli, bf, 255, 0);
 				::recv(cli, bf, 255, 0);
 				std::cout << bf << std::endl;
 			}
+		pool->join();
 		}
 		catch (std::string *s) {
 			std::cout << s->c_str();
 		}
 		
-		//pool->join();
+	}
+	
+	void testWebSocketServer()
+	{
+		const int port = 12345;
+		hThreadPool *pool = new hThreadPool(10);
+		TaskLauncherPtr launcher (new TaskLauncher(
+						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
+		
+		WebSocketSrvPtr websocket_srv(new WebSocketSrv(launcher));
+		websocket_srv->start(port);
+		pool->run();
+		launcher->setNoMoreTasks();
+		pool->join();
 	}
 	
 };

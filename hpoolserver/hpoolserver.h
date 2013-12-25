@@ -2,18 +2,16 @@
 #define HPOOLSERVER_H
 
 #include "../threadpool/tasklauncher.h"
-//#include "../hrpc/hcomm/include/hsock.h"
-//#include "../hrpc/hcomm/include/sendchannel.h"
+#include "../hrpc/hcomm/include/hsock.h"
 
 class hPoolServer
 {
 public:
-	class ClientInfo
-	{
-		int m_sock;
-		
+	class Connection
+	{	
 		uint64_t change_ts;
 	public:
+		int m_sock;
 		bool closing;
 		std::string ip;
 		int port;
@@ -23,27 +21,27 @@ public:
 		void send(const std::string &_mess);
 		void close();
 
-		ClientInfo(std::string _ip, int _port, int _sock);
+		Connection(std::string _ip, int _port, int _sock);
 	};
 	
-	typedef boost::shared_ptr<ClientInfo> ClientInfoPtr;
+	typedef boost::shared_ptr<Connection> ConnectionPtr;
 	
 private:
 	TaskLauncherPtr m_launcher;
-	boost::function<void(ClientInfoPtr)> m_handler;
+	boost::function<void(ConnectionPtr)> m_handler;
 	int m_listen_socket;
 	uint64_t m_idle_timeout;
 	bool m_isrunning;
-	std::vector<ClientInfo> m_clients;
+	std::vector<Connection> m_clients;
 	
 public:
     
-	TaskLauncher::TaskRet Handler(ClientInfoPtr client_info);
+	TaskLauncher::TaskRet Handler(ConnectionPtr client_info);
 	
 	TaskLauncher::TaskRet closeClientsTask();
 
 	hPoolServer(TaskLauncherPtr launcher,
-			boost::function<void(ClientInfoPtr)> handler);
+			boost::function<void(ConnectionPtr)> handler);
 
 	TaskLauncher::TaskRet listenThread();
 	void start(int port);

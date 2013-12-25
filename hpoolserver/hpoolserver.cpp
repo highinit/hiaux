@@ -1,5 +1,4 @@
 #include "hpoolserver.h"
-#include "../hrpc/hcomm/include/hsock.h"
 #include <boost/bind.hpp>
 
 using namespace std;
@@ -25,7 +24,7 @@ class PoolException : public std::exception
 	}
 };
 
-hPoolServer::ClientInfo::ClientInfo(std::string _ip, int _port, int _sock):
+hPoolServer::Connection::Connection(std::string _ip, int _port, int _sock):
 		ip(_ip),
 		port(_port),
 		m_sock(_sock),
@@ -33,19 +32,21 @@ hPoolServer::ClientInfo::ClientInfo(std::string _ip, int _port, int _sock):
 {
 }
 
-uint64_t hPoolServer::ClientInfo::getChangeTs()
+uint64_t hPoolServer::Connection::getChangeTs()
 {
 	return change_ts;
 }
 
-void hPoolServer::ClientInfo::recv(std::string &_bf)
+void hPoolServer::Connection::recv(std::string &_bf)
 {
 	char bf[255];
-	size_t nread = ::recv(m_sock, bf, 255, MSG_DONTWAIT);
+	size_t nread = ::recv(m_sock, bf, 255, MSG_WAITALL);
+	//std::cout << "nread " << nread << std::endl;
+	//bf[nread] = '\0';
 	_bf.append(bf);
 }
 
-void hPoolServer::ClientInfo::send(const std::string &_mess)
+void hPoolServer::Connection::send(const std::string &_mess)
 {
 	std::string bf = _mess; 
 	while (bf.size() != 0) {
@@ -54,19 +55,19 @@ void hPoolServer::ClientInfo::send(const std::string &_mess)
 	}
 }
 
-void hPoolServer::ClientInfo::close()
+void hPoolServer::Connection::close()
 {
 	closing = 1;
 }
 
 hPoolServer::hPoolServer(TaskLauncherPtr launcher, 
-					boost::function<void(ClientInfoPtr)> handler)
+					boost::function<void(ConnectionPtr)> handler)
 {
     m_launcher = launcher;
     m_handler = handler;
 }
 
-TaskLauncher::TaskRet hPoolServer::Handler(ClientInfoPtr client_info)
+TaskLauncher::TaskRet hPoolServer::Handler(ConnectionPtr client_info)
 {
 	m_handler(client_info);
 	
@@ -90,12 +91,12 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 
 		if (accepted_socket < 0) throw new PoolException("hsock_t::server: err accepting");
 
-		ClientInfoPtr client_info(new ClientInfo(inet_ntoa(cli_addr.sin_addr),
+		ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
 				 cli_addr.sin_port,
 				 accepted_socket));
 
 		m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
-			boost::bind(&hPoolServer::Handler, this, client_info)));
+			boost::bind(&hPoolServer::Handler, this, connection)));
 	}
 	return TaskLauncher::NO_RELAUNCH;
 }

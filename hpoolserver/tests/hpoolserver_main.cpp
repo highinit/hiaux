@@ -26,25 +26,25 @@ bool suite_hPoolServerTests_init = false;
 static hPoolServerTests suite_hPoolServerTests;
 
 static CxxTest::List Tests_hPoolServerTests = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 6, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
+CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 8, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
 
 static class TestDescription_suite_hPoolServerTests_testCheckInitConnection : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 39, "testCheckInitConnection" ) {}
+ TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 41, "testCheckInitConnection" ) {}
  void runTest() { suite_hPoolServerTests.testCheckInitConnection(); }
 } testDescription_suite_hPoolServerTests_testCheckInitConnection;
 
 static class TestDescription_suite_hPoolServerTests_testSendSimple : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 69, "testSendSimple" ) {}
+ TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 71, "testSendSimple" ) {}
  void runTest() { suite_hPoolServerTests.testSendSimple(); }
 } testDescription_suite_hPoolServerTests_testSendSimple;
 
-static class TestDescription_suite_hPoolServerTests_testPoolServer : public CxxTest::RealTestDescription {
+static class TestDescription_suite_hPoolServerTests_testWebSocketServer : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testPoolServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 84, "testPoolServer" ) {}
- void runTest() { suite_hPoolServerTests.testPoolServer(); }
-} testDescription_suite_hPoolServerTests_testPoolServer;
+ TestDescription_suite_hPoolServerTests_testWebSocketServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 123, "testWebSocketServer" ) {}
+ void runTest() { suite_hPoolServerTests.testWebSocketServer(); }
+} testDescription_suite_hPoolServerTests_testWebSocketServer;
 
 #include <cxxtest/Root.cpp>
 const char* CxxTest::RealWorldDescription::_worldName = "cxxtest";
