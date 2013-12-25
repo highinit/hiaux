@@ -19,13 +19,28 @@ class WebSocketSrv
 	{
 	public:
 		
+		enum State
+		{
+			READING_HEADERS,
+			READING_FRAME
+		};
+		
+		State state;
+		std::string readbf;
+		
+		Connection()
+		{
+			state = READING_HEADERS;
+		}
 	};
 	
+	typedef boost::shared_ptr<Connection> ConnectionPtr;
 	
 	TaskLauncherPtr m_launcher;
 	hPoolServerPtr m_poolserver;
 	
-	std::tr1::unordered_map<int, Connection> connections;
+	// socket / connection
+	std::tr1::unordered_map<int, ConnectionPtr> connections;
 	
 	
 	bool isWebSocket(const std::string &bf, std::string &key);
