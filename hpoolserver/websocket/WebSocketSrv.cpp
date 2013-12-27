@@ -1,5 +1,6 @@
 #include "WebSocketSrv.h"
-
+#include "../../crypt/sha1.h"
+#include "../../crypt/base64.h"
 #include <sstream>
 ///#define PORT 8080
 #define BUF_LEN 0x1FF
@@ -62,15 +63,42 @@ void WebSocketSrv::handler(hPoolServer::ConnectionPtr connection)
 	if (web_conn->state == Connection::READING_HEADERS) {
 		char bf[BUF_LEN];
 		int nread = ::recv(connection->m_sock, bf, BUF_LEN, 0);
-		//std::cout << bf << std::endl;
+		std::cout << bf << std::endl;
 		//std::cout << "read bytes: " << nread << std::endl;
 		web_conn->readbf.append(bf);
 		std::string key;
 		if (isWebSocket(web_conn->readbf, key)) {
+			//key = "Iv8io/9s+lYFgZWcXczP8Q==";
+			std::string accept_key = key+"258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+			unsigned char sha1_hash[20];
+			sha1::calc(accept_key.data(), accept_key.size(), sha1_hash);
+			accept_key = base64_encode(sha1_hash, 20);
 			std::cout << "Reading headers done key:" << key << "\n";
-			
+			std::string response = "HTTP/1.1 101 Switching Protocols\n"
+								"Upgrade: websocket\n"
+								"Connection: Upgrade\n"
+								"Sec-WebSocket-Accept: "+accept_key+"\n";
+						//		"Sec-WebSocket-Extensions: x-webkit-deflate-frame";
+			std::cout << "RESPONSE\n" +  response + "\n";
+			int nsend = 0;
+			while (nsend != response.size()) {
+				nsend = ::send(connection->m_sock,
+							response.substr(nsend, response.size()-nsend).c_str(),
+							response.size()-nsend, 0);
+				//std::cout << "sent: " << nsend << std::endl;
+			}
 			web_conn->state = Connection::READING_FRAME;
 		}
+	}
+	
+	if (web_conn->state == Connection::READING_FRAME) {
+		//std::cout << "reading frame:\n";
+		char bf[BUF_LEN];
+		int nread = ::recv(connection->m_sock, bf, BUF_LEN, 0);
+		//std::cout << nread;
+		//if (bf!="")
+		std::cout << bf;
+		//std::cout << "sent handshake got:\n" << bf;
 	}
 	//connection->close();
 }

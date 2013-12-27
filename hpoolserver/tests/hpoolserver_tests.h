@@ -130,7 +130,7 @@ public:
 		WebSocketSrvPtr websocket_srv(new WebSocketSrv(launcher));
 		websocket_srv->start(port);
 		pool->run();
-		launcher->setNoMoreTasks();
+		//launcher->setNoMoreTasks();
 		pool->join();
 	}
 	

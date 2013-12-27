@@ -9,7 +9,6 @@
 #define	WEBSOCKETSRV_H
 
 #include "../hpoolserver.h"
-#include "cwebsocket/websocket.h"
 #include <tr1/unordered_map>
 
 
