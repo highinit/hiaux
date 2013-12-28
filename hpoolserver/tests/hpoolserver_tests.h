@@ -6,6 +6,7 @@
 
 #include "../../hrpc/hcomm/include/hsock.h"
 
+#include "../../common/string_utils.h"
 
 /* UTF-8 to ISO-8859-1/ISO-8859-15 mapper.
  * Return 0..255 for valid ISO-8859-15 code points, 256 otherwise.
@@ -211,7 +212,38 @@ public:
 	
 	}
 	
+	bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
+	{
+		size_t eq_sym_pos = s.find('=');
+		if (eq_sym_pos == std::string::npos)
+			return false;
+		std::string key = s.substr(0, eq_sym_pos);
+		std::string value = s.substr(eq_sym_pos+1, s.size()-eq_sym_pos);
+		removeLeadingAndEndingSpaces(key);
+		removeLeadingAndEndingSpaces(value);
+		kv.first = key;
+		kv.second = value;
+		return true;
+	}
 	
+	void parseUrl(const std::string &data,
+				std::tr1::unordered_map<std::string, std::string> &values_GET)
+	{
+		std::cout << "\n___PARSE URL___\n";
+		if (data.size()<4) return;
+		//std::string data = _data.substr(2, _data.size()-3);
+		std::vector<char> delims;
+		delims.push_back('?');
+		delims.push_back('&');
+		
+		std::vector<std::string> keyvalues;
+		split(data, delims, keyvalues);
+		for (int i = 0; i<keyvalues.size(); i++) {
+			std::pair<std::string, std::string> kv;
+			if (getPairGET(keyvalues[i], kv))
+				std::cout << "KEY: " << kv.first << " VALUE: " << kv.second << std::endl;
+		}
+	}
 	
 	void poolServerHandler(hPoolServer::ConnectionPtr conn)
 	{
@@ -220,8 +252,22 @@ public:
 	//	while (bf.find('\n')==std::string::npos)
 		
 		conn->recv(bf);
-		//std::cout << bf << std::endl;
+		std::cout << bf << std::endl;
 		if (bf!="") {
+			std::tr1::unordered_map<std::string, std::string> values_GET;
+			
+			
+			std::vector<std::string> lines;
+			split(bf, '\n', lines);
+			std::cout << "LINES: " << lines.size() << std::endl;
+			if (lines.size()>=1) {
+				std::vector<std::string> words;
+				split(lines[0], ' ', words);
+				std::cout << "WORDS: " << words.size() << std::endl;
+				if (words.size()>2)
+					parseUrl(words[1], values_GET);
+			}
+			
 			std::string content = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
 								"<html><body>SERVER HEIL!</body></html>";
 
@@ -231,7 +277,7 @@ public:
 			std::string response = "HTTP/1.1 200 OK\r\n"
 						"Content-Type: text/html; charset=utf-8\r\n"
 						"Date: Sat, 28 Dec 2013 18:33:30 GMT\r\n"
-						"Server: highinit suggest\r\n"
+						"Server: highinit suggest server\r\n"
 						"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Content-Length: "+content_len+"\n\n"+content+"\r\n";
@@ -239,7 +285,7 @@ public:
 
 			char buf[response.size()];
 			utf8_to_latin9(buf, response.c_str(), response.size());
-			std::cout << "\n\nRESPONSE: \n" << response;
+			//std::cout << "\n\nRESPONSE: \n" << response;
 			conn->send(buf);
 		}
 		//conn->close();
@@ -258,7 +304,7 @@ public:
 		pool->run();
 		launcher->setNoMoreTasks();
 		
-		sleep(1);
+		//sleep(1);
 		/*
 			for (int i = 0; i<10; i++) {
 				int cli = hSock::client("127.0.0.1", port);
@@ -289,5 +335,6 @@ public:
 		//launcher->setNoMoreTasks();
 		pool->join();
 	}
+	
 	
 };

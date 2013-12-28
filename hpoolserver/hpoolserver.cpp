@@ -39,20 +39,23 @@ uint64_t hPoolServer::Connection::getChangeTs()
 
 void hPoolServer::Connection::recv(std::string &_bf)
 {
-	char bf[400];
-	size_t nread = ::recv(m_sock, bf, 400, 0);
+	char bf[500];
+	size_t nread = ::recv(m_sock, bf, 500, 0);
 	//std::cout << "nread " << nread << std::endl;
 	//bf[nread] = '\0';
+	std::cout << "RECIEVED: " << nread << std::endl;
 	_bf.append(bf);
 }
 
 void hPoolServer::Connection::send(const std::string &_mess)
 {
 	std::string bf = _mess; 
-	while (bf.size() != 0) {
+	//while (bf.size() != 0) {
 		size_t nsent = ::send(m_sock, bf.c_str(), bf.size(), 0);
-		bf = bf.substr(nsent, bf.size()-nsent);
-	}
+		if (nsent<=0)
+			std::cout << "SEND ERROR!!_____________";
+	//	bf = bf.substr(nsent, bf.size()-nsent);
+//	}
 }
 
 void hPoolServer::Connection::close()

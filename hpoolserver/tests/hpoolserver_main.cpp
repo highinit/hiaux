@@ -26,23 +26,23 @@ bool suite_hPoolServerTests_init = false;
 static hPoolServerTests suite_hPoolServerTests;
 
 static CxxTest::List Tests_hPoolServerTests = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 141, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
+CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 142, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
 
 static class TestDescription_suite_hPoolServerTests_testCheckInitConnection : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 174, "testCheckInitConnection" ) {}
+ TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 175, "testCheckInitConnection" ) {}
  void runTest() { suite_hPoolServerTests.testCheckInitConnection(); }
 } testDescription_suite_hPoolServerTests_testCheckInitConnection;
 
 static class TestDescription_suite_hPoolServerTests_testSendSimple : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 204, "testSendSimple" ) {}
+ TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 205, "testSendSimple" ) {}
  void runTest() { suite_hPoolServerTests.testSendSimple(); }
 } testDescription_suite_hPoolServerTests_testSendSimple;
 
 static class TestDescription_suite_hPoolServerTests_testPoolServer : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testPoolServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 248, "testPoolServer" ) {}
+ TestDescription_suite_hPoolServerTests_testPoolServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 294, "testPoolServer" ) {}
  void runTest() { suite_hPoolServerTests.testPoolServer(); }
 } testDescription_suite_hPoolServerTests_testPoolServer;
 

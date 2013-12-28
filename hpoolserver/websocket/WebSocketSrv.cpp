@@ -6,27 +6,13 @@
 #define BUF_LEN 0x1FF
 #define PACKET_DUMP
 
+#include "../../common/string_utils.h"
+
 WebSocketSrv::WebSocketSrv(TaskLauncherPtr launcher):
 	m_launcher(launcher)
 {
 	m_poolserver.reset(new hPoolServer(launcher, 
 					boost::bind(&WebSocketSrv::handler, this, _1)));
-}
-
-std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
-}
-
-
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
 }
 
 bool WebSocketSrv::isWebSocket(const std::string &bf, std::string &key)
