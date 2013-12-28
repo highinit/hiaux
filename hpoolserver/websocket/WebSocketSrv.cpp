@@ -73,20 +73,21 @@ void WebSocketSrv::handler(hPoolServer::ConnectionPtr connection)
 			unsigned char sha1_hash[20];
 			sha1::calc(accept_key.data(), accept_key.size(), sha1_hash);
 			accept_key = base64_encode(sha1_hash, 20);
-			std::cout << "Reading headers done key:" << key << "\n";
-			std::string response = "HTTP/1.1 101 Switching Protocols\n"
-								"Upgrade: websocket\n"
-								"Connection: Upgrade\n"
-								"Sec-WebSocket-Accept: "+accept_key+"\n";
-						//		"Sec-WebSocket-Extensions: x-webkit-deflate-frame";
-			std::cout << "RESPONSE\n" +  response + "\n";
+			std::cout << "Reading headers done key:" << key << "\r\n";
+			std::string response = "HTTP/1.1 101 Switching Protocols\r\n"
+								"Upgrade: websocket\r\n"
+								"Connection: upgrade\r\n"
+								"Sec-WebSocket-Accept: "+accept_key+"\r\n";
+								//"Sec-WebSocket-Extensions: x-webkit-deflate-frame\n";
+			std::cout << "RESPONSE\n\n" +  response + "\n";
 			int nsend = 0;
 			while (nsend != response.size()) {
-				nsend = ::send(connection->m_sock,
+				nsend += ::send(connection->m_sock,
 							response.substr(nsend, response.size()-nsend).c_str(),
 							response.size()-nsend, 0);
-				//std::cout << "sent: " << nsend << std::endl;
+				std::cout << "sent: " << nsend << std::endl;
 			}
+			std::cout << "reading frame:\n";
 			web_conn->state = Connection::READING_FRAME;
 		}
 	}
