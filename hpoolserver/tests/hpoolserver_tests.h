@@ -252,11 +252,11 @@ public:
 	//	while (bf.find('\n')==std::string::npos)
 		
 		conn->recv(bf);
-		std::cout << bf << std::endl;
 		if (bf!="") {
+			std::cout << bf << std::endl;
 			std::tr1::unordered_map<std::string, std::string> values_GET;
 			
-			
+			/*
 			std::vector<std::string> lines;
 			split(bf, '\n', lines);
 			std::cout << "LINES: " << lines.size() << std::endl;
@@ -267,7 +267,7 @@ public:
 				if (words.size()>2)
 					parseUrl(words[1], values_GET);
 			}
-			
+			*/
 			std::string content = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
 								"<html><body>SERVER HEIL!</body></html>";
 
