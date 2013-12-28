@@ -75,9 +75,9 @@ void WebSocketSrv::handler(hPoolServer::ConnectionPtr connection)
 			accept_key = base64_encode(sha1_hash, 20);
 			std::cout << "Reading headers done key:" << key << "\r\n";
 			std::string response = "HTTP/1.1 101 Switching Protocols\r\n"
-								"Upgrade: websocket\r\n"
-								"Connection: upgrade\r\n"
-								"Sec-WebSocket-Accept: "+accept_key+"\r\n";
+					"Upgrade: websocket\r\n"
+					"Connection: upgrade\r\n"
+					"Sec-WebSocket-Accept: "+accept_key;//+"\r\n";
 								//"Sec-WebSocket-Extensions: x-webkit-deflate-frame\n";
 			std::cout << "RESPONSE\n\n" +  response + "\n";
 			int nsend = 0;

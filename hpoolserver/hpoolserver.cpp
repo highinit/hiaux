@@ -39,8 +39,8 @@ uint64_t hPoolServer::Connection::getChangeTs()
 
 void hPoolServer::Connection::recv(std::string &_bf)
 {
-	char bf[255];
-	size_t nread = ::recv(m_sock, bf, 255, MSG_WAITALL);
+	char bf[400];
+	size_t nread = ::recv(m_sock, bf, 400, 0);
 	//std::cout << "nread " << nread << std::endl;
 	//bf[nread] = '\0';
 	_bf.append(bf);
@@ -50,7 +50,7 @@ void hPoolServer::Connection::send(const std::string &_mess)
 {
 	std::string bf = _mess; 
 	while (bf.size() != 0) {
-		size_t nsent = ::send(m_sock, bf.c_str(), bf.size(), MSG_DONTWAIT);
+		size_t nsent = ::send(m_sock, bf.c_str(), bf.size(), 0);
 		bf = bf.substr(nsent, bf.size()-nsent);
 	}
 }
@@ -94,7 +94,7 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 		ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
 				 cli_addr.sin_port,
 				 accepted_socket));
-
+		std::cout << "\n_________NEW CONNECTION\n";
 		m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
 			boost::bind(&hPoolServer::Handler, this, connection)));
 	}
