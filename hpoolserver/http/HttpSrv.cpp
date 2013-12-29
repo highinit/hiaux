@@ -55,6 +55,7 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 						"Server: "+m_resp_info->server_name+"\r\n"
 						"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
+						"Access-Control-Allow-Origin: *\r\n"
 						"Content-Length: "+content_len+"\n\n"+_content+"\r\n";
 	size_t nsent = ::send(m_sock, response.c_str(), response.size(), MSG_DONTWAIT);
 	if (nsent<=0)
