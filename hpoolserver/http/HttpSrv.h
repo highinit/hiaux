@@ -11,53 +11,70 @@
 #include "../hpoolserver.h"
 #include <tr1/unordered_map>
 
-#include "http_parser.h"
-
 class HttpSrv
 {
+public:
+	
+	class ResponseInfo
+	{
+	public:
+		std::string content_type;
+		std::string server_name;
+		ResponseInfo(const std::string &_content_type,
+					const std::string &_server_name);
+	};
+	
+	typedef boost::shared_ptr<ResponseInfo> ResponseInfoPtr;
+	
 	class Request
 	{
 	public:
 		std::string value;
+		std::tr1::unordered_map<std::string, std::string> values_GET;
 		
 		Request() { }
 		Request(const std::string &_url);
 		bool getField(const std::string name, std::string &value);
 	};
 	
+	typedef boost::shared_ptr<Request> RequestPtr;
+	
 	class Connection
 	{
 	public:
-		/*enum State
-		{
-			PARSING_REQUEST,
-			SENDING_RESPONSE
-		};
-		State state;
-		 */ 
 		bool alive;
+		bool closing;
 	private:
 		int m_sock;
 		std::string readbf;
 		std::string sendbf;
-		std::queue<Request> requests;
+		std::queue<RequestPtr> requests;
+		
+		ResponseInfoPtr m_resp_info;
 		
 		bool recv();
 		void parseRequests();
 	public:
-		Connection(int sock);
+		Connection(int sock, ResponseInfoPtr resp_info);
 		~Connection();
-		bool getNextRequest(Request &req);
-		void send(const std::string &_mess);
+		RequestPtr getNextRequest();
+		void close();
+		//void send(const std::string &_mess);
+		void sendResponse(const std::string &_content);
 	};
 	
 	typedef boost::shared_ptr<Connection> ConnectionPtr;
-	
+
+private:
 	TaskLauncherPtr m_launcher;
 	hPoolServerPtr m_poolserver;
 	
 	// socket / connection
 	std::tr1::unordered_map<int, ConnectionPtr> connections;
+	
+	boost::function<void(HttpSrv::ConnectionPtr, HttpSrv::RequestPtr)> m_request_hdl;
+	
+	ResponseInfoPtr m_resp_info;
 	
 	ConnectionPtr getHttpConn(int socket);
 	void closeHttpConn(int socket);
@@ -65,7 +82,10 @@ public:
 	
 	void handler(hPoolServer::ConnectionPtr pool_conn);
 	
-	HttpSrv(TaskLauncherPtr launcher);
+	HttpSrv(TaskLauncherPtr launcher,
+			const ResponseInfo &_resp_info,
+			boost::function<void(HttpSrv::ConnectionPtr,
+								HttpSrv::RequestPtr)> request_hdl);
 	void start(int port);
 };
 

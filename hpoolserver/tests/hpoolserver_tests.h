@@ -306,13 +306,29 @@ public:
 		pool->join();
 	}
 	
+	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req)
+	{
+		std::cout << "onHttpRequest\n";
+		std::tr1::unordered_map<std::string, std::string>::iterator it =
+					req->values_GET.begin();
+		while (it != req->values_GET.end()) {
+			std::cout << it->first << "/" << it->second << std::endl;
+			it++;
+		}
+		
+		http_conn->sendResponse("SIEG HEIL SERVER!");
+	}
+	
 	void testHttpServer()
 	{
 		const int port = 12345;
 		hThreadPool *pool = new hThreadPool(10);
 		TaskLauncherPtr launcher (new TaskLauncher(
 						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
-		HttpSrvPtr http_srv(new HttpSrv(launcher));
+		HttpSrvPtr http_srv(new HttpSrv(launcher,
+						HttpSrv::ResponseInfo("text/html; charset=utf-8",
+											"highinit suggest server"),
+						boost::bind(&hPoolServerTests::onHttpRequest, this, _1, _2)));
 		http_srv->start(port);
 		pool->run();
 		pool->join();

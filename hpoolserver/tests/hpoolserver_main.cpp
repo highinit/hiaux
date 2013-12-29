@@ -42,7 +42,7 @@ public:
 
 static class TestDescription_suite_hPoolServerTests_testHttpServer : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testHttpServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 309, "testHttpServer" ) {}
+ TestDescription_suite_hPoolServerTests_testHttpServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 322, "testHttpServer" ) {}
  void runTest() { suite_hPoolServerTests.testHttpServer(); }
 } testDescription_suite_hPoolServerTests_testHttpServer;
 
