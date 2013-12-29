@@ -32,6 +32,12 @@ hPoolServer::Connection::Connection(std::string _ip, int _port, int _sock):
 {
 }
 
+hPoolServer::Connection::~Connection()
+{
+	shutdown(m_sock, SHUT_RDWR);
+//	std::cout << "pool connection closed\n";
+}
+
 uint64_t hPoolServer::Connection::getChangeTs()
 {
 	return change_ts;
@@ -44,16 +50,16 @@ void hPoolServer::Connection::recv(std::string &_bf)
 	//std::cout << "nread " << nread << std::endl;
 	//bf[nread] = '\0';
 	if (nread>=0) {
-		std::cout << "RECIEVED: " << nread << std::endl;
+		//std::cout << "RECIEVED: " << nread << std::endl;
 		_bf.append(bf);
 	}
 }
 
 void hPoolServer::Connection::send(const std::string &_mess)
 {
-	std::string bf = _mess; 
+	//std::string bf = _mess; 
 	//while (bf.size() != 0) {
-		size_t nsent = ::send(m_sock, bf.c_str(), bf.size(), 0);
+		size_t nsent = ::send(m_sock, _mess.c_str(), _mess.size(), MSG_DONTWAIT);
 		if (nsent<=0)
 			std::cout << "SEND ERROR!!_____________";
 	//	bf = bf.substr(nsent, bf.size()-nsent);
@@ -77,8 +83,9 @@ TaskLauncher::TaskRet hPoolServer::Handler(ConnectionPtr client_info)
 	m_handler(client_info);
 	
 	// check to kill client
-	if (client_info->closing) 
+	if (client_info->closing) {
 		return TaskLauncher::NO_RELAUNCH;
+	}
 	// if timeout
 	
 	// ok, no kill

@@ -1,6 +1,7 @@
 #include "string_utils.h"
 #include <sstream>
 #include <iostream>
+#include <curl/curl.h>
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
@@ -66,4 +67,50 @@ void removeLeadingAndEndingSpaces(std::string &s)
 {
 	removeLeadingSpaces(s);
 	removeEndingSpaces(s);
+}
+
+bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
+{
+	size_t eq_sym_pos = s.find('=');
+	if (eq_sym_pos == std::string::npos)
+		return false;
+	std::string key = s.substr(0, eq_sym_pos);
+	std::string value = s.substr(eq_sym_pos+1, s.size()-eq_sym_pos);
+	removeLeadingAndEndingSpaces(key);
+	removeLeadingAndEndingSpaces(value);
+	char *key_c = curl_easy_unescape(NULL, key.c_str(), key.size(), NULL);
+	if (key_c==NULL) return false;
+	kv.first = std::string(key_c);
+	curl_free(key_c);
+	
+	char *value_c = curl_easy_unescape(NULL, value.c_str(), value.size(), NULL);
+	if (value_c==NULL) return false;
+	kv.second = std::string(value_c);
+	curl_free(value_c);
+	
+	return true;
+}
+	
+void parseGET(const std::string &_data,
+			std::tr1::unordered_map<std::string, std::string> &values_GET)
+{
+	std::vector<std::string> words = split(_data, ' ');
+	if (words.size()<2)
+		return;
+	
+	std::string data = words[1];
+	
+	if (data.size()<4) return;
+	std::vector<char> delims;
+	delims.push_back('?');
+	delims.push_back('&');
+
+	std::vector<std::string> keyvalues;
+	split(data, delims, keyvalues);
+	for (int i = 0; i<keyvalues.size(); i++) {
+		std::pair<std::string, std::string> kv;
+		if (getPairGET(keyvalues[i], kv))
+			//std::cout << "KEY: " << kv.first << " VALUE: " << kv.second << std::endl;
+			values_GET[kv.first] = kv.second;
+	}
 }

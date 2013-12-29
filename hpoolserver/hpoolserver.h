@@ -22,6 +22,7 @@ public:
 		void close();
 
 		Connection(std::string _ip, int _port, int _sock);
+		~Connection();
 	};
 	
 	typedef boost::shared_ptr<Connection> ConnectionPtr;

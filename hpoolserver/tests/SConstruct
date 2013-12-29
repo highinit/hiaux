@@ -1,6 +1,6 @@
 _CCFLAGS = '-c -Wall '
 
-_LINKFLAGS = '-g -v '
+_LINKFLAGS = '-g -v -lcurl'
 
 _CXX = ' clang++'# -Wc++11-extensions'
 

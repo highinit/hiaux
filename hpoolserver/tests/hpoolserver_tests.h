@@ -7,6 +7,7 @@
 #include "../../hrpc/hcomm/include/hsock.h"
 
 #include "../../common/string_utils.h"
+#include "../http/HttpSrv.h"
 
 /* UTF-8 to ISO-8859-1/ISO-8859-15 mapper.
  * Return 0..255 for valid ISO-8859-15 code points, 256 otherwise.
@@ -212,38 +213,7 @@ public:
 	
 	}
 	
-	bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
-	{
-		size_t eq_sym_pos = s.find('=');
-		if (eq_sym_pos == std::string::npos)
-			return false;
-		std::string key = s.substr(0, eq_sym_pos);
-		std::string value = s.substr(eq_sym_pos+1, s.size()-eq_sym_pos);
-		removeLeadingAndEndingSpaces(key);
-		removeLeadingAndEndingSpaces(value);
-		kv.first = key;
-		kv.second = value;
-		return true;
-	}
 	
-	void parseUrl(const std::string &data,
-				std::tr1::unordered_map<std::string, std::string> &values_GET)
-	{
-		std::cout << "\n___PARSE URL___\n";
-		if (data.size()<4) return;
-		//std::string data = _data.substr(2, _data.size()-3);
-		std::vector<char> delims;
-		delims.push_back('?');
-		delims.push_back('&');
-		
-		std::vector<std::string> keyvalues;
-		split(data, delims, keyvalues);
-		for (int i = 0; i<keyvalues.size(); i++) {
-			std::pair<std::string, std::string> kv;
-			if (getPairGET(keyvalues[i], kv))
-				std::cout << "KEY: " << kv.first << " VALUE: " << kv.second << std::endl;
-		}
-	}
 	
 	void poolServerHandler(hPoolServer::ConnectionPtr conn)
 	{
@@ -291,7 +261,7 @@ public:
 		//conn->close();
 	}
 	
-	void testPoolServer()
+	void XtestPoolServer()
 	{
 		try {
 		hThreadPool *pool = new hThreadPool(10);
@@ -336,5 +306,16 @@ public:
 		pool->join();
 	}
 	
+	void testHttpServer()
+	{
+		const int port = 12345;
+		hThreadPool *pool = new hThreadPool(10);
+		TaskLauncherPtr launcher (new TaskLauncher(
+						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
+		HttpSrvPtr http_srv(new HttpSrv(launcher));
+		http_srv->start(port);
+		pool->run();
+		pool->join();
+	}
 	
 };

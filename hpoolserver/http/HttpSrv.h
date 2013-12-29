@@ -15,33 +15,40 @@
 
 class HttpSrv
 {
+	class Request
+	{
+	public:
+		std::string value;
+		
+		Request() { }
+		Request(const std::string &_url);
+		bool getField(const std::string name, std::string &value);
+	};
+	
 	class Connection
 	{
-		http_parser *m_parser;
-		http_parser_settings *m_parser_settings;
 	public:
-		
-		enum State
+		/*enum State
 		{
 			PARSING_REQUEST,
 			SENDING_RESPONSE
 		};
-		
 		State state;
+		 */ 
+		bool alive;
+	private:
+		int m_sock;
 		std::string readbf;
 		std::string sendbf;
+		std::queue<Request> requests;
 		
-		Connection()
-		{
-			m_parser_settings = new http_parser_settings;
-			http_parser_init(m_parser, HTTP_REQUEST);
-			state = PARSING_REQUEST;
-		}
-		
-		bool getField(const std::string name, std::string &value)
-		{
-			
-		}
+		bool recv();
+		void parseRequests();
+	public:
+		Connection(int sock);
+		~Connection();
+		bool getNextRequest(Request &req);
+		void send(const std::string &_mess);
 	};
 	
 	typedef boost::shared_ptr<Connection> ConnectionPtr;
@@ -53,6 +60,7 @@ class HttpSrv
 	std::tr1::unordered_map<int, ConnectionPtr> connections;
 	
 	ConnectionPtr getHttpConn(int socket);
+	void closeHttpConn(int socket);
 public:
 	
 	void handler(hPoolServer::ConnectionPtr pool_conn);
