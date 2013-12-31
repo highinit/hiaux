@@ -43,6 +43,7 @@ uint64_t hPoolServer::Connection::getChangeTs()
 	return change_ts;
 }
 
+/*
 void hPoolServer::Connection::recv(std::string &_bf)
 {
 	char bf[100];
@@ -64,7 +65,7 @@ void hPoolServer::Connection::send(const std::string &_mess)
 			std::cout << "SEND ERROR!!_____________";
 	//	bf = bf.substr(nsent, bf.size()-nsent);
 //	}
-}
+}*/
 
 void hPoolServer::Connection::close()
 {
@@ -94,7 +95,7 @@ TaskLauncher::TaskRet hPoolServer::Handler(ConnectionPtr client_info)
 
 TaskLauncher::TaskRet hPoolServer::listenThread()
 {
-	while (m_isrunning) {
+	if (m_isrunning) {
 		struct sockaddr_in cli_addr;
 		size_t clilen = sizeof(cli_addr);
 		int accepted_socket = accept(m_listen_socket, 
@@ -109,6 +110,7 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 		std::cout << "\n_________NEW CONNECTION\n";
 		m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
 			boost::bind(&hPoolServer::Handler, this, connection)));
+		return TaskLauncher::RELAUNCH;
 	}
 	return TaskLauncher::NO_RELAUNCH;
 }

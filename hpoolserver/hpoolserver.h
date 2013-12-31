@@ -17,8 +17,8 @@ public:
 		int port;
 		
 		uint64_t getChangeTs();
-		void recv(std::string &_bf);
-		void send(const std::string &_mess);
+		//void recv(std::string &_bf);
+		//void send(const std::string &_mess);
 		void close();
 
 		Connection(std::string _ip, int _port, int _sock);

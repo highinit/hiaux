@@ -46,6 +46,9 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 	sprintf(content_len_c, "%d", _content.size());
 	std::string content_len(content_len_c);
 	
+	//char time_c[50];
+	//sprintf(time_c, "%d", asctime(0));
+	
 	char time_c[50];
 	sprintf(time_c, "%d", time(0));
 	
