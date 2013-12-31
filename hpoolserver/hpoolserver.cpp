@@ -95,7 +95,7 @@ TaskLauncher::TaskRet hPoolServer::Handler(ConnectionPtr client_info)
 
 TaskLauncher::TaskRet hPoolServer::listenThread()
 {
-	if (m_isrunning) {
+	while (m_isrunning) {
 		struct sockaddr_in cli_addr;
 		size_t clilen = sizeof(cli_addr);
 		int accepted_socket = accept(m_listen_socket, 
@@ -110,7 +110,7 @@ TaskLauncher::TaskRet hPoolServer::listenThread()
 		std::cout << "\n_________NEW CONNECTION\n";
 		m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()>(
 			boost::bind(&hPoolServer::Handler, this, connection)));
-		return TaskLauncher::RELAUNCH;
+		//return TaskLauncher::RELAUNCH;
 	}
 	return TaskLauncher::NO_RELAUNCH;
 }
