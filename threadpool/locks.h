@@ -20,11 +20,12 @@ class hAutoLock;
 
 class hLockTicket
 {
+public:
+
 	pmutexPtr m_lock;
 	boost::atomic<int> m_locked;
-public:
 	
-	friend hAutoLock;
+//	friend hAutoLock;
 	
 	hLockTicket(pmutexPtr lock, bool locked);
 	hLockTicket(const hLockTicket &a);
