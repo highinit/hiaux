@@ -13,11 +13,12 @@ hLockTicket::hLockTicket(pmutexPtr lock, bool locked)
 	}
 }
 
+/*
 hLockTicket::hLockTicket(const hLockTicket &a)
 {
 	m_locked = a.m_locked.load();
 	m_lock = a.m_lock; 
-}
+}*/
 
 hLockTicket::~hLockTicket()
 {

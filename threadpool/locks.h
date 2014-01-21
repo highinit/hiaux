@@ -12,13 +12,14 @@
 #include <boost/atomic.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 
 typedef pthread_mutex_t pmutex;
 typedef boost::shared_ptr<pthread_mutex_t> pmutexPtr;
 
 class hAutoLock;
 
-class hLockTicket
+class hLockTicket : public boost::noncopyable
 {
 public:
 
@@ -28,7 +29,7 @@ public:
 //	friend hAutoLock;
 	
 	hLockTicket(pmutexPtr lock, bool locked);
-	hLockTicket(const hLockTicket &a);
+	//hLockTicket(const hLockTicket &a);
 	~hLockTicket();
 	void unlock();
 };
