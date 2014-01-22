@@ -114,3 +114,29 @@ void parseGET(const std::string &_data,
 			values_GET[kv.first] = kv.second;
 	}
 }
+
+inline bool isDelimeter(char c)
+{
+	if (c==' ') return true;
+	if (c=='\t') return true;
+	if (c=='\n') return true;
+	return false;
+}
+
+void removeRedundantDelimeters(std::string &s)
+{
+//	std::wstring();
+	bool prev_delim = false;
+	std::string::iterator it = s.begin();
+	while (it != s.end()) {
+		if (isDelimeter(*it)) {
+			if (prev_delim)
+				s.erase(it);
+			else
+				prev_delim = true;
+		} else {
+			prev_delim = false;
+		}
+		it++;
+	}
+}

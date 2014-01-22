@@ -31,5 +31,8 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv);
 void parseGET(const std::string &data,
 			std::tr1::unordered_map<std::string, std::string> &values_GET);
 
+inline bool isDelimeter(char c);
+void removeRedundantDelimeters(std::string &s);
+
 #endif	/* STRING_UTILS_H */
 
