@@ -25,13 +25,13 @@ private:
 	
 	boost::atomic<size_t> tasks_launched;
 	boost::atomic<size_t> tasks_finished;
-	boost::atomic<bool> all_tasks_finished;
 	boost::atomic<bool> all_tasks_launched;
+	boost::atomic<bool> all_tasks_finished;
+	size_t m_max_parallel;
 	boost::atomic<bool> no_more_tasks;
 	
 	hLock finish_lock;
 	
-	size_t m_max_parallel;
 	boost::function<void()> m_onFinished;
 	
 	void incLaunched();

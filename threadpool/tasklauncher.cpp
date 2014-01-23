@@ -3,14 +3,14 @@
 TaskLauncher::TaskLauncher(hThreadPool *pool,
 						size_t max_parallel,
 						boost::function<void()> onFinished):
-	m_onFinished(onFinished),
+	m_pool(pool),
 	tasks_launched(0),
 	tasks_finished(0),
 	all_tasks_launched(0),
 	all_tasks_finished(0),
 	m_max_parallel(max_parallel),
 	no_more_tasks(0),
-	m_pool(pool)
+	m_onFinished(onFinished)
 {	
 }
 
