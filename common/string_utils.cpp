@@ -117,7 +117,7 @@ void parseGET(const std::string &_data,
 
 inline bool isDelimeter(char c)
 {
-	if (c==' ') return true;
+	//if (c==' ') return true;
 	if (c=='\t') return true;
 	if (c=='\n') return true;
 	return false;
@@ -130,8 +130,10 @@ void removeRedundantDelimeters(std::string &s)
 	std::string::iterator it = s.begin();
 	while (it != s.end()) {
 		if (isDelimeter(*it)) {
-			if (prev_delim)
+			if (prev_delim) {
 				s.erase(it);
+				//prev_delim = false;
+			}
 			else
 				prev_delim = true;
 		} else {
