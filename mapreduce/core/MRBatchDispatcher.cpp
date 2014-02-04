@@ -63,7 +63,7 @@ MRStats BatchMapper::getStats()
     return m_stats;
 }
 
-bool MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
+TaskLauncher::TaskRet MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 {
 	BatchMapper *mapper = new BatchMapper(batch, 
 						m_MR, 
@@ -74,7 +74,7 @@ bool MRBatchDispatcher::mapBatchTask(BatchAccessor* batch, int batchid)
 	m_stats += mapper->getStats();
 	delete mapper;
 	delete batch;
-	return 0;
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void MRBatchDispatcher::onBatchFinished(boost::shared_ptr<EmitHash> emit_hash, int batchid)
@@ -119,7 +119,7 @@ MRBatchDispatcher::MRBatchDispatcher(MapReduce *MR,
 void MRBatchDispatcher::addBatch(BatchAccessor* batch)
 {
 	int batchid = m_nbatches.fetch_add(1);
-	m_batch_tasks_launcher.addTask(new boost::function<bool()>(
+	m_batch_tasks_launcher.addTask(new boost::function<TaskLauncher::TaskRet()>(
 		boost::bind(&MRBatchDispatcher::mapBatchTask, this, batch, batchid)));
 }
 

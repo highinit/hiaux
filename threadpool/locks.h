@@ -51,8 +51,6 @@ public:
 class hLock
 {
 	pthread_mutex_t m;
-	hLock(const hLock&);
-	hLock &operator=(const hLock &);
 public:
 	
 	hLock();

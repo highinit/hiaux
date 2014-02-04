@@ -64,10 +64,11 @@ hLockTicketPtr hAutoLock::tryLock()
 	return empty_ticket;
 }
 
+/*
 hLock& hLock::operator=(const hLock &a)
 { 
-	return *this;
-}
+	
+}*/
 
 hLock::hLock()
 {

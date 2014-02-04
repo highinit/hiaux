@@ -35,18 +35,16 @@ public:
 	boost::atomic<size_t> nemits;
 	boost::atomic<size_t> nreduces;
 	MRStats();
-	MRStats(MRStats &a);
+	MRStats(const MRStats &a);
 	MRStats& operator+=(const MRStats &a);
 	MRStats& operator=(const MRStats &a);
 };
-
 
 class InputType
 {
 public:
 	virtual ~InputType() { }
 };
-
 
 class EmitType
 {

@@ -79,7 +79,7 @@ public:
 
 	void setProgressBar(boost::function<void(MRProgressBar)> showProgress);
 
-	bool reduceTask(MRInterResultPtr a, MRInterResultPtr b);
+	TaskLauncher::TaskRet reduceTask(MRInterResultPtr a, MRInterResultPtr b);
 	void onAddResult(MRInterResultPtr inter_result); // from batcher
 	void onGotResult(MRInterResultPtr inter_result); // from reduceTask
 	void noMoreInter();

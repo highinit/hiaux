@@ -35,7 +35,7 @@ MRInterResult::MRInterResult(std::string filename,
 	m_fd = open(filename.c_str(),  O_RDWR | O_CREAT | O_TRUNC,
 					S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-	flush_launcher.addTask(new boost::function<bool()>(
+	flush_launcher.addTask(new boost::function<TaskLauncher::TaskRet()>(
 		boost::bind(&MRInterResult::flushBuffer, this)));
 }
 
@@ -94,7 +94,7 @@ void MRInterResult::flush_wbuffer()
 	m_wbuffer_size = 0;
 }
 
-bool MRInterResult::flushBuffer()
+TaskLauncher::TaskRet MRInterResult::flushBuffer()
 {
 	write_queue.lock();
 	while (!write_queue.empty())
@@ -157,11 +157,11 @@ bool MRInterResult::flushBuffer()
 		flush_finish_lock.unlock();
 		
 		write_queue.unlock();
-		return 0; // dont repeat
+		return TaskLauncher::NO_RELAUNCH;
 	}
 
 	write_queue.unlock();
-	return 1; // repeat
+	return TaskLauncher::RELAUNCH;
 }
 
 void MRInterResult::waitFlushFinished()
@@ -236,7 +236,7 @@ void MRInterResult::preload(uint64_t key, bool cid)
 	{
 		throw hException("MRInterResult::preload error mode!=IR_READING");
 	}
-	auto it = m_file_map->find(key);
+	FileMap::iterator it = m_file_map->find(key);
 	if (it==m_file_map->end())
 	{
 		return;
@@ -342,8 +342,8 @@ void MRInterResult::setCacheReady(bool cid)
 Int64VecPtr MRInterResult::getKeys()
 {
 	Int64VecPtr keys( new std::vector<uint64_t> );
-	auto filemap_it = m_file_map->begin();
-	auto filemap_end = m_file_map->end();
+	FileMap::iterator filemap_it = m_file_map->begin();
+	FileMap::iterator filemap_end = m_file_map->end();
 	
 	while (filemap_it != filemap_end)
 	{

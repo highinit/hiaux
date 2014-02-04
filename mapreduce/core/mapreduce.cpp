@@ -33,7 +33,7 @@ MRStats::MRStats()
 	nreduces = 0;
 }
 
-MRStats::MRStats(MRStats &a)
+MRStats::MRStats(const MRStats &a)
 {
 	nmaps = a.nmaps.load();
 	nemits = a.nemits.load();

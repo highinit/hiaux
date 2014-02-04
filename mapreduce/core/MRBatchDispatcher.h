@@ -69,7 +69,7 @@ public:
 					boost::function<void(MRInterResultPtr)> onGotResult,
 					boost::function<void()> onBatchingFinished);
 
-	bool mapBatchTask(BatchAccessor* batch, int batchid);   
+	TaskLauncher::TaskRet mapBatchTask(BatchAccessor* batch, int batchid);   
 
 	void onBatchFinished(boost::shared_ptr<EmitHash> emit_hash, int batchid);
 	void addBatch(BatchAccessor* batch);

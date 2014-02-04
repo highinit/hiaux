@@ -15,7 +15,7 @@ public:
 				MapReduce *MR,
 				int emits_in_cache);
 
-	static bool loadCache(MRInterResultPtr inter,
+	static TaskLauncher::TaskRet loadCache(MRInterResultPtr inter,
 				bool cid,
 				Int64VecPtr keys, int b, int e, hLock &lock);
 

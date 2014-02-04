@@ -73,7 +73,7 @@ public:
 	~MRInterResult();
 	
 	//bool checkWriteBufferNotEmpty();
-	bool flushBuffer();
+	TaskLauncher::TaskRet flushBuffer();
 	
 	bool checkCacheReady(bool cid);
 	bool FlushFinished();

@@ -121,7 +121,7 @@ void MRNodeDispatcher::CallProgressBar()
 	m_showProgress(bar);
 }
 
-bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
+TaskLauncher::TaskRet MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 {
 	char filename[50];
 	sprintf(filename, "merge%d", (int)nmerge.fetch_add(1));
@@ -144,7 +144,7 @@ bool MRNodeDispatcher::reduceTask(MRInterResultPtr a, MRInterResultPtr b)
 	onGotResult(result);
 
 	CallProgressBar();
-	return 0;
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void MRNodeDispatcher::onAddResult(MRInterResultPtr inter_result)
@@ -178,7 +178,7 @@ void MRNodeDispatcher::onGotResult(MRInterResultPtr inter_result)
 		MRInterResultPtr b = inter_results.front();
 		inter_results.pop();
 		
-		reduce_tasks_launcher.addTask(new boost::function<bool()>
+		reduce_tasks_launcher.addTask(new boost::function<TaskLauncher::TaskRet()>
 				(boost::bind(&MRNodeDispatcher::reduceTask, this, a, b)));
 	}
 
@@ -199,7 +199,7 @@ void MRNodeDispatcher::noMoreInter()
 		MRInterResultPtr b = inter_results.front();
 		inter_results.pop();
 
-		reduce_tasks_launcher.addTask(new boost::function<bool()>
+		reduce_tasks_launcher.addTask(new boost::function<TaskLauncher::TaskRet()>
 				(boost::bind(&MRNodeDispatcher::reduceTask, this, a, b)));
 	}
 	
