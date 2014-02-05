@@ -34,5 +34,9 @@ void parseGET(const std::string &data,
 inline bool isDelimeter(char c);
 void removeRedundantDelimeters(std::string &s);
 
-#endif	/* STRING_UTILS_H */
+void string_to_uint64(const std::string &_s, uint64_t &_i);
+uint64_t string_to_uint64(const std::string &_s);
+void uint64_to_string(const uint64_t &_i, std::string &_s);
+std::string uint64_to_string(const uint64_t &_i);
 
+#endif	/* STRING_UTILS_H */

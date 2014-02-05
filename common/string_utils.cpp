@@ -142,3 +142,29 @@ void removeRedundantDelimeters(std::string &s)
 		it++;
 	}
 }
+
+void string_to_uint64(const std::string &_s, uint64_t &_i)
+{
+	sscanf(_s.c_str(), "%llu", &_i);
+}
+
+uint64_t string_to_uint64(const std::string &_s)
+{
+	uint64_t i;
+	string_to_uint64(_s, i);
+	return i;
+}
+
+void uint64_to_string(const uint64_t &_i, std::string &_s)
+{
+	char bf[50];
+	sprintf(bf, "%llu", _i);
+	_s = std::string(bf);
+}
+
+std::string uint64_to_string(const uint64_t &_i)
+{
+	char bf[50];
+	sprintf(bf, "%llu", _i);
+	return std::string(bf);
+}
