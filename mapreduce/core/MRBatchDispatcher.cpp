@@ -28,12 +28,13 @@ BatchMapper::BatchMapper(BatchAccessor* batch,
 	m_MR->setEmitF(boost::bind(&BatchMapper::emit, this, _1, _2));
 	m_emit_hash.reset(new EmitHash);
 
-	while (!m_batch->end())
-	{
+	while (!m_batch->end()) {
 		m_stats.nmaps++;
 		InputType *input = m_batch->getNextInput();
-		if (input!=NULL)
-		m_MR->map(input);
+		if (input!=NULL) {
+			m_MR->map(input);
+			delete input;
+		}
 	}
 	onBatchFinished(m_emit_hash, batchid);
 }

@@ -70,8 +70,8 @@ public:
 					MapReduce *MR,
 					std::string path,
 					boost::function<void(MRInterResultPtr)> onFinished,
-					size_t nbatch_threads = 6,
-					size_t nreduce_threads = 6,
+					size_t nbatch_threads = 3,
+					size_t nreduce_threads = 3,
 					size_t npreaload_threads = 1,
 					size_t nflush_threads = 1,
 					size_t preload_buffer_size = 500000,
@@ -87,5 +87,7 @@ public:
 
 	void addBatch(BatchAccessor* batch);
 };
+
+typedef boost::shared_ptr<MRNodeDispatcher> MRNodeDispatcherPtr;
 
 #endif

@@ -105,7 +105,7 @@ FileMapPtr InterResultLoader::getFileMap()
 EmitType *InterResultLoader::readEmit(off_t offset)
 {
 	uint8_t *data = p+offset;
-	uint64_t key = *((uint64_t*)data);
+//	uint64_t key = *((uint64_t*)data);
 	uint64_t size = *((uint64_t*)(data+sizeof(uint64_t)));
 	char bf[size+1];
 	memcpy(bf, (data+2*sizeof(uint64_t)), size);

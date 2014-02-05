@@ -25,8 +25,8 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
-
 #include <boost/atomic.hpp>
+#include <boost/noncopyable.hpp>
 
 class MRStats
 {
@@ -48,7 +48,9 @@ public:
 
 class EmitType
 {
-public: 
+public:
+	virtual void restore(const std::string &_dump) = 0;
+	virtual void dump(std::string &_dump) const = 0;
 	virtual ~EmitType() { } 
 };
 
@@ -63,7 +65,7 @@ public:
 	virtual ~BatchAccessor() { }
 };
 
-class MapReduce
+class MapReduce : public boost::noncopyable
 {
 protected:
 	boost::function<void(uint64_t, EmitType*)> emit; 
@@ -72,14 +74,14 @@ public:
 	MapReduce ();
 	void setEmitF(boost::function<void(uint64_t, EmitType*)> emitf);
 
-	virtual void map(InputType* object) = 0;
-	virtual EmitType* reduce(uint64_t key, EmitType* a, EmitType* b) = 0;
+	virtual void map(const InputType* object) const = 0;
+	virtual EmitType* reduce(uint64_t key, EmitType* a, EmitType* b) const = 0;
 	virtual void finilize(EmitType*) = 0;
 
-	virtual std::string dumpEmit(EmitType *emit) = 0;
-	virtual EmitType* restoreEmit(std::string dump) = 0;
+	//virtual void dumpEmit(const EmitType *_emit, std::string &_dump) const = 0;
+	virtual EmitType* restoreEmit(const std::string &_dump) const = 0;
 
-	virtual MapReduce *create() = 0;
+	virtual MapReduce *create() const = 0;
 	virtual ~MapReduce() { }
 };
 

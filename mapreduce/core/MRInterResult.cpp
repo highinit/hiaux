@@ -196,7 +196,9 @@ void MRInterResult::addEmit(KeyType key, EmitType *emit)
 	{
 		throw hException("MRInterResult::addEmit error mode!=IR_WRITING");
 	}
-	std::string dump = m_MR->dumpEmit(emit);
+	std::string dump;
+	//m_MR->dumpEmit(emit, dump);
+	emit->dump(dump);
 	delete emit;
 
 	write_queue.lock();
