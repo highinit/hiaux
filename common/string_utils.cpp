@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <curl/curl.h>
+#include <set>
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
@@ -39,6 +40,106 @@ std::vector<std::string> &split(const std::string &s,
 		if (in_tokens[i]!="")
 			elems.push_back(in_tokens[i]);
 	return elems;
+}
+
+void fix_utf8_string(std::string& str)
+{
+    std::string temp;
+    utf8::replace_invalid(str.begin(), str.end(), back_inserter(temp));
+    str = temp;
+}
+
+void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<std::string> &_elems)
+{
+	if (_s.size()==0)
+		return;
+	
+	const char *it = _s.data();
+	const char *end = _s.data()+_s.size();
+	char *elem = new char [_s.size()];
+	char *elem_end = elem;
+	
+	memset(elem, 0, _s.size());
+	do {
+		uint32_t symbol = utf8::next(it, end);
+		
+		if (_delims.find(symbol) != _delims.end()) {
+			if (elem != elem_end)
+				_elems.push_back(std::string(elem));
+			memset(elem, 0, _s.size());
+			elem_end = elem;
+		} else
+			elem_end = utf8::append(symbol, elem_end);
+			
+	} while (it < end);
+	delete [] elem;
+}
+
+bool isUtf8Char(uint32_t c)
+{
+	// A to Z
+	if (0x41 <= c && c <= 0x5a) return true;
+	// a to z
+	if (0x61 <= c && c <= 0x7a) return true;
+	// А to Я
+	if (0x410 <= c && c <= 0x42F) return true;
+	// а to я
+	if (0x430 <= c && c <= 0x44f) return true;
+	return false;
+}
+
+void eraseNonCharsUtf8(std::string &_s)
+{
+	if (_s.size()==0)
+		return;
+	
+	const char *it = _s.data();
+	const char *end = _s.data()+_s.size();
+	char res[_s.size()+1];
+	char *res_end = res;
+	
+	memset(res, 0, _s.size()+1);
+		
+	do {
+		uint32_t symbol = utf8::next(it, end);
+				
+		if (isUtf8Char(symbol)) {
+			res_end = utf8::append(symbol, res_end);
+		}
+			
+	} while (it < end);
+	res_end = 0;
+	_s = std::string(res);
+}
+
+uint32_t toLowerCharUtf8(uint32_t c)
+{
+	if (0x41 <= c && c <= 0x5a)
+		return c + 0x61 - 0x41;
+	if (0x410 <= c && c <= 0x42F)
+		return c + 0x430 - 0x410;
+	return c;
+}
+
+void toLowerUtf8(std::string &_s)
+{
+	if (_s.size()==0)
+	return;
+	
+	const char *it = _s.data();
+	const char *end = _s.data()+_s.size();
+	char res[_s.size()+1];
+	char *res_end = res;
+	
+	memset(res, 0, _s.size()+1);
+		
+	do {
+		uint32_t symbol = utf8::next(it, end);
+		res_end = utf8::append(toLowerCharUtf8(symbol), res_end);
+			
+	} while (it < end);
+	res_end = 0;
+	_s = std::string(res);
 }
 
 void removeLeadingSpaces(std::string &s)
