@@ -72,6 +72,10 @@ void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<s
 			elem_end = utf8::append(symbol, elem_end);
 			
 	} while (it < end);
+	
+	if (elem != elem_end)
+		_elems.push_back(std::string(elem));
+	
 	delete [] elem;
 }
 

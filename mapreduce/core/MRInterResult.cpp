@@ -45,6 +45,10 @@ MRInterResult::~MRInterResult()
 //	m_file_map->clear();
 	m_emit_cache0.clear();
 	m_emit_cache1.clear();
+	if (!FlushFinished()) {
+		waitFlushFinished();
+		close(m_fd);
+	}
 }
 
 void MRInterResult::deleteFile()
