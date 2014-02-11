@@ -1,0 +1,5 @@
+{
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ "-lpthread"]
+}

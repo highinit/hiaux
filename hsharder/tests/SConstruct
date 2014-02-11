@@ -1,4 +1,0 @@
-env = Environment(CCFLAGS='-std=gnu++11 ')
-Program('hsharder_test', 
-['hsharder_test.cpp',
-'../hsharder.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g')

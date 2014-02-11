@@ -1,3 +1,0 @@
-env = Environment(CCFLAGS='-std=c++11')
-Program('hconfig_parser_test', 
-['test.cpp'], LIBS=[], LIBPATH='.')

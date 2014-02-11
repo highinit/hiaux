@@ -1,3 +1,0 @@
-env = Environment(CCFLAGS='-g')
-Program('sendch_test', 
-['main.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-g', CPPPATH= ['./cxxtest', '../'])
