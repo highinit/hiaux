@@ -1,8 +1,8 @@
 {
 
-"_NAME" : "hiaux_threads",
+"_NAME" : "hiaux_strings",
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
 
-"_LINKFLAGS": [ "-lpthread"]
+"_LINKFLAGS": [ ]
 }
