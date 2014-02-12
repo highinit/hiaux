@@ -6,7 +6,8 @@ class HiBuilder:
 	_LINKFLAGS_SET = set()
 	_CPPPATH_SET = set()
 	_CPPFILES_SET = set()
-	
+	_LIBS_NAMES_SET = set()
+
 	_target_name = ""
 
 	def __init__(self, _target_name):
@@ -17,6 +18,10 @@ class HiBuilder:
 		with open(_hiconn_file_path+'connect.hiconn') as f:
 			config_js = f.read() #.replace('\n','')
 		config = json.loads(config_js)
+		
+		if config["_NAME"] in self._LIBS_NAMES_SET:
+			return
+
 		if '_CPPFILES' in config.keys():
 			for cppfile in config['_CPPFILES']:
 				if cppfile['type'] == "Glob":
@@ -41,8 +46,14 @@ class HiBuilder:
 			for ccflag in config['_CCFLAGS']:
 				if ccflag not in self._CCFLAGS_SET:
 					self._CCFLAGS_SET.add(ccflag)
+		
+		if '_DEPS' in config.keys():
+			for dep in config['_DEPS']:
+				self.connectLib(_hiconn_file_path+dep)
+		
+		self._LIBS_NAMES_SET.add(config["_NAME"])
 
-	def buildProgram(self):
+	def buildProgram(self, Program):
 
 		_CXX = "clang++"
 		_CCFLAGS = ""
@@ -65,7 +76,6 @@ class HiBuilder:
 		for cppfile in self._CPPFILES_SET:
 			_CPPFILES.append(cppfile)
 
-		env = Environment()
 		Program(self._target_name, 
 		_CPPFILES, CCFLAGS=_CCFLAGS, LINKFLAGS=_LINKFLAGS, CXX = _CXX,
 		CPPPATH = _CPPPATH)
