@@ -22,6 +22,8 @@ class HiBuilder:
 		if config["_NAME"] in self._LIBS_NAMES_SET:
 			return
 
+		print "Parsing " + _hiconn_file_path + "connect.hiconn"
+
 		if '_CPPFILES' in config.keys():
 			for cppfile in config['_CPPFILES']:
 				if cppfile['type'] == "Glob":

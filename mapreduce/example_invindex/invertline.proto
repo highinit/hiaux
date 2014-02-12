@@ -1,5 +1,0 @@
-package mapr_test;
-
-message InvertLine {
-	repeated uint64 pages = 1;
-}

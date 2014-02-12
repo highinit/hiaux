@@ -2,7 +2,6 @@
 
 "_NAME" : "hiaux_strings",
 
-"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ]
 
-"_LINKFLAGS": [ ]
 }
