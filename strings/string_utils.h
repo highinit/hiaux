@@ -10,7 +10,7 @@
 
 #include <string>
 #include <vector>
-#include <tr1/unordered_map>
+#include <unordered_map>
 #include <set>
 #include "../../thirdparty/utf8_v2_3_4/source/utf8.h"
 
@@ -38,7 +38,7 @@ void removeLeadingAndEndingSpaces(std::string &s);
 
 bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv);
 void parseGET(const std::string &data,
-			std::tr1::unordered_map<std::string, std::string> &values_GET);
+			std::unordered_map<std::string, std::string> &values_GET);
 
 inline bool isDelimeter(char c);
 void removeRedundantDelimeters(std::string &s);

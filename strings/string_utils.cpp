@@ -85,9 +85,9 @@ bool isUtf8Char(uint32_t c)
 	if (0x41 <= c && c <= 0x5a) return true;
 	// a to z
 	if (0x61 <= c && c <= 0x7a) return true;
-	// А to Я
+	// ?? to ??
 	if (0x410 <= c && c <= 0x42F) return true;
-	// а to я
+	// ?? to ??
 	if (0x430 <= c && c <= 0x44f) return true;
 	return false;
 }
@@ -197,7 +197,7 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
 }
 	
 void parseGET(const std::string &_data,
-			std::tr1::unordered_map<std::string, std::string> &values_GET)
+			std::unordered_map<std::string, std::string> &values_GET)
 {
 	std::vector<std::string> words = split(_data, ' ');
 	if (words.size()<2)
