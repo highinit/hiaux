@@ -8,6 +8,8 @@
 #ifndef LOCKS_H
 #define	LOCKS_H
 
+#include "hiconfig.h"
+
 #include <pthread.h>
 #include <boost/atomic.hpp>
 #include <boost/bind.hpp>
