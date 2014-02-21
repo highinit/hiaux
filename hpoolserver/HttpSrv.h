@@ -74,6 +74,7 @@ private:
 	
 	// socket / connection
 	hiaux::hashtable<int, ConnectionPtr> connections;
+	hAutoLock m_connections_lock;
 	
 	boost::function<void(HttpSrv::ConnectionPtr, HttpSrv::RequestPtr)> m_request_hdl;
 	

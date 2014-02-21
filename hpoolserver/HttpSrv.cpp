@@ -127,6 +127,7 @@ HttpSrv::HttpSrv(TaskLauncherPtr launcher,
 
 HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 {
+	hLockTicketPtr ticket = m_connections_lock.lock();
 	ConnectionPtr http_conn;
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
 							connections.find(socket); 
@@ -140,6 +141,7 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 
 void HttpSrv::closeHttpConn(int socket)
 {
+	hLockTicketPtr ticket = m_connections_lock.lock();
 	ConnectionPtr http_conn;
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
 							connections.find(socket); 

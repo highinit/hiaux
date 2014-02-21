@@ -1,0 +1,8 @@
+{
+
+"_NAME" : "hiaux_events",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ ]
+}
