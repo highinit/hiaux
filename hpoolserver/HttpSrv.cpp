@@ -1,5 +1,4 @@
 #include "HttpSrv.h"
-#include "../../common/string_utils.h"
 
 HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
 					const std::string &_server_name):
@@ -129,7 +128,7 @@ HttpSrv::HttpSrv(TaskLauncherPtr launcher,
 HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 {
 	ConnectionPtr http_conn;
-	std::tr1::unordered_map<int, ConnectionPtr>::iterator it = 
+	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
 							connections.find(socket); 
 	if (it==connections.end()) {
 		http_conn.reset(new Connection(socket, m_resp_info));
@@ -142,7 +141,7 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 void HttpSrv::closeHttpConn(int socket)
 {
 	ConnectionPtr http_conn;
-	std::tr1::unordered_map<int, ConnectionPtr>::iterator it = 
+	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
 							connections.find(socket); 
 	if (it!=connections.end())
 		connections.erase(it);

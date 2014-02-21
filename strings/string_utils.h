@@ -8,9 +8,11 @@
 #ifndef STRING_UTILS_H
 #define	STRING_UTILS_H
 
+#include "hiconfig.h"
+
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include "hiaux/structs/hashtable.h"
 #include <set>
 #include "../../thirdparty/utf8_v2_3_4/source/utf8.h"
 
@@ -38,7 +40,7 @@ void removeLeadingAndEndingSpaces(std::string &s);
 
 bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv);
 void parseGET(const std::string &data,
-			std::unordered_map<std::string, std::string> &values_GET);
+			hiaux::hashtable<std::string, std::string> &values_GET);
 
 inline bool isDelimeter(char c);
 void removeRedundantDelimeters(std::string &s);

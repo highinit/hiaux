@@ -8,8 +8,11 @@
 #ifndef HTTPSRV_H
 #define	HTTPSRV_H
 
-#include "../hpoolserver.h"
-#include <tr1/unordered_map>
+#include "hiconfig.h"
+
+#include "hpoolserver.h"
+#include "hiaux/structs/hashtable.h"
+#include "hiaux/strings/string_utils.h"
 
 class HttpSrv
 {
@@ -30,7 +33,7 @@ public:
 	{
 	public:
 		std::string value;
-		std::tr1::unordered_map<std::string, std::string> values_GET;
+		hiaux::hashtable<std::string, std::string> values_GET;
 		
 		Request() { }
 		Request(const std::string &_url);
@@ -70,7 +73,7 @@ private:
 	hPoolServerPtr m_poolserver;
 	
 	// socket / connection
-	std::tr1::unordered_map<int, ConnectionPtr> connections;
+	hiaux::hashtable<int, ConnectionPtr> connections;
 	
 	boost::function<void(HttpSrv::ConnectionPtr, HttpSrv::RequestPtr)> m_request_hdl;
 	

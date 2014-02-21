@@ -1,144 +1,13 @@
 
+#include "hiconfig.h"
+
 #include <cxxtest/TestSuite.h>
 
-#include "../hpoolserver.h"
-#include "../websocket/WebSocketSrv.h"
+#include "hpoolserver.h"
 
-#include "../../hrpc/hcomm/include/hsock.h"
 
-#include "../../common/string_utils.h"
-#include "../http/HttpSrv.h"
-
-/* UTF-8 to ISO-8859-1/ISO-8859-15 mapper.
- * Return 0..255 for valid ISO-8859-15 code points, 256 otherwise.
-*/
-static inline unsigned int to_latin9(const unsigned int code)
-{
-    /* Code points 0 to U+00FF are the same in both. */
-    if (code < 256U)
-        return code;
-    switch (code) {
-    case 0x0152U: return 188U; /* U+0152 = 0xBC: OE ligature */
-    case 0x0153U: return 189U; /* U+0153 = 0xBD: oe ligature */
-    case 0x0160U: return 166U; /* U+0160 = 0xA6: S with caron */
-    case 0x0161U: return 168U; /* U+0161 = 0xA8: s with caron */
-    case 0x0178U: return 190U; /* U+0178 = 0xBE: Y with diaresis */
-    case 0x017DU: return 180U; /* U+017D = 0xB4: Z with caron */
-    case 0x017EU: return 184U; /* U+017E = 0xB8: z with caron */
-    case 0x20ACU: return 164U; /* U+20AC = 0xA4: Euro */
-    default:      return 256U;
-    }
-}
-
-/* Convert an UTF-8 string to ISO-8859-15.
- * All invalid sequences are ignored.
- * Note: output == input is allowed,
- * but   input < output < input + length
- * is not.
- * Output has to have room for (length+1) chars, including the trailing NUL byte.
-*/
-size_t utf8_to_latin9(char *const output, const char *const input, const size_t length)
-{
-    unsigned char             *out = (unsigned char *)output;
-    const unsigned char       *in  = (const unsigned char *)input;
-    const unsigned char *const end = (const unsigned char *)input + length;
-    unsigned int               c;
-
-    while (in < end)
-        if (*in < 128)
-            *(out++) = *(in++); /* Valid codepoint */
-        else
-        if (*in < 192)
-            in++;               /* 10000000 .. 10111111 are invalid */
-        else
-        if (*in < 224) {        /* 110xxxxx 10xxxxxx */
-            if (in + 1 >= end)
-                break;
-            if ((in[1] & 192U) == 128U) {
-                c = to_latin9( (((unsigned int)(in[0] & 0x1FU)) << 6U)
-                             |  ((unsigned int)(in[1] & 0x3FU)) );
-                if (c < 256)
-                    *(out++) = c;
-            }
-            in += 2;
-
-        } else
-        if (*in < 240) {        /* 1110xxxx 10xxxxxx 10xxxxxx */
-            if (in + 2 >= end)
-                break;
-            if ((in[1] & 192U) == 128U &&
-                (in[2] & 192U) == 128U) {
-                c = to_latin9( (((unsigned int)(in[0] & 0x0FU)) << 12U)
-                             | (((unsigned int)(in[1] & 0x3FU)) << 6U)
-                             |  ((unsigned int)(in[2] & 0x3FU)) );
-                if (c < 256)
-                    *(out++) = c;
-            }
-            in += 3;
-
-        } else
-        if (*in < 248) {        /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx */
-            if (in + 3 >= end)
-                break;
-            if ((in[1] & 192U) == 128U &&
-                (in[2] & 192U) == 128U &&
-                (in[3] & 192U) == 128U) {
-                c = to_latin9( (((unsigned int)(in[0] & 0x07U)) << 18U)
-                             | (((unsigned int)(in[1] & 0x3FU)) << 12U)
-                             | (((unsigned int)(in[2] & 0x3FU)) << 6U)
-                             |  ((unsigned int)(in[3] & 0x3FU)) );
-                if (c < 256)
-                    *(out++) = c;
-            }
-            in += 4;
-
-        } else
-        if (*in < 252) {        /* 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
-            if (in + 4 >= end)
-                break;
-            if ((in[1] & 192U) == 128U &&
-                (in[2] & 192U) == 128U &&
-                (in[3] & 192U) == 128U &&
-                (in[4] & 192U) == 128U) {
-                c = to_latin9( (((unsigned int)(in[0] & 0x03U)) << 24U)
-                             | (((unsigned int)(in[1] & 0x3FU)) << 18U)
-                             | (((unsigned int)(in[2] & 0x3FU)) << 12U)
-                             | (((unsigned int)(in[3] & 0x3FU)) << 6U)
-                             |  ((unsigned int)(in[4] & 0x3FU)) );
-                if (c < 256)
-                    *(out++) = c;
-            }
-            in += 5;
-
-        } else
-        if (*in < 254) {        /* 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx */
-            if (in + 5 >= end)
-                break;
-            if ((in[1] & 192U) == 128U &&
-                (in[2] & 192U) == 128U &&
-                (in[3] & 192U) == 128U &&
-                (in[4] & 192U) == 128U &&
-                (in[5] & 192U) == 128U) {
-                c = to_latin9( (((unsigned int)(in[0] & 0x01U)) << 30U)
-                             | (((unsigned int)(in[1] & 0x3FU)) << 24U)
-                             | (((unsigned int)(in[2] & 0x3FU)) << 18U)
-                             | (((unsigned int)(in[3] & 0x3FU)) << 12U)
-                             | (((unsigned int)(in[4] & 0x3FU)) << 6U)
-                             |  ((unsigned int)(in[5] & 0x3FU)) );
-                if (c < 256)
-                    *(out++) = c;
-            }
-            in += 6;
-
-        } else
-            in++;               /* 11111110 and 11111111 are invalid */
-
-    /* Terminate the output string. */
-    *out = '\0';
-
-    return (size_t)(out - (unsigned char *)output);
-}
-
+#include "hiaux/strings/string_utils.h"
+#include "HttpSrv.h"
 
 class hPoolServerTests : public CxxTest::TestSuite
 {    
@@ -173,7 +42,7 @@ public:
  */
 	};
     
-    void testCheckInitConnection()      //////////////////////////
+    void XtestCheckInitConnection()      //////////////////////////
     {
         CheckInitConnection();
     }
@@ -203,7 +72,7 @@ public:
         }*/
     };
     
-    void testSendSimple()               //////////////////////////
+    void XtestSendSimple()               //////////////////////////
     {
         CheckSendSimple();
     }
@@ -213,7 +82,7 @@ public:
 	
 	}
 	
-	
+	/*
 	
 	void poolServerHandler(hPoolServer::ConnectionPtr conn)
 	{
@@ -226,18 +95,7 @@ public:
 			std::cout << bf << std::endl;
 			std::tr1::unordered_map<std::string, std::string> values_GET;
 			
-			/*
-			std::vector<std::string> lines;
-			split(bf, '\n', lines);
-			std::cout << "LINES: " << lines.size() << std::endl;
-			if (lines.size()>=1) {
-				std::vector<std::string> words;
-				split(lines[0], ' ', words);
-				std::cout << "WORDS: " << words.size() << std::endl;
-				if (words.size()>2)
-					parseUrl(words[1], values_GET);
-			}
-			*/
+			
 			std::string content = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">"
 								"<html><body>SERVER HEIL!</body></html>";
 
@@ -274,16 +132,7 @@ public:
 		pool->run();
 		launcher->setNoMoreTasks();
 		
-		//sleep(1);
-		/*
-			for (int i = 0; i<10; i++) {
-				int cli = hSock::client("127.0.0.1", port);
-				char bf[255];
-				sprintf(bf, "CLIENT SIEG!\n");
-				::send(cli, bf, 255, 0);
-				::recv(cli, bf, 255, 0);
-				std::cout << bf << std::endl;
-			}*/
+		
 		pool->join();
 		}
 		catch (std::string *s) {
@@ -304,12 +153,12 @@ public:
 		pool->run();
 		//launcher->setNoMoreTasks();
 		pool->join();
-	}
+	}*/
 	
 	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req)
 	{
 		std::cout << "onHttpRequest\n";
-		std::tr1::unordered_map<std::string, std::string>::iterator it =
+		hiaux::hashtable<std::string, std::string>::iterator it =
 					req->values_GET.begin();
 		while (it != req->values_GET.end()) {
 			std::cout << it->first << "/" << it->second << std::endl;
@@ -317,11 +166,14 @@ public:
 		}
 		
 		http_conn->sendResponse("SIEG HEIL SERVER!");
+		http_conn->close();
 	}
 	
 	void testHttpServer()
 	{
-		const int port = 12345;
+		try {
+		std::cout << "testHttpServer\n";
+		const int port = 1234;
 		hThreadPool *pool = new hThreadPool(10);
 		TaskLauncherPtr launcher (new TaskLauncher(
 						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
@@ -332,6 +184,9 @@ public:
 		http_srv->start(port);
 		pool->run();
 		pool->join();
+		} catch (const char *s) {
+			std::cout << "Exception: " << s << std::endl;
+		}
 	}
 	
 };

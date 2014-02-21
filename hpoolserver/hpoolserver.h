@@ -1,8 +1,19 @@
 #ifndef HPOOLSERVER_H
 #define HPOOLSERVER_H
 
-#include "../threadpool/tasklauncher.h"
-#include "../hrpc/hcomm/include/hsock.h"
+#include "hiconfig.h"
+#include "hiaux/structs/hashtable.h"
+#include "hiaux/threads/tasklauncher.h"
+#include "hiaux/events/EventsWatcher.h"
+
+#include <boost/bind.hpp>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
 
 class hPoolServer
 {
@@ -16,30 +27,43 @@ public:
 		std::string ip;
 		int port;
 		
+		boost::function<void(int)> m_onClose;
+		
 		uint64_t getChangeTs();
 		//void recv(std::string &_bf);
 		//void send(const std::string &_mess);
 		void close();
 
-		Connection(std::string _ip, int _port, int _sock);
+		Connection(std::string _ip, int _port, int _sock,
+				boost::function<void(int)> _onClose);
 		~Connection();
 	};
 	
 	typedef boost::shared_ptr<Connection> ConnectionPtr;
 	
 private:
+	
 	TaskLauncherPtr m_launcher;
 	boost::function<void(ConnectionPtr)> m_handler;
 	int m_listen_socket;
 	uint64_t m_idle_timeout;
 	bool m_isrunning;
-	std::vector<Connection> m_clients;
+	// socket / connection
+	hiaux::hashtable<int, ConnectionPtr> m_connections;
+	hAutoLock m_connections_lock;
+	EventWatcherPtr m_events_watcher;
+	
+	int startClient(const std::string &_ip, int portno);
+	int startServer(int port);
 	
 public:
     
-	TaskLauncher::TaskRet Handler(ConnectionPtr client_info);
+	void onRead(int _sock, void *_opaque_info);
+	void onWrite(int _sock, void *_opaque_info);
+	void onError(int _sock, void *_opaque_info);
 	
-	TaskLauncher::TaskRet closeClientsTask();
+	void onCloseConnection(int _sock_fd);
+	TaskLauncher::TaskRet readThread();
 
 	hPoolServer(TaskLauncherPtr launcher,
 			boost::function<void(ConnectionPtr)> handler);

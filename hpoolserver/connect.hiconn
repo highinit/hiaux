@@ -1,0 +1,13 @@
+{
+
+"_NAME" : "hiaux_http_server",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": ["-lcurl"],
+
+"_DEPS" : ["../threads/",
+			"../strings/",
+			"../events/"]
+
+}

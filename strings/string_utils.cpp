@@ -197,7 +197,7 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
 }
 	
 void parseGET(const std::string &_data,
-			std::unordered_map<std::string, std::string> &values_GET)
+			hiaux::hashtable<std::string, std::string> &values_GET)
 {
 	std::vector<std::string> words = split(_data, ' ');
 	if (words.size()<2)

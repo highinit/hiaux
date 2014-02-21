@@ -1,0 +1,11 @@
+{
+
+"_NAME" : "hiaux_pq",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ "-lpq"],
+
+"_DEPS": ["../threads/"]
+
+}

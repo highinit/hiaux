@@ -21,28 +21,16 @@ int main( int argc, char *argv[] ) {
     return status;
 }
 bool suite_hPoolServerTests_init = false;
-#include "/Users/phrk/Projects/highinit_repos/tetramorph/hpoolserver/tests/hpoolserver_tests.h"
+#include "/Users/phrk/Projects/highinit_repos/hiaux/hpoolserver/tests/hpoolserver_tests.h"
 
 static hPoolServerTests suite_hPoolServerTests;
 
 static CxxTest::List Tests_hPoolServerTests = { 0, 0 };
-CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 143, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
-
-static class TestDescription_suite_hPoolServerTests_testCheckInitConnection : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_hPoolServerTests_testCheckInitConnection() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 176, "testCheckInitConnection" ) {}
- void runTest() { suite_hPoolServerTests.testCheckInitConnection(); }
-} testDescription_suite_hPoolServerTests_testCheckInitConnection;
-
-static class TestDescription_suite_hPoolServerTests_testSendSimple : public CxxTest::RealTestDescription {
-public:
- TestDescription_suite_hPoolServerTests_testSendSimple() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 206, "testSendSimple" ) {}
- void runTest() { suite_hPoolServerTests.testSendSimple(); }
-} testDescription_suite_hPoolServerTests_testSendSimple;
+CxxTest::StaticSuiteDescription suiteDescription_hPoolServerTests( "hpoolserver_tests.h", 12, "hPoolServerTests", suite_hPoolServerTests, Tests_hPoolServerTests );
 
 static class TestDescription_suite_hPoolServerTests_testHttpServer : public CxxTest::RealTestDescription {
 public:
- TestDescription_suite_hPoolServerTests_testHttpServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 322, "testHttpServer" ) {}
+ TestDescription_suite_hPoolServerTests_testHttpServer() : CxxTest::RealTestDescription( Tests_hPoolServerTests, suiteDescription_hPoolServerTests, 172, "testHttpServer" ) {}
  void runTest() { suite_hPoolServerTests.testHttpServer(); }
 } testDescription_suite_hPoolServerTests_testHttpServer;
 
