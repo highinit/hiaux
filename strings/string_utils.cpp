@@ -206,12 +206,21 @@ void parseGET(const std::string &_data,
 	std::string data = words[1];
 	
 	if (data.size()<4) return;
+	std::vector<std::string> keyvalues;
+	/*
+	std::set<uint32_t> delims;
+	delims.insert(0x3f); // '?'
+	delims.insert(0x26); // '&'
+
+	
+	splitUtf8(data, delims, keyvalues);
+	*/
+	
 	std::vector<char> delims;
 	delims.push_back('?');
 	delims.push_back('&');
-
-	std::vector<std::string> keyvalues;
 	split(data, delims, keyvalues);
+	
 	for (int i = 0; i<keyvalues.size(); i++) {
 		std::pair<std::string, std::string> kv;
 		if (getPairGET(keyvalues[i], kv))
