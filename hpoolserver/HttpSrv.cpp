@@ -1,3 +1,5 @@
+#include <queue>
+
 #include "HttpSrv.h"
 
 HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
@@ -54,35 +56,46 @@ int HttpSrv_onMessageComplete(http_parser* parser) {
 }
 
 int HttpSrv::Connection::onMessageBegin() {
-	
+	std::cout << "HttpSrv::Connection::onMessageBegin" << std::endl;
+	return 0;
 }
 
 int HttpSrv::Connection::onUrl(const char *at, size_t length) {
-	
+	//std::cout << "HttpSrv::Connection::onUrl" << at << std::endl;
+	cur_request.url = std::string(at);
+	return 0;
 }
 
 int HttpSrv::Connection::onStatus(const char *at, size_t length) {
-	
+	//std::cout << "HttpSrv::Connection::onStatus" << at << std::endl;
+	return 0;
 }
 
 int HttpSrv::Connection::onHeadersField(const char *at, size_t length) {
-	
+	//std::cout << "HttpSrv::Connection::onHeadersField" << at << std::endl;
+	return 0;
 }
 
 int HttpSrv::Connection::onHeadersValue(const char *at, size_t length) {
-	
+	//std::cout << "HttpSrv::Connection::onHeadersValue" << at << std::endl;
+	return 0;
 }
 
 int HttpSrv::Connection::onHeadersComplete() {
-	
+	//std::cout << "HttpSrv::Connection::onHeadersComplete" << std::endl;
+	return 0;
 }
 
 int HttpSrv::Connection::onBody(const char *at, size_t length) {
-	
+	//std::cout << "HttpSrv::Connection::onBody" << at << std::endl;
+	cur_request.body = std::string(at);
+	return 0;
 }
 
 int HttpSrv::Connection::onMessageComplete() {
-	
+	std::cout << "HttpSrv::Connection::onMessageComplete" << std::endl;
+	requests.push( RequestPtr(new Request( cur_request ) ) );
+	return 0;
 }
 
 HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
@@ -106,20 +119,22 @@ HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
 
 HttpSrv::Connection::~Connection()
 {
-	//std::cout << "http connection closed\n";
+	std::cout << "http connection closed\n";
 }
 
 bool HttpSrv::Connection::recv()
 {
-	char bf[100];
-	int nread = ::recv(m_sock, bf, 100, MSG_DONTWAIT);
-	if (nread>0) {
-		readbf.append(bf);
-		return true;
-	} else if (nread == 0) {
-		alive  = false;
+	char bf[1024];
+	int nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
+	bool read = false;
+	while (nread > 0) {
+		read = true;
+		std::string add (bf);
+		//unescapeUrl(add);
+		readbf.append( add );
+		nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
 	}
-	return false;
+	return read;
 }
 
 void HttpSrv::Connection::sendResponse(const std::string &_content)
@@ -164,36 +179,17 @@ void HttpSrv::Connection::close()
 
 void HttpSrv::Connection::parseRequests()
 {
-	
-	return;
-	std::vector<std::string> lines;
 	if (readbf.size()==0)
 		return;
-	std::cout << "ReadBF: " << readbf << std::endl;
-	int nextline_pos = readbf.find('\n');
-	while (nextline_pos!=-1) {
-		if (nextline_pos>1)
-			lines.push_back(readbf.substr(0, nextline_pos));
-		readbf = readbf.substr(nextline_pos+1, readbf.size()-nextline_pos-1);
-		nextline_pos = readbf.find('\n');
-	}
-	if (lines.size()==0)
-		return;
 	
-	for (int i = 0; i<lines.size(); i++) {
-		std::cout << "Line: " << lines[i] << std::endl; 
-		if (lines[i].substr(0,3)=="GET")
-			requests.push(RequestPtr(new Request(lines[i])));
-	}
-	
-	lines.clear();
+	http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
 }
 
 HttpSrv::RequestPtr HttpSrv::Connection::getNextRequest()
 {
 	RequestPtr req;
-	recv();
-	parseRequests();
+	if (recv())
+		parseRequests();
 	
 	if (requests.size()==0) 
 		return req;

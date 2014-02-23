@@ -35,7 +35,9 @@ public:
 	{
 	public:
 		std::string value;
+		std::string url;
 		hiaux::hashtable<std::string, std::string> values_GET;
+		std::string body;
 		
 		Request() { }
 		Request(const std::string &_url);
@@ -54,6 +56,8 @@ public:
 		std::string readbf;
 		http_parser m_parser;
 		http_parser_settings m_parser_settings;
+		
+		Request cur_request;
 		std::queue<RequestPtr> requests;
 		
 		ResponseInfoPtr m_resp_info;

@@ -282,3 +282,18 @@ std::string uint64_to_string(const uint64_t &_i)
 	sprintf(bf, "%llu", _i);
 	return std::string(bf);
 }
+
+std::string float_to_string(float _f)
+{
+	char bf[50];
+	sprintf(bf, "%f", _f);
+	return std::string(bf);
+}
+
+std::string &unescapeUrl(std::string &_value) {
+	char *value_c = curl_easy_unescape(NULL, _value.c_str(), _value.size(), NULL);
+	if (value_c==NULL) _value = "";
+	_value = std::string(value_c);
+	curl_free(value_c);
+	return _value;
+}

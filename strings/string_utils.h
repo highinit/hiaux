@@ -49,5 +49,8 @@ void string_to_uint64(const std::string &_s, uint64_t &_i);
 uint64_t string_to_uint64(const std::string &_s);
 void uint64_to_string(const uint64_t &_i, std::string &_s);
 std::string uint64_to_string(const uint64_t &_i);
+std::string float_to_string(float _f);
+
+std::string &unescapeUrl(std::string &_value);
 
 #endif	/* STRING_UTILS_H */
