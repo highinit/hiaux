@@ -64,8 +64,14 @@ public:
 		Connection(int sock, ResponseInfoPtr resp_info);
 		~Connection();
 		
-		int onDataHttp (const char *at, size_t length);
-		int onEventHttp ();
+		int onMessageBegin();
+		int onUrl(const char *at, size_t length);
+		int onStatus(const char *at, size_t length);
+		int onHeadersField(const char *at, size_t length);
+		int onHeadersValue(const char *at, size_t length);
+		int onHeadersComplete();
+		int onBody(const char *at, size_t length);
+		int onMessageComplete();
 		
 		RequestPtr getNextRequest();
 		void close();

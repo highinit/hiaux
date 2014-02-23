@@ -13,16 +13,76 @@ HttpSrv::Request::Request(const std::string &_url)
 	parseGET(_url, values_GET);
 }
 
-int HttpSrv_http_data_cb (http_parser* parser, const char *at, size_t length)
-{
+int HttpSrv_onMessageBegin(http_parser* parser) {
 	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
-	conn->onDataHttp(at, length);
+	return conn->onMessageBegin();
 }
 
-int HttpSrv_http_cb (http_parser* parser)
-{
+int HttpSrv_onUrl(http_parser* parser, const char *at, size_t length) {
 	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
-	conn->onEventHttp();
+	return conn->onUrl(at, length);
+}
+
+int HttpSrv_onStatus(http_parser* parser, const char *at, size_t length) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onStatus(at, length);
+}
+
+int HttpSrv_onHeadersField(http_parser* parser, const char *at, size_t length) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onHeadersField(at, length);
+}
+
+int HttpSrv_onHeadersValue(http_parser* parser, const char *at, size_t length) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onHeadersValue(at, length);
+}
+
+int HttpSrv_onHeadersComplete(http_parser* parser) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onHeadersComplete();
+}
+
+int HttpSrv_onBody(http_parser* parser, const char *at, size_t length) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onBody(at, length);	
+}
+
+int HttpSrv_onMessageComplete(http_parser* parser) {
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	return conn->onMessageComplete();
+}
+
+int HttpSrv::Connection::onMessageBegin() {
+	
+}
+
+int HttpSrv::Connection::onUrl(const char *at, size_t length) {
+	
+}
+
+int HttpSrv::Connection::onStatus(const char *at, size_t length) {
+	
+}
+
+int HttpSrv::Connection::onHeadersField(const char *at, size_t length) {
+	
+}
+
+int HttpSrv::Connection::onHeadersValue(const char *at, size_t length) {
+	
+}
+
+int HttpSrv::Connection::onHeadersComplete() {
+	
+}
+
+int HttpSrv::Connection::onBody(const char *at, size_t length) {
+	
+}
+
+int HttpSrv::Connection::onMessageComplete() {
+	
 }
 
 HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
@@ -33,23 +93,20 @@ HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
 {
 	http_parser_init(&m_parser, HTTP_REQUEST);
 	m_parser.data = (void*)this;
-	m_parser_settings.
+	m_parser_settings.on_message_begin = HttpSrv_onMessageBegin;
+	m_parser_settings.on_url = &HttpSrv_onUrl;
+	m_parser_settings.on_status = &HttpSrv_onStatus;
+	m_parser_settings.on_header_field = &HttpSrv_onHeadersField;
+	m_parser_settings.on_header_value = &HttpSrv_onHeadersValue;
+	m_parser_settings.on_headers_complete = &HttpSrv_onHeadersComplete;
+	m_parser_settings.on_body = &HttpSrv_onBody;
+	m_parser_settings.on_message_complete = &HttpSrv_onMessageComplete;
 }
+
 
 HttpSrv::Connection::~Connection()
 {
 	//std::cout << "http connection closed\n";
-	delete parser;
-}
-
-int HttpSrv::Connection::onDataHttp (const char *at, size_t length)
-{
-
-}
-
-int HttpSrv::Connection::onEventHttp ()
-{
-		
 }
 
 bool HttpSrv::Connection::recv()
