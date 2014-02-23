@@ -9,7 +9,20 @@ HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
 
 HttpSrv::Request::Request(const std::string &_url)
 {
+	std::cout << "Request: " << _url << std::endl; 
 	parseGET(_url, values_GET);
+}
+
+int HttpSrv_http_data_cb (http_parser* parser, const char *at, size_t length)
+{
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	conn->onDataHttp(at, length);
+}
+
+int HttpSrv_http_cb (http_parser* parser)
+{
+	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
+	conn->onEventHttp();
 }
 
 HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
@@ -18,11 +31,25 @@ HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
 		closing(false),
 		m_resp_info(resp_info)
 {
+	http_parser_init(&m_parser, HTTP_REQUEST);
+	m_parser.data = (void*)this;
+	m_parser_settings.
 }
 
 HttpSrv::Connection::~Connection()
 {
 	//std::cout << "http connection closed\n";
+	delete parser;
+}
+
+int HttpSrv::Connection::onDataHttp (const char *at, size_t length)
+{
+
+}
+
+int HttpSrv::Connection::onEventHttp ()
+{
+		
 }
 
 bool HttpSrv::Connection::recv()
@@ -80,9 +107,12 @@ void HttpSrv::Connection::close()
 
 void HttpSrv::Connection::parseRequests()
 {
+	
+	return;
 	std::vector<std::string> lines;
 	if (readbf.size()==0)
 		return;
+	std::cout << "ReadBF: " << readbf << std::endl;
 	int nextline_pos = readbf.find('\n');
 	while (nextline_pos!=-1) {
 		if (nextline_pos>1)
@@ -93,10 +123,12 @@ void HttpSrv::Connection::parseRequests()
 	if (lines.size()==0)
 		return;
 	
-	for (int i = 0; i<lines.size(); i++)
+	for (int i = 0; i<lines.size(); i++) {
+		std::cout << "Line: " << lines[i] << std::endl; 
 		if (lines[i].substr(0,3)=="GET")
 			requests.push(RequestPtr(new Request(lines[i])));
-
+	}
+	
 	lines.clear();
 }
 

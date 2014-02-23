@@ -199,6 +199,7 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
 void parseGET(const std::string &_data,
 			hiaux::hashtable<std::string, std::string> &values_GET)
 {
+	std::cout << "parseGET " << _data << std::endl;
 	std::vector<std::string> words = split(_data, ' ');
 	if (words.size()<2)
 		return;
@@ -211,7 +212,6 @@ void parseGET(const std::string &_data,
 	std::set<uint32_t> delims;
 	delims.insert(0x3f); // '?'
 	delims.insert(0x26); // '&'
-
 	
 	splitUtf8(data, delims, keyvalues);
 	*/

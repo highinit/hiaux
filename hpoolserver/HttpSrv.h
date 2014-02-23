@@ -14,6 +14,8 @@
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"
 
+#include "http_parser.h"
+
 class HttpSrv
 {
 public:
@@ -50,7 +52,8 @@ public:
 	private:
 		int m_sock;
 		std::string readbf;
-		std::string sendbf;
+		http_parser m_parser;
+		http_parser_settings m_parser_settings;
 		std::queue<RequestPtr> requests;
 		
 		ResponseInfoPtr m_resp_info;
@@ -60,6 +63,10 @@ public:
 	public:
 		Connection(int sock, ResponseInfoPtr resp_info);
 		~Connection();
+		
+		int onDataHttp (const char *at, size_t length);
+		int onEventHttp ();
+		
 		RequestPtr getNextRequest();
 		void close();
 		//void send(const std::string &_mess);
