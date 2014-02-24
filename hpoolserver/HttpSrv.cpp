@@ -141,14 +141,14 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 {
 	//Sat, 28 Dec 2013 18:33:30 GMT
 	char content_len_c[50];
-	sprintf(content_len_c, "%d", _content.size());
+	sprintf(content_len_c, "%d", (int)_content.size());
 	std::string content_len(content_len_c);
 	
 	//char time_c[50];
 	//sprintf(time_c, "%d", asctime(0));
 	
 	char time_c[50];
-	sprintf(time_c, "%d", time(0));
+	sprintf(time_c, "%d", (int)time(0));
 	
 	std::string response = "HTTP/1.1 200 OK\r\n"
 						"Content-Type: "+m_resp_info->content_type+"\r\n"

@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
 #include "hiaux/structs/hashtable.h"
 #include <set>
 #include "../../thirdparty/utf8_v2_3_4/source/utf8.h"
