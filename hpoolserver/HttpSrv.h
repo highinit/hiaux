@@ -9,7 +9,7 @@
 #define	HTTPSRV_H
 
 #include "hiconfig.h"
-
+#include <cstdio>
 #include "hpoolserver.h"
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"

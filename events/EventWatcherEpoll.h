@@ -10,6 +10,8 @@
 
 #include <sys/epoll.h>
 
+#include "errno.h"
+
 class EventWatcherEpoll {
 	int m_epoll;
 	boost::function<void(int,void*)> m_onRead;

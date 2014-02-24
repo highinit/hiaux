@@ -3,7 +3,7 @@
 #include "hiconfig.h"
 #include "EventWatcherEpoll.h"
 
-EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
+EventWatcherEpoll::EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,
 				boost::function<void(int,void*)> _onError):
 		m_onRead(_onRead),
@@ -51,7 +51,7 @@ void EventWatcherEpoll::handleEvents()
 			m_onRead(fd, NULL);
 		if (fevent & EPOLLOUT)
 			m_onWrite(fd, NULL);
-		if (fevent & EPOLLRDHUB)
+		if (fevent & 0x2000)
 			m_onError(fd, NULL);
 	}
 }
