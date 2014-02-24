@@ -8,6 +8,8 @@
 #ifndef HASHTABLE_H
 #define	HASHTABLE_H
 
+#include "hiconfig.h"
+
 #ifdef NO_STD_TR1
 	#include <unordered_map>
 	namespace hiaux {	
