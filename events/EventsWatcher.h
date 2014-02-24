@@ -3,7 +3,7 @@
 
 #include "hiconfig.h"
 
-#if defined __LINUX__
+#if defined __linux__
 #define _EVENT_WATCHER_IS_EPOLL_
 #define EventWatcher EventWatcherEpoll
 #define EventWatcherPtr EventWatcherEpollPtr

@@ -1,4 +1,4 @@
-#ifdef __linux__
+#if defined __linux__
 
 #ifndef _EVENT_WATCHER_EPOLL_H_
 #define _EVENT_WATCHER_EPOLL_H_
@@ -23,6 +23,8 @@ public:
 	virtual void delSocket(int _sock_fd, void *_opaque_info);
 	virtual void handleEvents();
 };
+
+typedef boost::shared_ptr<EventWatcherEpoll> EventWatcherEpollPtr;
 
 #endif // _EVENT_WATCHER_EPOLL_H_
 
