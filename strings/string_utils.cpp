@@ -44,9 +44,10 @@ std::vector<std::string> &split(const std::string &s,
 
 void fix_utf8_string(std::string& str)
 {
-    std::string temp;
-    utf8::replace_invalid(str.begin(), str.end(), back_inserter(temp));
-    str = temp;
+	std::string temp;
+	temp.reserve(str.size());
+	utf8::replace_invalid(str.begin(), str.end(), back_inserter(temp));
+	str = temp;
 }
 
 void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<std::string> &_elems)

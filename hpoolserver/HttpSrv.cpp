@@ -63,6 +63,7 @@ int HttpSrv::Connection::onMessageBegin() {
 int HttpSrv::Connection::onUrl(const char *at, size_t length) {
 	//std::cout << "HttpSrv::Connection::onUrl" << at << std::endl;
 	cur_request.url = std::string(at);
+	fix_utf8_string(cur_request.url);
 	return 0;
 }
 
@@ -89,6 +90,7 @@ int HttpSrv::Connection::onHeadersComplete() {
 int HttpSrv::Connection::onBody(const char *at, size_t length) {
 	//std::cout << "HttpSrv::Connection::onBody" << at << std::endl;
 	cur_request.body = std::string(at);
+	fix_utf8_string(cur_request.body);
 	return 0;
 }
 
