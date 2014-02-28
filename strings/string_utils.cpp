@@ -301,3 +301,29 @@ std::string &unescapeUrl(std::string &_value) {
 	curl_free(value_c);
 	return _value;
 }
+
+std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to)
+{
+	if (_value.size()==0)
+	return;
+	
+	const char *it = _value.data();
+	const char *end = _value.data()+_value.size();
+	char *res = new char [_value.size()+1];
+	char *res_end = res;
+	
+	memset(res, 0, _value.size()+1);
+		
+	do {
+		uint32_t symbol = utf8::next(it, end);
+		if (symbol == _what)
+			res_end = utf8::append(_to, res_end);
+		else
+			res_end = utf8::append(symbol, res_end);
+		
+	} while (it < end);
+	res_end = 0;
+	_value = std::string(res);
+	delete [] res;
+	return _value;
+}
