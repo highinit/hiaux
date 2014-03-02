@@ -11,7 +11,7 @@ HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
 
 HttpSrv::Request::Request(const std::string &_url)
 {
-	std::cout << "Request: " << _url << std::endl; 
+	//std::cout << "Request: " << _url << std::endl; 
 	parseGET(_url, values_GET);
 }
 
@@ -56,7 +56,7 @@ int HttpSrv_onMessageComplete(http_parser* parser) {
 }
 
 int HttpSrv::Connection::onMessageBegin() {
-	std::cout << "HttpSrv::Connection::onMessageBegin" << std::endl;
+	//std::cout << "HttpSrv::Connection::onMessageBegin" << std::endl;
 	return 0;
 }
 
@@ -95,7 +95,7 @@ int HttpSrv::Connection::onBody(const char *at, size_t length) {
 }
 
 int HttpSrv::Connection::onMessageComplete() {
-	std::cout << "HttpSrv::Connection::onMessageComplete" << std::endl;
+	//std::cout << "HttpSrv::Connection::onMessageComplete" << std::endl;
 	requests.push( RequestPtr(new Request( cur_request ) ) );
 	return 0;
 }
@@ -121,7 +121,7 @@ HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
 
 HttpSrv::Connection::~Connection()
 {
-	std::cout << "http connection closed\n";
+	//std::cout << "http connection closed\n";
 }
 
 bool HttpSrv::Connection::recv()
@@ -238,11 +238,12 @@ void HttpSrv::closeHttpConn(int socket)
 
 void HttpSrv::handler(hPoolServer::ConnectionPtr pool_conn)
 {
+	//std::cout << "n http conn: " << connections.size() << std::endl;
 	ConnectionPtr http_conn = getHttpConn(pool_conn->m_sock);
 	
 	RequestPtr req = http_conn->getNextRequest();
 
-	if (!http_conn->alive) {
+	if (!http_conn->alive || http_conn->closing || time(0)-pool_conn->getCreateTs()>5) {
 		closeHttpConn(pool_conn->m_sock);
 		pool_conn->close();
 		return;

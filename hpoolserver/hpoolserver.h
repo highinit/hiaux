@@ -14,13 +14,14 @@
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <netdb.h>
+#include <unistd.h>
 
 class hPoolServer
 {
 public:
 	class Connection
 	{	
-		uint64_t change_ts;
+		uint64_t create_ts;
 	public:
 		int m_sock;
 		bool closing;
@@ -29,7 +30,7 @@ public:
 		
 		boost::function<void(int)> m_onClose;
 		
-		uint64_t getChangeTs();
+		uint64_t getCreateTs();
 		//void recv(std::string &_bf);
 		//void send(const std::string &_mess);
 		void close();

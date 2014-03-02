@@ -29,7 +29,12 @@ std::vector<std::string> &split(const std::string &s,
 							std::vector<std::string> &elems);
 
 void fix_utf8_string(std::string& str);
-void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<std::string> &_elems);
+
+void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims,
+					std::vector<std::string> &_elems);
+void splitIntoTwoUtf8(const std::string &_v, uint32_t delim,
+						std::string &_f, std::string &_s);
+
 bool isUtf8Char(uint32_t c);
 void eraseNonCharsUtf8(std::string &_s);
 uint32_t toLowerCharUtf8(uint32_t c);

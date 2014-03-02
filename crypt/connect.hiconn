@@ -1,0 +1,10 @@
+{
+
+"_NAME" : "hiaux_crypt",
+
+"_LINKFLAGS" : ["-lssl"],
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+		{ "type": "Glob", "mask": "*.c" } ]
+
+}

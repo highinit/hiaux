@@ -53,7 +53,8 @@ void fix_utf8_string(std::string& str)
 	}
 }
 
-void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<std::string> &_elems)
+void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims,
+				std::vector<std::string> &_elems)
 {
 	if (_s.size()==0)
 		return;
@@ -83,6 +84,46 @@ void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims, std::vector<s
 	delete [] elem;
 }
 
+void splitIntoTwoUtf8(const std::string &_v, uint32_t _delim,
+						std::string &_f, std::string &_s)
+{
+	if (_v.size()==0)
+		return;
+	const char *it = _v.data();
+	const char *end = _v.data()+_v.size();
+	char *f = new char [_v.size()+1];
+	char *f_end = f;
+	char *s = new char [_v.size()+1];
+	char *s_end = s;
+	
+	memset(f, 0, _v.size()+1);
+	memset(s, 0, _v.size()+1);
+	bool first = true;
+	
+	try {
+		do {
+			uint32_t symbol = utf8::next(it, end);
+			if (first && symbol == _delim) {
+				first = false;
+				continue;
+			}
+
+			if (first)
+				f_end = utf8::append(symbol, f_end);
+			else
+				s_end = utf8::append(symbol, s_end);
+
+		} while (it < end);
+	} catch (...)  {
+	}
+	
+	_f = std::string(f);
+	_s = std::string(s);
+	
+	delete [] f;
+	delete [] s;
+}
+
 bool isUtf8Char(uint32_t c)
 {
 	// A to Z
@@ -107,15 +148,21 @@ void eraseNonCharsUtf8(std::string &_s)
 	char *res_end = res;
 	
 	memset(res, 0, _s.size()+1);
+	
+	try {
+		do {
+			uint32_t symbol = utf8::next(it, end);
+
+			if (isUtf8Char(symbol)) {
+				res_end = utf8::append(symbol, res_end);
+			} else
+				res_end = utf8::append(0x20, res_end); // ' '
+
+		} while (it < end);
+	}
+	catch (...) {
 		
-	do {
-		uint32_t symbol = utf8::next(it, end);
-				
-		if (isUtf8Char(symbol)) {
-			res_end = utf8::append(symbol, res_end);
-		}
-			
-	} while (it < end);
+	}
 	res_end = 0;
 	_s = std::string(res);
 }
@@ -140,12 +187,16 @@ void toLowerUtf8(std::string &_s)
 	char *res_end = res;
 	
 	memset(res, 0, _s.size()+1);
-		
-	do {
-		uint32_t symbol = utf8::next(it, end);
-		res_end = utf8::append(toLowerCharUtf8(symbol), res_end);
-			
-	} while (it < end);
+	
+	try {
+		do {
+			uint32_t symbol = utf8::next(it, end);
+			res_end = utf8::append(toLowerCharUtf8(symbol), res_end);
+
+		} while (it < end);
+	}
+	catch (...) {	
+	}
 	res_end = 0;
 	_s = std::string(res);
 }
@@ -313,15 +364,18 @@ std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to)
 	char *res_end = res;
 	
 	memset(res, 0, _value.size()+1);
-		
-	do {
-		uint32_t symbol = utf8::next(it, end);
-		if (symbol == _what)
-			res_end = utf8::append(_to, res_end);
-		else
-			res_end = utf8::append(symbol, res_end);
-		
-	} while (it < end);
+	try {
+		do {
+			uint32_t symbol = utf8::next(it, end);
+			if (symbol == _what)
+				res_end = utf8::append(_to, res_end);
+			else
+				res_end = utf8::append(symbol, res_end);
+
+		} while (it < end);
+	}
+	catch (...) {	
+	}
 	res_end = 0;
 	_value = std::string(res);
 	delete [] res;

@@ -15,14 +15,19 @@ EventWatcherKqueue::EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 		m_onWrite(_onWrite),
 		m_onError(_onError)
 {
+	m_nsockets = 0;
 	m_kqueue = kqueue();
 }
 
 void EventWatcherKqueue::addSocket(int _sock_fd, void *_opaque_info)
 {
+	//m_nsockets++;
 	struct kevent ev;
-	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, _opaque_info);
-	if (kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1 ) {
+	struct timespec timeout;
+	timeout.tv_nsec = 0;
+	timeout.tv_sec = 10;
+	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_ADD, 0, 0, _opaque_info);
+	if (kevent(m_kqueue, &ev, 1, NULL, 0, &timeout) == -1 ) {
 		std::cout << "EventWatcher::addEvent kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
 		exit (0);
 	}
@@ -31,6 +36,7 @@ void EventWatcherKqueue::addSocket(int _sock_fd, void *_opaque_info)
 
 void EventWatcherKqueue::delSocket(int _sock_fd, void *_opaque_info)
 {
+	//m_nsockets--;
 	//std::cout << "EventWatcher::delSocket\n";
 	struct kevent ev;
 	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_DELETE, 0, 0, _opaque_info);
@@ -42,6 +48,7 @@ void EventWatcherKqueue::delSocket(int _sock_fd, void *_opaque_info)
 
 void EventWatcherKqueue::handleEvents()
 {
+	//std::cout << "m_nsockets: " << m_nsockets << std::endl;
 	struct kevent events[4096];
 	timespec timeout = {0, 250000000};
 	int nevents = kevent(m_kqueue, NULL, 0, events, 4096, &timeout);

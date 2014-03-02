@@ -22,6 +22,7 @@
 
 class EventWatcherKqueue {	
 	int m_kqueue;
+	size_t m_nsockets;
 	boost::function<void(int,void*)> m_onRead;
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
