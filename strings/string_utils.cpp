@@ -356,7 +356,7 @@ std::string &unescapeUrl(std::string &_value) {
 std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to)
 {
 	if (_value.size()==0)
-	return;
+	return _value;
 	
 	const char *it = _value.data();
 	const char *end = _value.data()+_value.size();
