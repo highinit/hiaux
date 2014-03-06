@@ -155,8 +155,8 @@ void eraseNonCharsUtf8(std::string &_s)
 
 			if (isUtf8Char(symbol)) {
 				res_end = utf8::append(symbol, res_end);
-			} else
-				res_end = utf8::append(0x20, res_end); // ' '
+			} //else
+				//res_end = utf8::append(0x20, res_end); // ' '
 
 		} while (it < end);
 	}
