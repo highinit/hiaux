@@ -15,6 +15,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 
 typedef pthread_mutex_t pmutex;
 typedef boost::shared_ptr<pthread_mutex_t> pmutexPtr;
@@ -84,6 +85,8 @@ public:
 	void unlock();
 	void kick();
 };
+
+typedef boost::shared_ptr<hCondWaiter> hCondWaiterPtr;
 
 class hRWLockRead
 {

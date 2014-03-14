@@ -5,11 +5,12 @@
 
 #include <libpq-fe.h>
 //#include "hiaux/threads/locks.h"
+#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
 #include <string>
 
-class PQ : public boost::noncopyable {
+class PG : public boost::noncopyable {
 	const std::string m_host;
 	const std::string m_db;
 	const std::string m_user;
@@ -17,11 +18,16 @@ class PQ : public boost::noncopyable {
 	PGconn *m_conn;
 public:
 	
-	PQ(const std::string &_host,
+	PG(const std::string &_host,
 		const std::string &_db,
 		const std::string &_user,
 		const std::string &_pass);
-	~PQ();
+	
+	PGresult* query(const std::string &_q);
+	
+	~PG();
 };
+
+typedef boost::shared_ptr<PG> PGPtr;
 
 #endif
