@@ -49,7 +49,6 @@ public:
 
 	void addTask(boost::function<TaskLauncher::TaskRet()> *task);
 
-	
 	void setMaxParallel(size_t max_parallel);
 	void setNoMoreTasks();
 
