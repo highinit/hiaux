@@ -56,6 +56,8 @@ uint64_t string_to_uint64(const std::string &_s);
 void uint64_to_string(const uint64_t &_i, std::string &_s);
 std::string uint64_to_string(const uint64_t &_i);
 std::string float_to_string(float _f);
+std::string inttostr (int _i);
+int strtoint(const std::string &_s);
 
 std::string &unescapeUrl(std::string &_value);
 std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to);

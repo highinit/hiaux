@@ -253,35 +253,46 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
 	
 void parseGET(const std::string &_data,
 			hiaux::hashtable<std::string, std::string> &values_GET)
-{
-	std::cout << "parseGET " << _data << std::endl;
-	std::vector<std::string> words = split(_data, ' ');
-	if (words.size()<2)
-		return;
+{		
+	enum URL_PARSER_STATE {
+		OUTSIDE,
+		KEY,
+		VALUE
+	};
 	
-	std::string data = words[1];
+	std::string key,value;
 	
-	if (data.size()<4) return;
-	std::vector<std::string> keyvalues;
-	/*
-	std::set<uint32_t> delims;
-	delims.insert(0x3f); // '?'
-	delims.insert(0x26); // '&'
-	
-	splitUtf8(data, delims, keyvalues);
-	*/
-	
-	std::vector<char> delims;
-	delims.push_back('?');
-	delims.push_back('&');
-	split(data, delims, keyvalues);
-	
-	for (int i = 0; i<keyvalues.size(); i++) {
-		std::pair<std::string, std::string> kv;
-		if (getPairGET(keyvalues[i], kv))
-			//std::cout << "KEY: " << kv.first << " VALUE: " << kv.second << std::endl;
-			values_GET[kv.first] = kv.second;
+	int sbeg = 0;
+	URL_PARSER_STATE state = OUTSIDE;
+	for (int i = 0; i<_data.size(); i++) {
+		if (_data[i]=='?') {
+			state = KEY;
+			if (i+1 != _data.size())
+				sbeg = i + 1;
+			else sbeg = i;
+		} else if (_data[i]=='=') {
+			state = VALUE;
+			key = _data.substr(sbeg, i-sbeg);
+			if (i+1 != _data.size())
+				sbeg = i + 1;
+			else sbeg = i;
+		} else if (_data[i]=='&') {
+			state = KEY;
+			value = _data.substr(sbeg, i-sbeg);
+			values_GET[key] = value;
+			if (i+1 != _data.size())
+				sbeg = i + 1;
+			else sbeg = i;
+		}
 	}
+	
+	if (state == VALUE) {
+		value = _data.substr(sbeg, _data.size()-sbeg);
+	} else if (state == KEY) {
+		key = _data.substr(sbeg, _data.size()-sbeg);
+		value = "";
+	}
+	values_GET[key] = value;
 }
 
 inline bool isDelimeter(char c)
@@ -336,6 +347,18 @@ std::string uint64_to_string(const uint64_t &_i)
 	char bf[50];
 	sprintf(bf, "%llu", _i);
 	return std::string(bf);
+}
+
+std::string inttostr (int _i) {
+	char bf[50];
+	sprintf(bf, "%d", _i);
+	return std::string(bf);
+}
+
+int strtoint(const std::string &_s) {
+	int i;
+	sscanf(_s.c_str(), "%d", &i);
+	return i;
 }
 
 std::string float_to_string(float _f)

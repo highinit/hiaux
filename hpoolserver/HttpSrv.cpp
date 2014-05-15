@@ -64,6 +64,7 @@ int HttpSrv::Connection::onUrl(const char *at, size_t length) {
 	//std::cout << "HttpSrv::Connection::onUrl" << at << std::endl;
 	cur_request.url = std::string(at);
 	fix_utf8_string(cur_request.url);
+	parseGET(cur_request.url, cur_request.values_GET);
 	return 0;
 }
 
@@ -156,7 +157,7 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 						"Content-Type: "+m_resp_info->content_type+"\r\n"
 						"Date: "+time_c+"\r\n"
 						"Server: "+m_resp_info->server_name+"\r\n"
-						"Connection: keep-alive\r\n"
+						//"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Access-Control-Allow-Origin: *\r\n"
 						"Content-Length: "+content_len+"\n\n"+_content+"\r\n";
@@ -177,6 +178,10 @@ void HttpSrv::Connection::send(const std::string &_mess)
 void HttpSrv::Connection::close()
 {
 	closing = true;
+}
+
+int HttpSrv::Connection::getSock() {
+	return m_sock;
 }
 
 void HttpSrv::Connection::parseRequests()

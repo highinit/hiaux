@@ -9,9 +9,11 @@ class HiBuilder:
 	_LIBS_NAMES_SET = set()
 
 	_target_name = ""
+	_CXX = ""
 
-	def __init__(self, _target_name):
+	def __init__(self, _target_name, _CXX):
 		self._target_name = _target_name
+		self._CXX = _CXX
 
 	def connectLib(self, _hiconn_file_path):
 		config_js = ''
@@ -55,9 +57,9 @@ class HiBuilder:
 		
 		self._LIBS_NAMES_SET.add(config["_NAME"])
 
-	def buildProgram(self, Program):
+	def build(self, Program):
 
-		_CXX = "clang++"
+		_CXX = self._CXX
 		_CCFLAGS = ""
 		_LINKFLAGS = ""
 		_CPPPATH = []
@@ -81,7 +83,8 @@ class HiBuilder:
 		Program(self._target_name, 
 		_CPPFILES, CCFLAGS=_CCFLAGS, LINKFLAGS=_LINKFLAGS, CXX = _CXX,
 		CPPPATH = _CPPPATH)
-
+	
+	
 	def addLinkFlags(self, linkflags):
 		for linkflag in linkflags:
 			if linkflag not in self._LINKFLAGS_SET:

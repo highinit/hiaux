@@ -79,6 +79,7 @@ public:
 		
 		RequestPtr getNextRequest();
 		void close();
+		int getSock();
 		//void send(const std::string &_mess);
 		void sendResponse(const std::string &_content);
 	};
