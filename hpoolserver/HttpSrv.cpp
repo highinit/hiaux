@@ -15,6 +15,16 @@ HttpSrv::Request::Request(const std::string &_url)
 	parseGET(_url, values_GET);
 }
 
+bool HttpSrv::Request::getField(const std::string &_key, std::string &_value) {
+	hiaux::hashtable<std::string, std::string>::iterator it = values_GET.find(_key);
+	
+	if (it != values_GET.end()) {
+		_value = it->second;
+		return true;
+	} else
+		return false;
+}
+
 int HttpSrv_onMessageBegin(http_parser* parser) {
 	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
 	return conn->onMessageBegin();
@@ -63,7 +73,9 @@ int HttpSrv::Connection::onMessageBegin() {
 int HttpSrv::Connection::onUrl(const char *at, size_t length) {
 	//std::cout << "HttpSrv::Connection::onUrl" << at << std::endl;
 	cur_request.url = std::string(at);
-	fix_utf8_string(cur_request.url);
+	cur_request.url = cur_request.url.substr(0, cur_request.url.find(' '));
+	//fix_utf8_string(cur_request.url);
+	cur_request.path = getUrlPath(cur_request.url);
 	parseGET(cur_request.url, cur_request.values_GET);
 	return 0;
 }

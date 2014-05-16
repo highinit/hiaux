@@ -34,14 +34,15 @@ public:
 	class Request
 	{
 	public:
-		std::string value;
+		//std::string value;
 		std::string url;
+		std::string path;
 		hiaux::hashtable<std::string, std::string> values_GET;
 		std::string body;
 		
 		Request() { }
 		Request(const std::string &_url);
-		bool getField(const std::string name, std::string &value);
+		bool getField(const std::string &_key, std::string &_value);
 	};
 	
 	typedef boost::shared_ptr<Request> RequestPtr;

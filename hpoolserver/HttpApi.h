@@ -1,0 +1,38 @@
+#ifndef _HTTPAPI_H_
+#define _HTTPAPI_H_
+
+#include "hiconfig.h"
+#include "HttpSrv.h"
+
+class HttpApi {
+	hiaux::hashtable<std::string, std::vector<std::string> > m_methods;
+	hiaux::hashtable<std::string, int> m_signed;
+	boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> m_onreq;
+	
+	bool isSigned(const std::string &_method) const;
+	bool checkFields(hiaux::hashtable<std::string, std::string> &_fields) const;
+	
+	hiaux::hashtable<std::string, std::string> m_keys;
+	
+public:
+	
+	HttpApi();
+	
+	void addKey(const std::string &_userid, const std::string &_key);
+	
+	void addMethod(const std::string &_name,
+					const std::vector<std::string> &_args_names,
+					boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq);
+	
+	// checks sign = concat name . [{_arg_name}] . ts; fields: method_sign, ts 
+	void addMethodSigned(const std::string &_name,
+						const std::vector<std::string> &_args_names,
+						boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq,
+						uint64_t _max_ts_range);
+	
+	void handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req);
+};
+
+typedef boost::shared_ptr<HttpApi> HttpApiPtr;
+
+#endif

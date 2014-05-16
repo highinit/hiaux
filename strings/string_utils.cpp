@@ -404,3 +404,10 @@ std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to)
 	delete [] res;
 	return _value;
 }
+
+std::string getUrlPath(const std::string &_url) {
+	int qpos = _url.find('?');
+	if (qpos == -1)
+		return _url;
+	return _url.substr(0, qpos);
+}

@@ -62,5 +62,6 @@ int strtoint(const std::string &_s);
 std::string &unescapeUrl(std::string &_value);
 std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to);
 
+std::string getUrlPath(const std::string &_url);
 
 #endif	/* STRING_UTILS_H */
