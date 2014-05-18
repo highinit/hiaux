@@ -73,18 +73,21 @@ class hThread
 	ThreadQueuePtr waiting_threads;
 
 	pthread_t *m_th;
-
+	bool m_running;
+	boost::atomic<size_t> *m_nrunning_threads;
 public:
 
 	hCondWaiter local_queue_notempty;
 	
-	hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th);
+	hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pthread_t *th, boost::atomic<size_t> *_nrunning_threads);
+	~hThread();
 	void run();
 
 	bool queueNotEmpty();
 
 	void addTask(boost::function<void()> *f);
 	void kick();
+	void kill();
 	void join();
 };
 
@@ -96,9 +99,13 @@ class hThreadPool
 	ThreadQueuePtr waiting_threads;
 	std::vector<hThread*> threads;
 	size_t nthreads;
+	
+	boost::atomic<size_t> m_nrunning_threads;
+	void kill();
 public:
 
 	hThreadPool(int nthreads);
+	~hThreadPool();
 	// boost::function<void()> f = boost::bind(&hTaskHandler::calc, &handler);
 	void addTask(boost::function<void()>* f);
 	void run();

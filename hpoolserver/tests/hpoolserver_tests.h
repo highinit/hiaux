@@ -198,7 +198,6 @@ public:
 	}
 	
 	void onGetStatsCalled(hiaux::hashtable<std::string, std::string> &_args, std::string& _resp) {
-		std::cout << "srv:onGetStatsCalled\n";
 		_resp = "onGetStatsCalled";
 	}
 	
@@ -236,7 +235,8 @@ public:
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.call("get-stats", params, req);
-		std::cout << "client:" << req << std::endl;
+		TS_ASSERT_EQUALS ( req , "onGetStatsCalled\r\n" );
+			
 	}
 	
 };

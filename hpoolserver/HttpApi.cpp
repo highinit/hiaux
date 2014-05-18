@@ -72,15 +72,14 @@ void HttpApi::addMethodSigned(const std::string &_name,
 }
 
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
-	std::cout << "HttpApi::handle\n";
+	//std::cout << "HttpApi::handle\n";
 	if (!checkFields (_req->values_GET)) {
-		std::cout << "HttpApi::handle fields error\n";
+		//std::cout << "HttpApi::handle fields error\n";
 		_conn->sendResponse("HttpApi: request error");
+	} else {
+		std::string resp;
+		m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);
+		_conn->sendResponse(resp);
 	}
-	
-	std::string resp;
-	m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);
-	_conn->sendResponse(resp);
-	
 	_conn->close();
 }
