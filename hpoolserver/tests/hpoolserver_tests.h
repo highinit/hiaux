@@ -8,6 +8,14 @@
 
 #include "hiaux/strings/string_utils.h"
 #include "HttpSrv.h"
+#include "HttpApi.h"
+#include "HttpApiClient.h"
+
+#include <boost/bind.hpp>
+
+void onFinished() {
+	
+}
 
 class hPoolServerTests : public CxxTest::TestSuite
 {    
@@ -169,12 +177,12 @@ public:
 		http_conn->close();
 	}
 	
-	void testHttpServer()
+	void XtestHttpServer()
 	{
 		try {
 		std::cout << "testHttpServer\n";
 		const int port = 1234;
-		hThreadPool *pool = new hThreadPool(10);
+		hThreadPoolPtr pool (new hThreadPool(10));
 		TaskLauncherPtr launcher (new TaskLauncher(
 						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
 		HttpSrvPtr http_srv(new HttpSrv(launcher,
@@ -187,6 +195,48 @@ public:
 		} catch (const char *s) {
 			std::cout << "Exception: " << s << std::endl;
 		}
+	}
+	
+	void onGetStatsCalled(hiaux::hashtable<std::string, std::string> &_args, std::string& _resp) {
+		std::cout << "srv:onGetStatsCalled\n";
+		_resp = "onGetStatsCalled";
+	}
+	
+	void testHttpApiClient_simpleMethod() {
+		
+		std::string userid = "_userid_";
+		std::string key = "_key_";
+		int port = 6732;
+		
+		HttpApiPtr api (new HttpApi);
+		api->addKey(userid, key);
+		std::vector<std::string> args;
+		args.push_back("ts1");
+		args.push_back("ts2");
+		api->addMethod("get-stats", args, boost::bind(&hPoolServerTests::onGetStatsCalled, this, _1, _2));
+		
+		hThreadPoolPtr pool (new hThreadPool(4));
+		pool->run();
+		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&hPoolServerTests::onFinished, this))); 
+		
+		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+										"highinit nazareth server"),
+										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+		
+		srv->start(port);
+		
+		sleep(2);
+		
+		// make client and call
+		char endpoint[255];
+		sprintf(endpoint, "http://127.0.0.1:%d/", port);
+		HttpApiClient c(endpoint, "_user_", "_key_");
+		std::string req;
+		hiaux::hashtable<std::string, std::string> params;
+		params["ts1"] = "_ts1_";
+		params["ts2"] = "_ts2_";
+		c.call("get-stats", params, req);
+		std::cout << "client:" << req << std::endl;
 	}
 	
 };

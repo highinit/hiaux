@@ -9,6 +9,7 @@
 "_DEPS" : ["../threads/",
 			"../strings/",
 			"../events/",
+			"../crypt/",
 			"../../thirdparty/http-parser/"]
 
 }

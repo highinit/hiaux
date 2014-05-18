@@ -15,7 +15,7 @@
 
 #ifdef NO_STD_TR1
 	#include <unordered_map>
-	
+/*
 	template <class T>
 	struct ::std::hash<std::pair<T, T> > {
 	public:
@@ -39,7 +39,7 @@
 			return ::std::hash<T>()(::boost::get<0>(x)) ^ ::std::hash<T2>()(::boost::get<1>(x)) ^ ::std::hash<T2>()(::boost::get<2>(x));
         }
 	};
-	
+*/	
 	namespace hiaux {	
 		template<class K, class V>
 		class hashtable : public ::std::unordered_map<K,V> {

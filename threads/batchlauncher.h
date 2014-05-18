@@ -1,5 +1,6 @@
 #include "tasklauncher.h"
 
+/*
 class BatchLauncher {
 
 	TaskLauncher m_task_launcher;
@@ -22,3 +23,4 @@ public:
 	void setNoMoreTasks();
 	void waitFinish();
 };
+*/

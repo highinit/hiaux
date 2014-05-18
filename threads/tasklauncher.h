@@ -20,7 +20,7 @@ private:
 	{
 	};
 	
-	hThreadPool *m_pool;
+	hThreadPoolPtr m_pool;
 	TaskQueue task_q;
 	
 	boost::atomic<size_t> tasks_launched;
@@ -43,7 +43,7 @@ public:
 
 	void Task(boost::function<TaskLauncher::TaskRet()> *task);
 	
-	TaskLauncher(hThreadPool *pool,
+	TaskLauncher(hThreadPoolPtr pool,
 				size_t max_parallel, 
 				boost::function<void()> onFinished);
 

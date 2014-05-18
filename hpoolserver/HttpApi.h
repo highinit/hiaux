@@ -5,9 +5,9 @@
 #include "HttpSrv.h"
 
 class HttpApi {
-	hiaux::hashtable<std::string, std::vector<std::string> > m_methods;
+	hiaux::hashtable<std::string, std::vector<std::string> > m_methods_args;
 	hiaux::hashtable<std::string, int> m_signed;
-	boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> m_onreq;
+	hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >m_methods_callbacks;
 	
 	bool isSigned(const std::string &_method) const;
 	bool checkFields(hiaux::hashtable<std::string, std::string> &_fields) const;
@@ -28,7 +28,7 @@ public:
 	void addMethodSigned(const std::string &_name,
 						const std::vector<std::string> &_args_names,
 						boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq,
-						uint64_t _max_ts_range);
+						uint64_t _max_ts_range = 15);
 	
 	void handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req);
 };

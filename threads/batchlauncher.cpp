@@ -1,5 +1,6 @@
 #include "batchlauncher.h"
 
+/*
 BatchLauncher::BatchLauncher(hThreadPool *_pool, size_t _maxparallel):
 	 m_task_launcher(_pool, _maxparallel, boost::bind(&BatchLauncher::onFinished, this)),
 	 m_finished(false),
@@ -39,3 +40,4 @@ void BatchLauncher::setNoMoreTasks() {
 void BatchLauncher::waitFinish() {
 	cond_on_finished.wait();
 }
+*/

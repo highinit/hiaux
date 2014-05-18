@@ -1,6 +1,6 @@
 #include "tasklauncher.h"
 
-TaskLauncher::TaskLauncher(hThreadPool *pool,
+TaskLauncher::TaskLauncher(hThreadPoolPtr pool,
 						size_t max_parallel,
 						boost::function<void()> onFinished):
 	m_pool(pool),

@@ -5,7 +5,7 @@ from hibuilder import HiBuilder
 
 env = Environment()
 
-b = HiBuilder("poolserver_test")
+b = HiBuilder("poolserver_test", "clang++")
 
 hicore_path = "../../../"
 hiaux_path = "../../../"
@@ -15,9 +15,14 @@ b.addPath(hiaux_path)
 b.addPath("../")
 b.addPath("./")
 
-b.connectLib("../../threads/")
 b.connectLib("../")
+
+b.connectLib("../../threads/")
+
+b.addPath(hicore_path+"thirdparty/http-parser/")
+b.connectLib(hicore_path+"thirdparty/http-parser/")
+
 
 b.addCppGlob("*.cpp")
 
-b.buildProgram(Program)
+b.build(Program)

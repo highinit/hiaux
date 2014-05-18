@@ -17,8 +17,8 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) c
 	if (_fields.find("method") == _fields.end())
 		return false;
 	
-	hiaux::hashtable<std::string, std::vector<std::string> >::const_iterator it = m_methods.find(_fields["method"]);
-	if (it == m_methods.end())
+	hiaux::hashtable<std::string, std::vector<std::string> >::const_iterator it = m_methods_args.find(_fields["method"]);
+	if (it == m_methods_args.end())
 		return false;
 	
 	std::vector<std::string>::const_iterator fields_it = it->second.begin();
@@ -38,10 +38,13 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) c
 		if (m_keys.find( _fields["api_userid"] ) == m_keys.end())
 			return false;
 		
-		std::string sign_raw = _fields["method"] + _fields["api_userid"] + _fields["ts"] + m_keys.find(_fields.find("api_userid")->second)->second;
+		std::string sign_raw = _fields["method"] + _fields["ts"] + m_keys.find(_fields.find("api_userid")->second)->second;
 		unsigned char sign[21];
 		sha1::calc(sign_raw.c_str(), sign_raw.size(), sign);
-		if (_fields["sign"] != std::string( (char*) sign))
+		char sign_hex[41];
+		sha1::toHexString(sign, sign_hex);
+		
+		if (_fields["sign"] != std::string(sign_hex))
 			return false;
 	}
 	return true;
@@ -54,8 +57,8 @@ void HttpApi::addKey(const std::string &_userid, const std::string &_key) {
 void HttpApi::addMethod(const std::string &_name,
 				const std::vector<std::string> &_args_names,
 				boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq) {
-	m_methods[_name] = _args_names;
-	m_onreq = _onreq;
+	m_methods_args[_name] = _args_names;
+	m_methods_callbacks[_name] = _onreq;
 }
 
 // checks sign = concat name . [{_arg_name}] . ts; fields: method_sign, ts 
@@ -63,15 +66,21 @@ void HttpApi::addMethodSigned(const std::string &_name,
 					const std::vector<std::string> &_args_names,
 					boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq,
 					uint64_t _max_ts_range) {
-	m_methods[_name] = _args_names;
-	m_onreq = _onreq;
+	m_methods_args[_name] = _args_names;
+	m_methods_callbacks[_name] = _onreq;
 	m_signed[_name] = true;
 }
 
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
+	std::cout << "HttpApi::handle\n";
 	if (!checkFields (_req->values_GET)) {
+		std::cout << "HttpApi::handle fields error\n";
 		_conn->sendResponse("HttpApi: request error");
-		
 	}
+	
+	std::string resp;
+	m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);
+	_conn->sendResponse(resp);
+	
 	_conn->close();
 }
