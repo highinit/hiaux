@@ -6,6 +6,7 @@
 
 #include "hiconfig.h"
 #include "hiaux/structs/hashtable.h"
+#include "hiaux/threads/locks.h"
 //#include "EventsWatcher.h"
 
 //#ifdef _EVENT_WATCHER_IS_KQUEUE_
@@ -29,6 +30,7 @@ class EventWatcherKqueue {
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
 	boost::function<void(int,void*)> m_onAccept;
+//	hAutoLockPtr m_lock;
 public:
 	EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,

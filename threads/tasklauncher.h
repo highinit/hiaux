@@ -60,4 +60,10 @@ public:
 
 typedef boost::shared_ptr<TaskLauncher> TaskLauncherPtr;
 
+#define NEW_LAUNCHER_TASK1(a) (new boost::function<TaskLauncher::TaskRet()>(boost::bind(a)))
+#define NEW_LAUNCHER_TASK2(a, b) (new boost::function<TaskLauncher::TaskRet()>(boost::bind(a, b)))
+#define NEW_LAUNCHER_TASK3(a, b, c) (new boost::function<TaskLauncher::TaskRet()>(boost::bind(a, b, c)))
+#define NEW_LAUNCHER_TASK4(a, b, c, d) (new boost::function<TaskLauncher::TaskRet()>(boost::bind(a, b, c, d)))
+#define NEW_LAUNCHER_TASK5(a, b, c, d, e) (new boost::function<TaskLauncher::TaskRet()>(boost::bind(a, b, c, d, e)))
+
 #endif

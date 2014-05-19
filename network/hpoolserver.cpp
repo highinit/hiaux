@@ -34,8 +34,8 @@ hPoolServer::Connection::Connection(std::string _ip, int _port, int _sock,
 
 hPoolServer::Connection::~Connection()
 {
-	::close(m_sock);
-	::shutdown(m_sock, SHUT_RDWR);
+	if (!closing)
+		close();
 }
 
 uint64_t hPoolServer::Connection::getCreateTs()
@@ -69,12 +69,17 @@ hPoolServer::~hPoolServer() {
 
 void hPoolServer::onCloseConnection(int _sock_fd)
 {
-	hLockTicketPtr ticket = m_connections_lock.lock();
+	{
+		hLockTicketPtr ticket = m_connections_lock.lock();
 	
-	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
-	if (it != m_connections.end())
-		m_connections.erase(it);
-	m_events_watcher->delSocket(_sock_fd, NULL);
+		hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
+		if (it != m_connections.end())
+			m_connections.erase(it);
+	}
+	hLockTicketPtr _ticket = m_sockets_to_close_q_lock.lock();
+	m_sockets_to_close_q.push(_sock_fd);
+	
+	//m_events_watcher->delSocket(_sock_fd, NULL);
 }
 
 void hPoolServer::onRead(int _sock_fd, void *_opaque_info)
@@ -84,8 +89,14 @@ void hPoolServer::onRead(int _sock_fd, void *_opaque_info)
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
 	if (it != m_connections.end()) {
 		ticket->unlock();
+		//m_launcher->addTask(NEW_LAUNCHER_TASK3(&hPoolServer::handleReadTask, this, it->second));
 		m_handler(it->second);
 	}
+}
+
+TaskLauncher::TaskRet hPoolServer::handleReadTask(ConnectionPtr _conn) {
+	m_handler(_conn);
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void hPoolServer::onWrite(int _sock_fd, void *_opaque_info)
@@ -114,8 +125,20 @@ TaskLauncher::TaskRet hPoolServer::readThread()
 {
 	while (m_isrunning) {
 		m_events_watcher->handleEvents();
+		
+		{
+			hLockTicketPtr ticket = m_sockets_to_close_q_lock.lock();
+			while (!m_sockets_to_close_q.empty()) {
+				int sock_fd = m_sockets_to_close_q.front();
+				m_events_watcher->delSocket(sock_fd, NULL);
+				::close(sock_fd);
+				::shutdown(sock_fd, SHUT_RDWR);
+				m_sockets_to_close_q.pop();
+			}
+		}
 	}
 	m_istopped.fetch_add(1);
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {

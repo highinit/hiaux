@@ -55,6 +55,9 @@ private:
 	hAutoLock m_connections_lock;
 	EventWatcherPtr m_events_watcher;
 	
+	std::queue<int> m_sockets_to_close_q;
+	hAutoLock m_sockets_to_close_q_lock;
+	
 	int startClient(const std::string &_ip, int portno);
 	int startServer(int port);
 	
@@ -64,6 +67,9 @@ public:
 	void onWrite(int _sock, void *_opaque_info);
 	void onError(int _sock, void *_opaque_info);
 	void onAccept(int _sock_fd, void *_opaque_info);
+	
+	TaskLauncher::TaskRet handleReadTask(ConnectionPtr _conn);
+	TaskLauncher::TaskRet acceptTask(int _sock);
 	
 	void onCloseConnection(int _sock_fd);
 	TaskLauncher::TaskRet readThread();
