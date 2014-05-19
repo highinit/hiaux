@@ -1,3 +1,6 @@
+#ifndef _HTTPAPICLIENT_H_
+#define _HTTPAPICLIENT_H_
+
 #include "hiconfig.h"
 #include "hiaux/crypt/sha1.h"
 #include "hiaux/strings/string_utils.h"
@@ -39,3 +42,5 @@ public:
 				const hiaux::hashtable<std::string, std::string> &_get_params,
 				std::string &_resp) const;
 };
+
+#endif

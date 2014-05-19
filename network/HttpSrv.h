@@ -14,7 +14,7 @@
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"
 
-#include "http_parser.h"
+#include "thirdparty/http-parser/http_parser.h"
 
 class HttpSrv
 {
