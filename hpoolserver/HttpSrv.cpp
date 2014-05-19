@@ -229,6 +229,10 @@ HttpSrv::HttpSrv(TaskLauncherPtr launcher,
 					boost::bind(&HttpSrv::handler, this, _1)));
 }
 
+HttpSrv::~HttpSrv() {
+	m_poolserver->stop();
+}
+
 HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 {
 	hLockTicketPtr ticket = m_connections_lock.lock();

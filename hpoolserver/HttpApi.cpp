@@ -30,15 +30,17 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) c
 	}
 	
 	if (m_signed.find(_fields["method"]) != m_signed.end()) {
-		if (m_signed.find(_fields["api_userid"]) == m_signed.end() ||
-			m_signed.find(_fields["ts"]) == m_signed.end() ||
-			m_signed.find(_fields["sign"]) == m_signed.end())
+		if (_fields.find("api_userid") == _fields.end() ||
+			_fields.find("ts") == _fields.end() ||
+			_fields.find("sign") == _fields.end()) {
 				return false;
+			}
 		
-		if (m_keys.find( _fields["api_userid"] ) == m_keys.end())
+		if (m_keys.find( _fields["api_userid"] ) == m_keys.end()) {
 			return false;
+		}
 		
-		std::string sign_raw = _fields["method"] + _fields["ts"] + m_keys.find(_fields.find("api_userid")->second)->second;
+		std::string sign_raw = _fields["method"] + _fields["ts"] + m_keys.find( _fields["api_userid"] )->second;
 		unsigned char sign[21];
 		sha1::calc(sign_raw.c_str(), sign_raw.size(), sign);
 		char sign_hex[41];
@@ -72,9 +74,8 @@ void HttpApi::addMethodSigned(const std::string &_name,
 }
 
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
-	//std::cout << "HttpApi::handle\n";
+
 	if (!checkFields (_req->values_GET)) {
-		//std::cout << "HttpApi::handle fields error\n";
 		_conn->sendResponse("HttpApi: request error");
 	} else {
 		std::string resp;

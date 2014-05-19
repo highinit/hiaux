@@ -17,6 +17,7 @@ class EventWatcherEpoll {
 	boost::function<void(int,void*)> m_onRead;
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
+	boost::function<void(int,void*)> m_onAccept;
 public:
 	EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,

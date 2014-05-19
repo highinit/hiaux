@@ -5,6 +5,7 @@
 #define _EVENT_WATCHER_KQUEUE_H_
 
 #include "hiconfig.h"
+#include "hiaux/structs/hashtable.h"
 //#include "EventsWatcher.h"
 
 //#ifdef _EVENT_WATCHER_IS_KQUEUE_
@@ -23,14 +24,19 @@
 class EventWatcherKqueue {	
 	int m_kqueue;
 	size_t m_nsockets;
+	hiaux::hashtable<int, bool> m_sockets_accept;
 	boost::function<void(int,void*)> m_onRead;
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
+	boost::function<void(int,void*)> m_onAccept;
 public:
 	EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,
-				boost::function<void(int,void*)> _onError);
-	virtual void addSocket(int _sock_fd, void *_opaque_info);
+				boost::function<void(int,void*)> _onError,
+				boost::function<void(int,void*)> m_onAccept);
+	~EventWatcherKqueue();
+	virtual void addSocketAccept(int _sock_fd, void *_opaque_info);
+	virtual void addSocketRead(int _sock_fd, void *_opaque_info);
 	virtual void delSocket(int _sock_fd, void *_opaque_info);
 	virtual void handleEvents();
 };

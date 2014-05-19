@@ -46,17 +46,16 @@ class Tasks
         
         bool check()
         {
-            //std::cout << t1 << " " << t2 << " " << t3 << " " << t4 << " \n" ;
-            if (t1==t2 && t2==t3 && t3==t4 && t4==42)
-            {
+            //std::cout << "t1:" << t1 << " t2:" << t2 << " t3:" << t3 << " t4:" << t4 << std::endl;
+            if (t1==t2 && t2==t3 && t3==t4 && t4==42) {
                 return 1;
-            }
+				
+             }
             return 0;
         }
         
     };
 
-    
 class HdividerDistTests : public CxxTest::TestSuite
 {    
 
@@ -69,16 +68,15 @@ public:
        Tasks tasks;
        hThreadPool pool(2);
       
-       pool.addTask( boost::bind(&Tasks::f1, &tasks));
-       pool.addTask( boost::bind(&Tasks::f2, &tasks));
-       pool.addTask( boost::bind(&Tasks::f3, &tasks));
-       pool.addTask( boost::bind(&Tasks::f4, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f1, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f2, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f3, &tasks));
+	   pool.addTask( NEWTASK2(&Tasks::f4, &tasks));
        pool.run();
        
        sleep(1);
        
        TS_ASSERT(tasks.check()==1);
-        
     }
     
     void test1()
@@ -86,16 +84,13 @@ public:
        Tasks tasks;
        hThreadPool pool(2);
        pool.run();
-       sleep(1);
-       pool.addTask( boost::bind(&Tasks::f1, &tasks));
-       pool.addTask( boost::bind(&Tasks::f2, &tasks));
-       pool.addTask( boost::bind(&Tasks::f3, &tasks));
-       pool.addTask( boost::bind(&Tasks::f4, &tasks));
        
-       sleep(1);
+       pool.addTask( NEWTASK2(&Tasks::f1, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f2, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f3, &tasks));
+       pool.addTask( NEWTASK2(&Tasks::f4, &tasks));
        
-       
+	   sleep(1);
        TS_ASSERT(tasks.check()==1);
-        
     }
 };

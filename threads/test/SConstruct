@@ -1,4 +1,25 @@
-env = Environment(CCFLAGS='-std=gnu++11 ')
-Program('threadpool_test', 
-['threadpool.cpp',
-'threadpool_main.cpp'], LIBS=['pthread'], LIBPATH='.', CCFLAGS='-std=c++0x -stdlib=libstdc++', CXX='clang++')
+import sys
+sys.path.insert(0, '../../hibuilder/')
+
+from hibuilder import HiBuilder
+
+env = Environment()
+
+b = HiBuilder("threadpool_test", "clang++")
+
+hicore_path = "../../../"
+hiaux_path = "../../../"
+
+b.addPath(hicore_path)
+b.addPath(hiaux_path)
+b.addPath("../")
+b.addPath("./")
+
+b.connectLib("../")
+
+#b.addPath(hicore_path+"thirdparty/http-parser/")
+#b.connectLib(hicore_path+"thirdparty/http-parser/")
+
+b.addCppGlob("*.cpp")
+
+b.build(Program)

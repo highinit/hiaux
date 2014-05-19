@@ -109,6 +109,7 @@ public:
 			const ResponseInfo &_resp_info,
 			boost::function<void(HttpSrv::ConnectionPtr,
 								HttpSrv::RequestPtr)> request_hdl);
+	~HttpSrv();
 	void start(int port);
 };
 

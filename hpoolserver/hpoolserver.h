@@ -49,6 +49,7 @@ private:
 	int m_listen_socket;
 	uint64_t m_idle_timeout;
 	bool m_isrunning;
+	boost::atomic<int> m_istopped;
 	// socket / connection
 	hiaux::hashtable<int, ConnectionPtr> m_connections;
 	hAutoLock m_connections_lock;
@@ -62,14 +63,15 @@ public:
 	void onRead(int _sock, void *_opaque_info);
 	void onWrite(int _sock, void *_opaque_info);
 	void onError(int _sock, void *_opaque_info);
+	void onAccept(int _sock_fd, void *_opaque_info);
 	
 	void onCloseConnection(int _sock_fd);
 	TaskLauncher::TaskRet readThread();
 
 	hPoolServer(TaskLauncherPtr launcher,
 			boost::function<void(ConnectionPtr)> handler);
+	~hPoolServer();
 
-	TaskLauncher::TaskRet listenThread();
 	void start(int port);
 	void stop();
 };

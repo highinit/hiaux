@@ -7,25 +7,25 @@ HttpApiClient::HttpApiClient(const std::string &_url,
 	m_url(_url),
 	m_api_userid(_userid),
 	m_api_key(_key),
-	m_is_auth_info_set(true) {
-	m_curl = curl_easy_init();
-	curl_easy_setopt(m_curl, CURLOPT_DNS_CACHE_TIMEOUT, 3600);			
+	m_is_auth_info_set(true),
+	m_http_cli(new HttpClient()) {		
 }
 				
 HttpApiClient::HttpApiClient(const std::string &_url):
 	m_url(_url),
-	m_is_auth_info_set(false) {
-	m_curl = curl_easy_init();
-	curl_easy_setopt(m_curl, CURLOPT_DNS_CACHE_TIMEOUT, 3600);
+	m_is_auth_info_set(false),
+	m_http_cli(new HttpClient()) {
 }
 
 HttpApiClient::~HttpApiClient() {
-	curl_easy_cleanup(m_curl);
 }
 
-void HttpApiClient::buildRequestUrl(const std::string &_method,
+void HttpApiClient::buildRequestUrlSigned(const std::string &_method,
 					const hiaux::hashtable<std::string, std::string> &_get_params,
 					std::string &_req) const {
+	if (!m_is_auth_info_set)
+		throw "HttpApiClient::buildRequestUrlSigned !m_is_auth_info_set\n";
+
 	std::string ts = uint64_to_string(time(0));
 	std::string sign_raw = _method + ts + m_api_key;
 	unsigned char sign[21];
@@ -44,12 +44,18 @@ void HttpApiClient::buildRequestUrl(const std::string &_method,
 	}
 }
 
-size_t crawl_function_pt(void *ptr, size_t size, size_t nmemb, std::string *stream)
-{
-	std::string bf = *stream + std::string((char*)ptr);
-	stream->clear();
-	*stream = bf;
-	return size*nmemb;
+void HttpApiClient::buildRequestUrl(const std::string &_method,
+					const hiaux::hashtable<std::string, std::string> &_get_params,
+					std::string &_req) const {
+
+	_req = m_url + "?method=" + _method + "&api_userid=" + m_api_userid;
+
+	hiaux::hashtable<std::string, std::string>::const_iterator it = _get_params.begin();
+	hiaux::hashtable<std::string, std::string>::const_iterator end = _get_params.end();
+	while (it != end) {
+		_req += "&" + it->first + "=" + it->second;
+		it++;
+	}
 }
 
 void HttpApiClient::call(const std::string &_method,
@@ -58,16 +64,14 @@ void HttpApiClient::call(const std::string &_method,
 	std::string req_url;
 	buildRequestUrl(_method, _get_params, req_url);
 	
-	curl_easy_setopt(m_curl, CURLOPT_URL, req_url.c_str());
-	curl_easy_setopt(m_curl, CURLOPT_WRITEFUNCTION, crawl_function_pt);
-	curl_easy_setopt(m_curl, CURLOPT_WRITEDATA, &_resp);
-	curl_easy_setopt(m_curl, CURLOPT_ENCODING, "UTF-8");
-	curl_easy_setopt(m_curl, CURLOPT_TIMEOUT, 10);
-	curl_easy_setopt(m_curl, CURLOPT_USERAGENT, "hiaux HttpApiClient");
-	CURLcode res = curl_easy_perform(m_curl);
+	m_http_cli->callSimple(req_url, _resp);
+}
 
-	if (res!=0) {
-		_resp += "HttpApiClient::call error happened";
-	}
-	
+void HttpApiClient::callSigned(const std::string &_method,
+					const hiaux::hashtable<std::string, std::string> &_get_params,
+					std::string &_resp) const {
+	std::string req_url;
+	buildRequestUrlSigned(_method, _get_params, req_url);
+
+	m_http_cli->callSimple(req_url, _resp);
 }

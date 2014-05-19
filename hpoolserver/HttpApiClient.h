@@ -2,7 +2,7 @@
 #include "hiaux/crypt/sha1.h"
 #include "hiaux/strings/string_utils.h"
 #include "hiaux/crypt/md5.h"
-
+#include "HttpClient.h"
 #include "curl/curl.h"
 
 class HttpApiClient {
@@ -12,7 +12,7 @@ class HttpApiClient {
 	
 	bool m_is_auth_info_set;
 	
-	CURL *m_curl;
+	HttpClientPtr m_http_cli;
 
 public:
 	HttpApiClient(const std::string &_url,
@@ -27,7 +27,15 @@ public:
 						const hiaux::hashtable<std::string, std::string> &_get_params,
 						std::string &_requrl) const;
 	
+	void buildRequestUrlSigned(const std::string &_method,
+						const hiaux::hashtable<std::string, std::string> &_get_params,
+						std::string &_requrl) const;
+	
 	void call(const std::string &_method,
+				const hiaux::hashtable<std::string, std::string> &_get_params,
+				std::string &_resp) const;
+	
+	void callSigned(const std::string &_method,
 				const hiaux::hashtable<std::string, std::string> &_get_params,
 				std::string &_resp) const;
 };

@@ -30,6 +30,12 @@
 
 #include "locks.h"
 
+#define NEWTASK1(a) (new boost::function<void()>(boost::bind(a)))
+#define NEWTASK2(a, b) (new boost::function<void()>(boost::bind(a, b)))
+#define NEWTASK3(a, b, c) (new boost::function<void()>(boost::bind(a, b, c)))
+#define NEWTASK4(a, b, c, d) (new boost::function<void()>(boost::bind(a, b, c, d)))
+#define NEWTASK5(a, b, c, d, e) (new boost::function<void()>(boost::bind(a, b, c, d, e)))
+
 class hThread;
 
 //boost::lockfree::queue
@@ -101,12 +107,13 @@ class hThreadPool
 	size_t nthreads;
 	
 	boost::atomic<size_t> m_nrunning_threads;
+	
 	void kill();
 public:
 
 	hThreadPool(int nthreads);
 	~hThreadPool();
-	// boost::function<void()> f = boost::bind(&hTaskHandler::calc, &handler);
+
 	void addTask(boost::function<void()>* f);
 	void run();
 	void join();

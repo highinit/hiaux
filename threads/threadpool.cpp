@@ -34,7 +34,7 @@ hThread::~hThread() {
 }
 
 void hThread::run() {
-	m_nrunning_threads++;
+	m_nrunning_threads->fetch_add(1);
 	boost::function<void()> *f;
 	while (m_running)
 	{
@@ -51,6 +51,9 @@ void hThread::run() {
 			local_task_queue->lock();
 		}
 		local_task_queue->unlock();
+		
+		if (!m_running)
+			break;
 		
 		// global
 		task_queue->lock();
@@ -74,7 +77,8 @@ void hThread::run() {
 		waiting_threads->unlock();
 		local_queue_notempty.wait();     
 	}
-	m_nrunning_threads--;
+	m_nrunning_threads->fetch_sub(1);
+	//std::cout << "thread stop" << std::endl;
 }
 
 bool hThread::queueNotEmpty() {
@@ -104,6 +108,7 @@ void hThread::join() {
 }
 
 hThreadPool::hThreadPool(int nthreads) {
+	m_nrunning_threads = 0;
 	this->nthreads = nthreads;
 	this->task_queue = CallBackQueuePtr (new CallBackQueue);//new boost::lockfree::queue< boost::function<void()>* >(100000));
 	this->waiting_threads = ThreadQueuePtr (new ThreadQueue);//new boost::lockfree::queue<hThread*>(100000));
@@ -148,21 +153,25 @@ void hThreadPool::run() {
 }
 
 void hThreadPool::kill() {
+	//std::cout << "hThreadPool::kill\n";
+	//std::cout << "running threads " << m_nrunning_threads.load();
 	
-	for (int i = 0; i<threads.size(); i++)
+	for (int i = 0; i<threads.size(); i++) {
 		threads[i]->kill();
+	}
 	
 	waiting_threads->lock();
 	while (!waiting_threads->empty()) {
 		hThread *thread = waiting_threads->front();
 		waiting_threads->pop();
 		waiting_threads->unlock();
-
+		
+		thread->addTask( NEWTASK2 (&hThread::kill, thread) );
+		
 		thread->kick();
 		waiting_threads->lock();
 	}
 	waiting_threads->unlock();
-
 }
 
 void hThreadPool::join() {
@@ -172,9 +181,13 @@ void hThreadPool::join() {
 }
 
 hThreadPool::~hThreadPool() {
-	kill();
-	while (m_nrunning_threads.load() != 0) {
+//	std::cout << "hThreadPool::~hThreadPool\n";
+//	std::cout << "running threads " << m_nrunning_threads.load();
+	//kill();
+	while (m_nrunning_threads.load() > 0) {
+		kill();
 	}
+//	std::cout << "all threads shut down\n";
 	for (int i = 0; i<threads.size(); i++)
 		delete threads[i];
 }
