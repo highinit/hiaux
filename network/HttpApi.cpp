@@ -1,7 +1,8 @@
 #include "HttpApi.h"
 #include "hiaux/crypt/sha1.h"
 
-HttpApi::HttpApi() {
+HttpApi::HttpApi(boost::function<std::string()> _getAuthError):
+ m_getAuthError(_getAuthError) {
 	
 }
 
@@ -76,7 +77,7 @@ void HttpApi::addMethodSigned(const std::string &_name,
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	if (!checkFields (_req->values_GET)) {
-		_conn->sendResponse("HttpApi: request error");
+		_conn->sendResponse( m_getAuthError() );
 	} else {
 		std::string resp;
 		m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);

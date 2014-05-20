@@ -14,9 +14,11 @@ class HttpApi {
 	
 	hiaux::hashtable<std::string, std::string> m_keys;
 	
+	boost::function<std::string()> m_getAuthError;
+	
 public:
 	
-	HttpApi();
+	HttpApi(boost::function<std::string()> _getAuthError);
 	
 	void addKey(const std::string &_userid, const std::string &_key);
 	
