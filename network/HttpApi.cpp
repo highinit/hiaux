@@ -1,8 +1,8 @@
 #include "HttpApi.h"
 #include "hiaux/crypt/sha1.h"
 
-HttpApi::HttpApi(boost::function<std::string()> _getAuthError):
- m_getAuthError(_getAuthError) {
+HttpApi::HttpApi(boost::function<std::string(const std::string&)> _buildApiError):
+ m_buildApiError(_buildApiError) {
 	
 }
 
@@ -14,19 +14,25 @@ bool HttpApi::isSigned(const std::string &_method) const {
 		return false;
 }
 
-bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) const {
-	if (_fields.find("method") == _fields.end())
+bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, std::string &_err_mess) const {
+	if (_fields.find("method") == _fields.end()) {
+		_err_mess = "method not set";
 		return false;
+	}
 	
 	hiaux::hashtable<std::string, std::vector<std::string> >::const_iterator it = m_methods_args.find(_fields["method"]);
-	if (it == m_methods_args.end())
+	if (it == m_methods_args.end()) {
+		_err_mess = "method not found";
 		return false;
+	}
 	
 	std::vector<std::string>::const_iterator fields_it = it->second.begin();
 	std::vector<std::string>::const_iterator fields_end = it->second.end();
 	while (fields_it != fields_end) {
-		if (_fields.find(*fields_it) == _fields.end())
+		if (_fields.find(*fields_it) == _fields.end()) {
+			_err_mess = "not all method's params set";
 			return false;
+		}
 		fields_it++;
 	}
 	
@@ -34,10 +40,12 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) c
 		if (_fields.find("api_userid") == _fields.end() ||
 			_fields.find("ts") == _fields.end() ||
 			_fields.find("sign") == _fields.end()) {
+				_err_mess = "not all service fields set (api_userid, ts, sign)";
 				return false;
 			}
 		
 		if (m_keys.find( _fields["api_userid"] ) == m_keys.end()) {
+			_err_mess = "auth fail";
 			return false;
 		}
 		
@@ -47,8 +55,13 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields) c
 		char sign_hex[41];
 		sha1::toHexString(sign, sign_hex);
 		
-		if (_fields["sign"] != std::string(sign_hex))
+		//std::cout << "actual sign: " << sign_hex << std::endl;
+		//std::cout << "got sign: " <<  _fields["sign"] << std::endl;
+		
+		if (_fields["sign"] != std::string(sign_hex)) {
+			_err_mess = "auth fail";
 			return false;
+		}
 	}
 	return true;
 }
@@ -76,8 +89,10 @@ void HttpApi::addMethodSigned(const std::string &_name,
 
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
-	if (!checkFields (_req->values_GET)) {
-		_conn->sendResponse( m_getAuthError() );
+	std::string err_mess;
+
+	if (!checkFields (_req->values_GET, err_mess)) {
+		_conn->sendResponse( m_buildApiError( err_mess ) );
 	} else {
 		std::string resp;
 		m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);

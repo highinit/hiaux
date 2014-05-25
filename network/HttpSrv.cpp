@@ -172,8 +172,8 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 						//"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Access-Control-Allow-Origin: *\r\n"
-						"Content-Length: "+content_len+"\n\n"+_content+"\r\n";
-	size_t nsent = ::send(m_sock, response.c_str(), response.size(), MSG_DONTWAIT);
+						"Content-Length: "+content_len+"\r\n\r\n"+_content;
+	size_t nsent = ::send(m_sock, response.c_str(), response.size(), 0);
 	if (nsent<=0)
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
 				<< nsent << std::endl;

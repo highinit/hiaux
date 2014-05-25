@@ -17,6 +17,7 @@
 #include <set>
 #include "../../thirdparty/utf8_v2_3_4/source/utf8.h"
 
+// gurantees order
 std::vector<std::string> &split(const std::string &s,
 							char delim,
 							std::vector<std::string> &elems);
