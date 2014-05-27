@@ -251,7 +251,7 @@ bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv)
 	return true;
 }
 	
-void parseGET(const std::string &_data,
+void parseGET(const std::string &__data,
 			hiaux::hashtable<std::string, std::string> &values_GET)
 {		
 	enum URL_PARSER_STATE {
@@ -259,6 +259,9 @@ void parseGET(const std::string &_data,
 		KEY,
 		VALUE
 	};
+	
+	std::string _data = __data;
+	unescapeUrl(_data);
 	
 	std::string key,value;
 	
