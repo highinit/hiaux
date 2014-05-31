@@ -61,10 +61,10 @@ void splitUtf8(const std::string &_s, std::set<uint32_t> &_delims,
 	
 	const char *it = _s.data();
 	const char *end = _s.data()+_s.size();
-	char *elem = new char [_s.size()];
+	char *elem = new char [_s.size() + 1];
 	char *elem_end = elem;
 	
-	memset(elem, 0, _s.size());
+	memset(elem, 0, _s.size()+1);
 	do {
 		uint32_t symbol = utf8::next(it, end);
 		
