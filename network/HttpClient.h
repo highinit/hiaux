@@ -12,7 +12,7 @@ public:
 	HttpClient();
 	~HttpClient();
 	
-	void callSimple (const std::string &_url, std::string &_resp);
+	bool callSimple (const std::string &_url, std::string &_resp);
 };
 
 typedef boost::shared_ptr<HttpClient> HttpClientPtr;

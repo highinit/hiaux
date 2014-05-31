@@ -20,7 +20,7 @@ public:
 	
 	HttpApi(boost::function<std::string(const std::string &)> _buildError);
 	
-	void addKey(const std::string &_userid, const std::string &_key);
+	void addUser(const std::string &_userid, const std::string &_key);
 	
 	void addMethod(const std::string &_name,
 					const std::vector<std::string> &_args_names,

@@ -66,7 +66,7 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, s
 	return true;
 }
 
-void HttpApi::addKey(const std::string &_userid, const std::string &_key) {
+void HttpApi::addUser(const std::string &_userid, const std::string &_key) {
 	m_keys[_userid] = _key;
 }
 
