@@ -1,0 +1,10 @@
+{
+
+"_NAME" : "hiaux_loadconf",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ "-ljansson" ],
+
+"_DEPS" : []
+}
