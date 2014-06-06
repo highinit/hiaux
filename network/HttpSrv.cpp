@@ -247,6 +247,16 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 		return it->second;
 }
 
+ConnectionPtr HttpSrv::getHttpConnConst(int socket) {
+	
+	hLockTicketPtr ticket = m_connections_lock.lock();
+	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
+							connections.find(socket); 
+	if (it==connections.end())
+		return ConnectionPtr();
+	return it->second;
+}
+
 void HttpSrv::closeHttpConn(int socket)
 {
 	hLockTicketPtr ticket = m_connections_lock.lock();

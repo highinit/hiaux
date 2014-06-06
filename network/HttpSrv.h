@@ -99,11 +99,13 @@ private:
 	
 	ResponseInfoPtr m_resp_info;
 	
-	ConnectionPtr getHttpConn(int socket);
 	void closeHttpConn(int socket);
 public:
 	
 	void handler(hPoolServer::ConnectionPtr pool_conn);
+	
+	ConnectionPtr getHttpConn(int socket);
+	ConnectionPtr getHttpConnConst(int socket);
 	
 	HttpSrv(TaskLauncherPtr launcher,
 			const ResponseInfo &_resp_info,
