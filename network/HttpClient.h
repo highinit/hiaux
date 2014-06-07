@@ -17,4 +17,7 @@ public:
 
 typedef boost::shared_ptr<HttpClient> HttpClientPtr;
 
+size_t crawl_function_pt(void *ptr, size_t size, size_t nmemb, std::string *stream);
+
+
 #endif

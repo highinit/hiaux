@@ -16,6 +16,8 @@
 
 #include "thirdparty/http-parser/http_parser.h"
 
+#include <jansson.h>
+
 class HttpSrv
 {
 public:
@@ -43,6 +45,7 @@ public:
 		Request() { }
 		Request(const std::string &_url);
 		bool getField(const std::string &_key, std::string &_value);
+		std::string toJson();
 	};
 	
 	typedef boost::shared_ptr<Request> RequestPtr;

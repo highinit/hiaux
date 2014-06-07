@@ -25,6 +25,35 @@ bool HttpSrv::Request::getField(const std::string &_key, std::string &_value) {
 		return false;
 }
 
+std::string HttpSrv::Request::toJson() {
+	
+	json_t *root = json_object();
+	json_object_set_new(root, "url", json_string(url.c_str()));
+	json_object_set_new(root, "path", json_string(path.c_str()));
+	
+	json_t *get_arr = json_array();
+	
+	hiaux::hashtable<std::string, std::string>::iterator it = values_GET.begin();
+	hiaux::hashtable<std::string, std::string>::iterator end = values_GET.end();
+	
+	while (it != end) {
+		
+		json_t *getobj = json_object();
+		json_object_set_new(getobj, "k", json_string(it->first.c_str()));
+		json_object_set_new(getobj, "v", json_string(it->second.c_str()));
+		json_array_append_new(get_arr, getobj);
+		it++;
+	}
+	json_object_set_new(root, "getparams", get_arr);
+	
+	char *str = json_dumps(root, JSON_COMPACT);
+	std::string dump(str);
+	free(str);
+	
+	json_decref(root);
+	return dump;
+}
+
 int HttpSrv_onMessageBegin(http_parser* parser) {
 	HttpSrv::Connection* conn = (HttpSrv::Connection*)parser->data;
 	return conn->onMessageBegin();
@@ -247,7 +276,7 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 		return it->second;
 }
 
-ConnectionPtr HttpSrv::getHttpConnConst(int socket) {
+HttpSrv::ConnectionPtr HttpSrv::getHttpConnConst(int socket) {
 	
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
@@ -275,6 +304,7 @@ void HttpSrv::handler(hPoolServer::ConnectionPtr pool_conn)
 	RequestPtr req = http_conn->getNextRequest();
 
 	if (!http_conn->alive || http_conn->closing || time(0)-pool_conn->getCreateTs()>5) {
+		
 		closeHttpConn(pool_conn->m_sock);
 		pool_conn->close();
 		return;
