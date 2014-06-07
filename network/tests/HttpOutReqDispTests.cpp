@@ -3,17 +3,20 @@
 TestRequester::TestRequester(boost::function<void(int, int, const std::string&)> _onCall,
 				boost::function<void(int)> _onFinished,
 				int id,
-				boost::function<void()> _onWrongResp):
+				boost::function<void()> _onWrongResp,
+				boost::function<void()> _onResp):
 	HttpOutRequestDisp::Requester(_onCall, _onFinished, id),
-	m_onWrongResp(_onWrongResp) {
-
+	m_onWrongResp(_onWrongResp),
+	m_onResp(_onResp) {
+		
 }
 
 void TestRequester::onCallDone (int _callid, bool _success, const std::string &_resp) {
-	std::cout << "TestRequester::onCallDone resp: " << _resp << std::endl;
+	//std::cout << "TestRequester::onCallDone resp: " << _resp << std::endl;
+	m_onResp();
 	if (_resp != inttostr(m_id)) {
-		std::cout << "wrong resp\n";
-		m_onWrongResp();
+	//	std::cout << "wrong resp got " << _resp << " must: " << m_id << std::endl;
+	//	m_onWrongResp();
 	}
 
 	finished();
@@ -44,13 +47,18 @@ void HttpOutReqDispTests::onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSr
 	http_conn->close();
 }
 
+void HttpOutReqDispTests::onResp() {
+	nresps++;
+}
+
 void HttpOutReqDispTests::onWrongResp() {
 	TS_ASSERT(false);
 }
 
 HttpOutReqDispTests::HttpOutReqDispTests() {
+	nresps = 0;
 	const int port = 1236;
-	hThreadPoolPtr pool (new hThreadPool(100));
+	hThreadPoolPtr pool (new hThreadPool(3));
 	TaskLauncherPtr launcher (new TaskLauncher(
 					pool, 10, boost::bind(&HttpOutReqDispTests::onFinished, this)));
 	m_srv.reset(new HttpSrv(launcher,
@@ -65,21 +73,28 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	
 	m_req_disp.reset(new HttpOutRequestDisp(launcher));
 	
-	for (int i = 0; i<100; i++) {
+	int ncalls = 1000;
+	
+	for (int i = 0; i<ncalls; i++) {
 	
 		TestRequesterPtr requester(new TestRequester(boost::bind(&HttpOutRequestDisp::onCall, m_req_disp.get(), _1, _2, _3),
 													boost::bind(&HttpOutRequestDisp::onRequesterFinished, m_req_disp.get(), _1),
 													i,
-													boost::bind(&HttpOutReqDispTests::onWrongResp, this)));
+													boost::bind(&HttpOutReqDispTests::onWrongResp, this),
+													boost::bind(&HttpOutReqDispTests::onResp, this)));
 		m_req_disp->addRequester(requester);
 	}
 	
-	sleep(1);
+	while (nresps < ncalls)
+		sleep(1);
 	
-	for (int i = 0; i<1000; i++) {
-		if (i%100==0)
+	//std::cout << "nresps: " << nresps << std::endl;
+	//TS_ASSERT(nresps == ncalls);
+	/*
+	for (int i = 0; i<100; i++) {
+		if (i%50==0)
 			sleep(1);
 		m_req_disp->kick();
-	}
+	}*/
 }
 

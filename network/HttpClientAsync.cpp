@@ -14,6 +14,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 
 HttpClientAsync::~HttpClientAsync() {
 	hLockTicketPtr ticket = lock.lock();
+	/*
 	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.begin();
 	hiaux::hashtable<CURL*, JobInfo>::iterator end = m_e_curls.end();
 	while (it != end) {
@@ -24,6 +25,7 @@ HttpClientAsync::~HttpClientAsync() {
 //	std::cout << "calling curl_multi_cleanup\n";
 	curl_multi_cleanup(m_curl);
 //	std::cout << "curl_multi_cleanup finished\n";
+	*/
 }
 
 void HttpClientAsync::call (void* userdata, const std::string &_url) {
@@ -82,7 +84,7 @@ void HttpClientAsync::performTransfers() {
 
 void HttpClientAsync::kick() {
 	
-	hLockTicketPtr ticket = lock.tryLock();
+	hLockTicketPtr ticket = lock.lock();
 	if (ticket)
 		performTransfers();
 }

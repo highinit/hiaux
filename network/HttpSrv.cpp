@@ -303,8 +303,14 @@ void HttpSrv::handler(hPoolServer::ConnectionPtr pool_conn)
 	
 	RequestPtr req = http_conn->getNextRequest();
 
-	if (!http_conn->alive || http_conn->closing || time(0)-pool_conn->getCreateTs()>5) {
+	uint64_t now = time(0);
+
+	if (!http_conn->alive || http_conn->closing || now-pool_conn->getCreateTs()>15) {
 		
+		/*
+		if (now-pool_conn->getCreateTs()>5)
+			std::cout << "HttpSrv::handler closing connection by timeout\n";
+		*/
 		closeHttpConn(pool_conn->m_sock);
 		pool_conn->close();
 		return;

@@ -30,48 +30,75 @@ int HttpOutRequestDisp::Requester::getId() {
 HttpOutRequestDisp::HttpOutRequestDisp(TaskLauncherPtr _launcher):
 	 m_http_client(new HttpClientAsync(boost::bind(&HttpOutRequestDisp::onCallDone, this, _1))),
 	 m_launcher(_launcher) {
+	kicklock_running = true;
+	_launcher->addTask( NEW_LAUNCHER_TASK2 (&HttpOutRequestDisp::kickTask, this));
+}
+
+HttpOutRequestDisp::~HttpOutRequestDisp() {
+	kicklock_running = false;
+	sleep(2); // FIX
+}
+
+TaskLauncher::TaskRet HttpOutRequestDisp::onCallTask(int _reqid, int _reqcallid, const std::string &_url) {
 	
+	hLockTicketPtr ticket = lock.lock();
+	m_http_client->call((void*)new OutRequestInfo(_reqid, _reqcallid), _url);
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void HttpOutRequestDisp::onCall(int _reqid, int _reqcallid, const std::string &_url) {
-	m_http_client->call((void*)new OutRequestInfo(_reqid, _reqcallid), _url);
+	
+	m_launcher->addTask(NEW_LAUNCHER_TASK5 (&HttpOutRequestDisp::onCallTask, this, _reqid, _reqcallid, _url) );
 }
 
-TaskLauncher::TaskRet HttpOutRequestDisp::callDoneNotify(HttpOutRequestDisp::RequesterPtr _req, int _callid, bool _success, std::string _resp) {
-	_req->onCallDone(_callid, _success, _resp);
-	return TaskLauncher::NO_RELAUNCH;
-}
+/////
 
-TaskLauncher::TaskRet HttpOutRequestDisp::callStart(HttpOutRequestDisp::RequesterPtr _req) {
-	_req->start();
-	return TaskLauncher::NO_RELAUNCH;
-}
-
-void HttpOutRequestDisp::onCallDone(HttpClientAsync::JobInfo _ji) {
+TaskLauncher::TaskRet HttpOutRequestDisp::onCallDoneTask(HttpClientAsync::JobInfo _ji) {
 	
 	hLockTicketPtr ticket = lock.lock();
 	
 	OutRequestInfo *reqinfo = (OutRequestInfo*)_ji.userdata;
 	
 	hiaux::hashtable<int, RequesterPtr>::iterator it = m_requesters.find(reqinfo->reqid);
+	
 	if (it != m_requesters.end()) {
-		//it->second->onCallDone(reqinfo->requester_callid, _ji.success, _ji.resp);
-		m_launcher->addTask(NEW_LAUNCHER_TASK6 (&HttpOutRequestDisp::callDoneNotify,
-												this,
-												it->second,
-												reqinfo->requester_callid,
-												_ji.success,
-												_ji.resp) );
-	} 
-	else {
-		std::cout << "Punkt::onCallDone Requester dont exists\n";
-	}
+		it->second->onCallDone(reqinfo->requester_callid, _ji.success, _ji.resp);
+	} else
+		std::cout << "HttpOutRequestDisp::onCallDone Requester dont exists\n";
+	
 	delete reqinfo;
 	
-	//m_http_client->kick();
+	return TaskLauncher::NO_RELAUNCH;
 }
 
-void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
+void HttpOutRequestDisp::onCallDone(HttpClientAsync::JobInfo _ji) {
+	
+	m_launcher->addTask(NEW_LAUNCHER_TASK3(&HttpOutRequestDisp::onCallDoneTask,
+												this,
+												_ji));
+
+}
+
+/////
+
+TaskLauncher::TaskRet HttpOutRequestDisp::addRequesterTask(HttpOutRequestDisp::RequesterPtr _req) {
+	
+	hLockTicketPtr ticket = lock.lock();
+	
+	m_requesters.insert(std::pair<int, RequesterPtr> (_req->getId(), _req));
+	_req->start();
+	
+	return TaskLauncher::NO_RELAUNCH;
+}
+
+void HttpOutRequestDisp::addRequester(RequesterPtr _requester) {
+	
+	m_launcher->addTask( NEW_LAUNCHER_TASK3 (&HttpOutRequestDisp::addRequesterTask, this, _requester));
+}
+
+/////
+
+TaskLauncher::TaskRet HttpOutRequestDisp::onRequesterFinishedTask(int _reqid) {
 	
 	hLockTicketPtr ticket = lock.lock();
 	
@@ -79,24 +106,27 @@ void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
 	if (it != m_requesters.end()) {
 		m_requesters.erase(it);
 	} else {
-		std::cout << "Punkt::onRequesterFinished Requester dont exists\n";
+		std::cout << "HttpOutRequestDisp::onRequesterFinished Requester dont exists\n";
 	}
-	
-	//m_http_client->kick();
 }
 
-void HttpOutRequestDisp::addRequester(RequesterPtr _requester) {
-	
-	hLockTicketPtr ticket = lock.lock();
-	
-	m_requesters.insert(std::pair<int, RequesterPtr> (_requester->getId(), _requester));
-	
-	m_launcher->addTask( NEW_LAUNCHER_TASK3 (&HttpOutRequestDisp::callStart, this, _requester));
-	
-	//_requester->start();
-	//m_http_client->kick();
+void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
+		
+	m_launcher->addTask( NEW_LAUNCHER_TASK3 (&HttpOutRequestDisp::onRequesterFinishedTask, this, _reqid));
 }
 
+TaskLauncher::TaskRet HttpOutRequestDisp::kickTask() {
+	
+	while (kicklock_running)
+		m_http_client->kick();
+
+	return TaskLauncher::NO_RELAUNCH;
+}
+
+/*
 void HttpOutRequestDisp::kick() {
-	m_http_client->kick();
-}
+	
+	hLockTicketPtr ticket = kicklock.tryLock();
+	if (ticket)
+		m_launcher->addTask( NEW_LAUNCHER_TASK2 (&HttpOutRequestDisp::callKick, this));
+}*/

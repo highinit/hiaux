@@ -42,20 +42,27 @@ public:
 	HttpClientAsyncPtr m_http_client;
 	TaskLauncherPtr m_launcher;
 	hAutoLock lock;
-	
+	bool kicklock_running;
+	//hAutoLock kicklock;
 public:
 	
-	TaskLauncher::TaskRet callDoneNotify(HttpOutRequestDisp::RequesterPtr _req, int callid, bool success, std::string resp);
-	TaskLauncher::TaskRet callStart(HttpOutRequestDisp::RequesterPtr _req);
+	TaskLauncher::TaskRet onCallTask(int _reqid, int _reqcallid, const std::string &_url);
+	TaskLauncher::TaskRet onCallDoneTask(HttpClientAsync::JobInfo _ji);
+	TaskLauncher::TaskRet onRequesterFinishedTask(int _reqid);
+	TaskLauncher::TaskRet addRequesterTask(HttpOutRequestDisp::RequesterPtr _req);
+	
+	TaskLauncher::TaskRet kickTask();
 	
 	HttpOutRequestDisp(TaskLauncherPtr _launcher);
+	~HttpOutRequestDisp();
+	
 	void onCall(int _reqid, int _reqcallid, const std::string &_url);
 	void onCallDone(HttpClientAsync::JobInfo _ji);
 	void onRequesterFinished(int _reqid);
 	
 	void addRequester(RequesterPtr _requester);
 	
-	void kick();
+	//void kick();
 };
 
 typedef boost::shared_ptr<HttpOutRequestDisp> HttpOutRequestDispPtr;
