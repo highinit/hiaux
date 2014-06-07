@@ -28,15 +28,25 @@ int HttpOutRequestDisp::Requester::getId() {
 }
 
 HttpOutRequestDisp::HttpOutRequestDisp(TaskLauncherPtr _launcher):
-	 m_http_client(new HttpClientAsync(boost::bind(&HttpOutRequestDisp::onCallDone, this, _1))),
-	 m_launcher(_launcher) {
-	kicklock_running = true;
+	m_http_client(new HttpClientAsync(boost::bind(&HttpOutRequestDisp::onCallDone, this, _1))),
+	m_launcher(_launcher),
+	cond_kicking(boost::bind(&HttpOutRequestDisp::isKickStopped, this)) {
+
+	kick_running = true;
+	kick_stopped = false;
 	_launcher->addTask( NEW_LAUNCHER_TASK2 (&HttpOutRequestDisp::kickTask, this));
 }
 
+bool HttpOutRequestDisp::isKickStopped() {
+	
+	return kick_stopped;
+}
+
 HttpOutRequestDisp::~HttpOutRequestDisp() {
-	kicklock_running = false;
-	sleep(2); // FIX
+	
+	kick_running = false;
+	
+	cond_kicking.wait();
 }
 
 TaskLauncher::TaskRet HttpOutRequestDisp::onCallTask(int _reqid, int _reqcallid, const std::string &_url) {
@@ -112,14 +122,19 @@ TaskLauncher::TaskRet HttpOutRequestDisp::onRequesterFinishedTask(int _reqid) {
 
 void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
 		
-	m_launcher->addTask( NEW_LAUNCHER_TASK3 (&HttpOutRequestDisp::onRequesterFinishedTask, this, _reqid));
+	m_launcher->addTask(NEW_LAUNCHER_TASK3 (&HttpOutRequestDisp::onRequesterFinishedTask, this, _reqid));
 }
 
 TaskLauncher::TaskRet HttpOutRequestDisp::kickTask() {
 	
-	while (kicklock_running)
+	while (kick_running)
 		m_http_client->kick();
-
+	
+	cond_kicking.lock();
+	kick_stopped = true;
+	cond_kicking.unlock();
+	
+	cond_kicking.kick();
 	return TaskLauncher::NO_RELAUNCH;
 }
 

@@ -42,9 +42,14 @@ public:
 	HttpClientAsyncPtr m_http_client;
 	TaskLauncherPtr m_launcher;
 	hAutoLock lock;
-	bool kicklock_running;
+	bool kick_running;
+	bool kick_stopped;
+	
+	hCondWaiter cond_kicking;
 	//hAutoLock kicklock;
 public:
+	
+	bool isKickStopped();
 	
 	TaskLauncher::TaskRet onCallTask(int _reqid, int _reqcallid, const std::string &_url);
 	TaskLauncher::TaskRet onCallDoneTask(HttpClientAsync::JobInfo _ji);
