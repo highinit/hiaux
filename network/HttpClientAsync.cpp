@@ -6,7 +6,7 @@ callid(_callid) {
 	
 }
 
-HttpClientAsync::HttpClientAsync(boost::function<void(const std::string &_resp)> _onCalled):
+HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _ji)> _onCalled):
  m_curl(curl_multi_init()),
  m_onCalled(_onCalled) {
 
@@ -30,6 +30,8 @@ void HttpClientAsync::call (const std::string &_callid, const std::string &_url)
 	curl_easy_setopt(e_curl, CURLOPT_USERAGENT, "hiaux HttpClient");
 	
 	curl_multi_add_handle(m_curl, e_curl);
+	
+	performTransfers();
 }
 
 void HttpClientAsync::performTransfers() {
@@ -41,8 +43,18 @@ void HttpClientAsync::performTransfers() {
 	if (msg != NULL) 
 		if (msg->msg == CURLMSG_DONE) {
 			hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(msg->easy_handle);
+			
+			if (msg->data.result == CURLE_OK)
+				it->second.success = true;
+			else
+				it->second.success = false;
+			
+			JobInfo ji = it->second;
+			curl_easy_cleanup(it->first);
+			m_e_curls.erase(it);
+			
+			m_onCalled(ji);
 		}
-	
 }
 
 void HttpClientAsync::kick() {
