@@ -11,6 +11,8 @@
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/threads/locks.h"
 
+#include <sys/select.h>
+
 class HttpClientAsync {
 public:
 	class JobInfo {

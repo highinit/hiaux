@@ -63,7 +63,7 @@ void HttpOutReqDispTests::onWrongResp() {
 HttpOutReqDispTests::HttpOutReqDispTests() {
 	nresps = 0;
 	const int port = 1236;
-	const int nthreads = 3;
+	const int nthreads = 16;
 	hThreadPoolPtr pool (new hThreadPool(nthreads));
 	TaskLauncherPtr launcher (new TaskLauncher(
 					pool, nthreads, boost::bind(&HttpOutReqDispTests::onFinished, this)));
@@ -79,7 +79,7 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	
 	m_req_disp.reset(new HttpOutRequestDisp(launcher));
 	
-	int ncalls = 5000;
+	int ncalls = 2000;
 	
 	for (int i = 0; i<ncalls; i++) {
 	
@@ -90,13 +90,14 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 													boost::bind(&HttpOutReqDispTests::onResp, this)));
 		m_req_disp->addRequester(requester);
 	}
-	
+
+
 	while (nresps < ncalls) {
 		if (nresps % 1000 == 0)
 			std::cout << "nresps: " << nresps << std::endl;
 		sleep(1);
 	}
-	
+
 	//std::cout << "nresps: " << nresps << std::endl;
 	//TS_ASSERT(nresps == ncalls);
 	/*
