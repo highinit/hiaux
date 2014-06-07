@@ -13,6 +13,7 @@
 #include <boost/bind.hpp>
 
 #include "HttpClientAsyncTests.h"
+#include "HttpOutReqDispTests.h"
 
 void onFinished() {
 	
@@ -39,7 +40,7 @@ public:
 		http_conn->close();
 	}
 	
-	void testHttpServer()
+	void XtestHttpServer()
 	{
 		try {
 			//std::cout << "testHttpServer\n";
@@ -76,7 +77,7 @@ public:
 		_resp = "onGetStatsCalled\r\n";
 	}
 	
-	void testHttpApiClient_simpleMethod() {
+	void XtestHttpApiClient_simpleMethod() {
 		
 		std::string userid = "_userid_";
 		std::string key = "_key_";
@@ -113,7 +114,7 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpApiClient_signedMethod() {
+	void XtestHttpApiClient_signedMethod() {
 
 		std::string userid = "_userid_";
 		std::string key = "_key_";
@@ -153,7 +154,11 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpClientAsync() {
+	void XtestHttpClientAsync() {
 		HttpClientAsyncTests();
+	}
+	
+	void testHttpOutReqDisp() {
+		HttpOutReqDispTests();
 	}
 };

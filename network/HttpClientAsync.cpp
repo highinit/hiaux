@@ -82,7 +82,8 @@ void HttpClientAsync::performTransfers() {
 
 void HttpClientAsync::kick() {
 	
-	hLockTicketPtr ticket = lock.lock();
-	performTransfers();
+	hLockTicketPtr ticket = lock.tryLock();
+	if (ticket)
+		performTransfers();
 }
 
