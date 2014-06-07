@@ -3,7 +3,7 @@
 
 default:	all
 all:    
-	cxxtest/bin/cxxtestgen --error-printer -o hpoolserver_main.cpp hpoolserver_tests.h & /usr/local/bin/scons
+	cxxtest/bin/cxxtestgen --error-printer -o network_tests_main.cpp network_tests.h & /usr/local/bin/scons
 clean:
 	/usr/local/bin/scons -c
 install:

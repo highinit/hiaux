@@ -17,7 +17,7 @@ void onFinished() {
 	
 }
 
-class hPoolServerTests : public CxxTest::TestSuite
+class NetworkTests : public CxxTest::TestSuite
 {    
 
 public:
@@ -45,11 +45,11 @@ public:
 			const int port = 1234;
 			hThreadPoolPtr pool (new hThreadPool(10));
 			TaskLauncherPtr launcher (new TaskLauncher(
-							pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
+							pool, 10, boost::bind(&NetworkTests::onFinished, this)));
 			HttpSrvPtr http_srv(new HttpSrv(launcher,
 							HttpSrv::ResponseInfo("text/html; charset=utf-8",
 												"highinit suggest server"),
-							boost::bind(&hPoolServerTests::onHttpRequest, this, _1, _2)));
+							boost::bind(&NetworkTests::onHttpRequest, this, _1, _2)));
 			http_srv->start(port);
 			pool->run();
 			//pool->join();
@@ -81,16 +81,16 @@ public:
 		std::string key = "_key_";
 		int port = 6733;
 		
-		HttpApiPtr api (new HttpApi(boost::bind(&hPoolServerTests::onGenError, this, _1)));
+		HttpApiPtr api (new HttpApi(boost::bind(&NetworkTests::onGenError, this, _1)));
 		api->addUser(userid, key);
 		std::vector<std::string> args;
 		args.push_back("ts1");
 		args.push_back("ts2");
-		api->addMethod("get-stats", args, boost::bind(&hPoolServerTests::onGetStatsCalled, this, _1, _2));
+		api->addMethod("get-stats", args, boost::bind(&NetworkTests::onGetStatsCalled, this, _1, _2));
 		
 		hThreadPoolPtr pool (new hThreadPool(4));
 		pool->run();
-		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&hPoolServerTests::onFinished, this))); 
+		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
 		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
@@ -118,18 +118,18 @@ public:
 		std::string key = "_key_";
 		int port = 6732;
 		
-		HttpApiPtr api (new HttpApi(boost::bind(&hPoolServerTests::onGenError, this, _1)));
+		HttpApiPtr api (new HttpApi(boost::bind(&NetworkTests::onGenError, this, _1)));
 		api->addUser(userid, key);
 		std::vector<std::string> args;
 		args.push_back("ts1");
 		args.push_back("ts2");
 		
-		api->addMethodSigned("get-stats", args, boost::bind(&hPoolServerTests::onGetStatsCalled, this, _1, _2));
+		api->addMethodSigned("get-stats", args, boost::bind(&NetworkTests::onGetStatsCalled, this, _1, _2));
 		
 		hThreadPoolPtr pool (new hThreadPool(4));
 		pool->run();
 		
-		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&hPoolServerTests::onFinished, this))); 
+		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
 		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
@@ -152,7 +152,22 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpClientAsync() {
+	void XtestHttpClientAsync() {
+		const int port = 1234;
+		hThreadPoolPtr pool (new hThreadPool(10));
+		TaskLauncherPtr launcher (new TaskLauncher(
+						pool, 10, boost::bind(&NetworkTests::onFinished, this)));
+		HttpSrvPtr http_srv(new HttpSrv(launcher,
+						HttpSrv::ResponseInfo("text/html; charset=utf-8",
+											"highinit suggest server"),
+						boost::bind(&NetworkTests::onHttpRequest, this, _1, _2)));
+		http_srv->start(port);
+		pool->run();
+		//pool->join();
+		sleep(1);
 		
+		
+		std::string resp;
+		TS_ASSERT(resp == "SERVER RESPONSE!")
 	}
 };

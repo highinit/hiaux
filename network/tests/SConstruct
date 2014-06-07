@@ -5,7 +5,7 @@ from hibuilder import HiBuilder
 
 env = Environment()
 
-b = HiBuilder("poolserver_test", "clang++")
+b = HiBuilder("network_tests", "clang++")
 
 hicore_path = "../../../"
 hiaux_path = "../../../"
