@@ -1,8 +1,8 @@
 #include "HttpClientAsync.h"
 
-HttpClientAsync::JobInfo::JobInfo(const std::string &_callid):
+HttpClientAsync::JobInfo::JobInfo(void* _userdata):
 success(false),
-callid(_callid) {
+userdata(_userdata) {
 	
 }
 
@@ -12,13 +12,13 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 
 }
 
-void HttpClientAsync::call (const std::string &_callid, const std::string &_url) {
+void HttpClientAsync::call (void* userdata, const std::string &_url) {
 	
 	hLockTicketPtr ticket = lock.lock();
 	
 	CURL *e_curl = curl_easy_init();
 	
-	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(_callid)));
+	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(userdata)));
 	
 	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(e_curl);
 	
@@ -35,6 +35,7 @@ void HttpClientAsync::call (const std::string &_callid, const std::string &_url)
 }
 
 void HttpClientAsync::performTransfers() {
+
 	curl_multi_perform(m_curl, &m_nrunning);
 	
 	int nmsg;
@@ -64,5 +65,6 @@ void HttpClientAsync::kick() {
 }
 
 HttpClientAsync::~HttpClientAsync() {
+
 	curl_multi_cleanup(m_curl);
 }

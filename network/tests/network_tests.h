@@ -5,7 +5,6 @@
 
 #include "hpoolserver.h"
 
-
 #include "hiaux/strings/string_utils.h"
 #include "HttpSrv.h"
 #include "HttpApi.h"
@@ -13,12 +12,14 @@
 
 #include <boost/bind.hpp>
 
+#include "HttpClientAsyncTests.h"
+
 void onFinished() {
 	
 }
 
 class NetworkTests : public CxxTest::TestSuite
-{    
+{
 
 public:
 
@@ -152,22 +153,7 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void XtestHttpClientAsync() {
-		const int port = 1234;
-		hThreadPoolPtr pool (new hThreadPool(10));
-		TaskLauncherPtr launcher (new TaskLauncher(
-						pool, 10, boost::bind(&NetworkTests::onFinished, this)));
-		HttpSrvPtr http_srv(new HttpSrv(launcher,
-						HttpSrv::ResponseInfo("text/html; charset=utf-8",
-											"highinit suggest server"),
-						boost::bind(&NetworkTests::onHttpRequest, this, _1, _2)));
-		http_srv->start(port);
-		pool->run();
-		//pool->join();
-		sleep(1);
-		
-		
-		std::string resp;
-		TS_ASSERT(resp == "SERVER RESPONSE!")
+	void testHttpClientAsync() {
+		HttpClientAsyncTests();
 	}
 };

@@ -15,8 +15,8 @@ class HttpClientAsync {
 public:
 	class JobInfo {
 	public:
-		JobInfo(const std::string &_callid);
-		std::string callid;
+		JobInfo(void* _userdata);
+		void* userdata;
 		std::string resp;
 		bool success;
 	};
@@ -35,8 +35,10 @@ public:
 	HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _ji)> _onCalled);
 	~HttpClientAsync();
 
-	void call (const std::string &_callid, const std::string &_url);
+	void call (void* userdata, const std::string &_url);
 	void kick();
 };
+
+typedef boost::shared_ptr<HttpClientAsync> HttpClientAsyncPtr;
 
 #endif
