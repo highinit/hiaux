@@ -12,6 +12,20 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 
 }
 
+HttpClientAsync::~HttpClientAsync() {
+	hLockTicketPtr ticket = lock.lock();
+	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.begin();
+	hiaux::hashtable<CURL*, JobInfo>::iterator end = m_e_curls.end();
+	while (it != end) {
+		curl_multi_remove_handle(m_curl, it->first);
+		curl_easy_cleanup(it->first);
+		it++;
+	}
+//	std::cout << "calling curl_multi_cleanup\n";
+	curl_multi_cleanup(m_curl);
+//	std::cout << "curl_multi_cleanup finished\n";
+}
+
 void HttpClientAsync::call (void* userdata, const std::string &_url) {
 	
 	hLockTicketPtr ticket = lock.lock();
@@ -41,21 +55,29 @@ void HttpClientAsync::performTransfers() {
 	int nmsg;
 	CURLMsg* msg = curl_multi_info_read(m_curl, &nmsg);
 	
-	if (msg != NULL) 
+	while (msg != NULL) {
 		if (msg->msg == CURLMSG_DONE) {
 			hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(msg->easy_handle);
 			
-			if (msg->data.result == CURLE_OK)
-				it->second.success = true;
-			else
-				it->second.success = false;
+			if (it != m_e_curls.end()) {
 			
-			JobInfo ji = it->second;
-			curl_easy_cleanup(it->first);
-			m_e_curls.erase(it);
+				if (msg->data.result == CURLE_OK)
+					it->second.success = true;
+				else
+					it->second.success = false;
 			
-			m_onCalled(ji);
+				JobInfo ji = it->second;
+				curl_multi_remove_handle(m_curl, it->first);
+				curl_easy_cleanup(it->first);
+				m_e_curls.erase(it);
+			
+				m_onCalled(ji);
+			}
 		}
+		if (nmsg == 0)
+			break;
+		msg = curl_multi_info_read(m_curl, &nmsg);
+	}
 }
 
 void HttpClientAsync::kick() {
@@ -64,7 +86,3 @@ void HttpClientAsync::kick() {
 	performTransfers();
 }
 
-HttpClientAsync::~HttpClientAsync() {
-
-	curl_multi_cleanup(m_curl);
-}

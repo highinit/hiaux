@@ -6,6 +6,7 @@
 class HttpClientAsyncTests : public CxxTest::TestSuite {
 	HttpSrvPtr m_srv;
 	HttpClientAsyncPtr m_cli;
+	int ncalled;
 public:
 	void onFinished();
 	void onCalled(HttpClientAsync::JobInfo _ji);
