@@ -16,7 +16,7 @@ void TestRequester::onCallDone (int _callid, bool _success, const std::string &_
 	m_onResp();
 	if (_resp != inttostr(m_id)) {
 	//	std::cout << "wrong resp got " << _resp << " must: " << m_id << std::endl;
-	//	m_onWrongResp();
+		m_onWrongResp();
 	}
 
 	finished();
@@ -58,9 +58,10 @@ void HttpOutReqDispTests::onWrongResp() {
 HttpOutReqDispTests::HttpOutReqDispTests() {
 	nresps = 0;
 	const int port = 1236;
-	hThreadPoolPtr pool (new hThreadPool(3));
+	const int nthreads = 3;
+	hThreadPoolPtr pool (new hThreadPool(nthreads));
 	TaskLauncherPtr launcher (new TaskLauncher(
-					pool, 10, boost::bind(&HttpOutReqDispTests::onFinished, this)));
+					pool, nthreads, boost::bind(&HttpOutReqDispTests::onFinished, this)));
 	m_srv.reset(new HttpSrv(launcher,
 					HttpSrv::ResponseInfo("text/html; charset=utf-8",
 										"highinit suggest server"),
@@ -73,7 +74,7 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	
 	m_req_disp.reset(new HttpOutRequestDisp(launcher));
 	
-	int ncalls = 1000;
+	int ncalls = 10;
 	
 	for (int i = 0; i<ncalls; i++) {
 	
