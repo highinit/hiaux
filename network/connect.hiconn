@@ -4,7 +4,7 @@
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
 
-"_LINKFLAGS": ["-lcurl"],
+"_LINKFLAGS": ["-lcurl", "-ljansson"],
 
 "_DEPS" : ["../threads/",
 			"../strings/",

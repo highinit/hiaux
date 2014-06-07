@@ -27,40 +27,52 @@ public:
 
 	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req)
 	{
-		std::cout << "onHttpRequest\n";
 		hiaux::hashtable<std::string, std::string>::iterator it =
 					req->values_GET.begin();
 		while (it != req->values_GET.end()) {
-			std::cout << it->first << "/" << it->second << std::endl;
+			//std::cout << it->first << "/" << it->second << std::endl;
 			it++;
 		}
 		
-		http_conn->sendResponse("SIEG HEIL SERVER!");
+		http_conn->sendResponse("SERVER RESPONSE!");
 		http_conn->close();
 	}
 	
-	void XtestHttpServer()
+	void testHttpServer()
 	{
 		try {
-		std::cout << "testHttpServer\n";
-		const int port = 1234;
-		hThreadPoolPtr pool (new hThreadPool(10));
-		TaskLauncherPtr launcher (new TaskLauncher(
-						pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
-		HttpSrvPtr http_srv(new HttpSrv(launcher,
-						HttpSrv::ResponseInfo("text/html; charset=utf-8",
-											"highinit suggest server"),
-						boost::bind(&hPoolServerTests::onHttpRequest, this, _1, _2)));
-		http_srv->start(port);
-		pool->run();
-		pool->join();
+			//std::cout << "testHttpServer\n";
+			const int port = 1234;
+			hThreadPoolPtr pool (new hThreadPool(10));
+			TaskLauncherPtr launcher (new TaskLauncher(
+							pool, 10, boost::bind(&hPoolServerTests::onFinished, this)));
+			HttpSrvPtr http_srv(new HttpSrv(launcher,
+							HttpSrv::ResponseInfo("text/html; charset=utf-8",
+												"highinit suggest server"),
+							boost::bind(&hPoolServerTests::onHttpRequest, this, _1, _2)));
+			http_srv->start(port);
+			pool->run();
+			//pool->join();
+			sleep(1);
+			
+			HttpClient cli;
+			std::string resp;
+			cli.callSimple("http://localhost:1234/", resp);
+			
+			TS_ASSERT(resp == "SERVER RESPONSE!")
+			//std::cout << "resp: " << resp;
+		
 		} catch (const char *s) {
 			std::cout << "Exception: " << s << std::endl;
 		}
 	}
 	
+	std::string onGenError(const std::string &_mess) {
+		return _mess;
+	}
+	
 	void onGetStatsCalled(hiaux::hashtable<std::string, std::string> &_args, std::string& _resp) {
-		_resp = "onGetStatsCalled";
+		_resp = "onGetStatsCalled\r\n";
 	}
 	
 	void testHttpApiClient_simpleMethod() {
@@ -69,8 +81,8 @@ public:
 		std::string key = "_key_";
 		int port = 6733;
 		
-		HttpApiPtr api (new HttpApi);
-		api->addKey(userid, key);
+		HttpApiPtr api (new HttpApi(boost::bind(&hPoolServerTests::onGenError, this, _1)));
+		api->addUser(userid, key);
 		std::vector<std::string> args;
 		args.push_back("ts1");
 		args.push_back("ts2");
@@ -106,8 +118,8 @@ public:
 		std::string key = "_key_";
 		int port = 6732;
 		
-		HttpApiPtr api (new HttpApi);
-		api->addKey(userid, key);
+		HttpApiPtr api (new HttpApi(boost::bind(&hPoolServerTests::onGenError, this, _1)));
+		api->addUser(userid, key);
 		std::vector<std::string> args;
 		args.push_back("ts1");
 		args.push_back("ts2");
@@ -136,7 +148,11 @@ public:
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.callSigned("get-stats", params, req);
+	//	std::cout << "req: " << req << std::endl;
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
+	void testHttpClientAsync() {
+		
+	}
 };
