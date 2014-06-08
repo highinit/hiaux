@@ -10,7 +10,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
  m_onCalled(_onCalled) {
 	 
 	 m_curl = curl_multi_init();
-	 long timeout = 1;
+	 long timeout = 200;
 	 curl_multi_timeout(m_curl, &timeout);
 }
 
@@ -101,7 +101,7 @@ void HttpClientAsync::kick() {
 	
     struct timeval tv;
 	tv.tv_sec = 0;
-	tv.tv_usec = 50;
+	tv.tv_usec = 50000;
 	
     int retval = select(max_fd+1, &readfds, &writefds, &excfds, &tv);
 	if (retval != -1)

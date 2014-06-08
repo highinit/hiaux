@@ -79,7 +79,7 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	
 	m_req_disp.reset(new HttpOutRequestDisp(launcher));
 	
-	int ncalls = 2000;
+	int ncalls = 200;
 	
 	for (int i = 0; i<ncalls; i++) {
 	
@@ -93,8 +93,8 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 
 
 	while (nresps < ncalls) {
-		if (nresps % 1000 == 0)
-			std::cout << "nresps: " << nresps << std::endl;
+		//if (nresps % 1000 == 0)
+		//	std::cout << "nresps: " << nresps << std::endl;
 		sleep(1);
 	}
 
