@@ -18,6 +18,9 @@
 
 #include <jansson.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
 class HttpSrv
 {
 public:

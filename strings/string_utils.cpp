@@ -295,7 +295,7 @@ void parseGET(const std::string &__data,
 		key = _data.substr(sbeg, _data.size()-sbeg);
 		value = "";
 	}
-	values_GET[key] = value;
+	values_GET[key] = unescapeUrl(value);
 }
 
 inline bool isDelimeter(char c)

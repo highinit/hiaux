@@ -178,6 +178,9 @@ bool HttpSrv::Connection::recv()
 		readbf.append( add );
 		nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
 	}
+	
+	//std::cout << "req:\n" << readbf << std::endl;
+	
 	return read;
 }
 
@@ -201,9 +204,10 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 						//"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Access-Control-Allow-Origin: *\r\n"
+						"Connection: close\r\n"
 						"Content-Length: "+content_len+"\r\n\r\n"+_content;
 	size_t nsent = ::send(m_sock, response.c_str(), response.size(), 0);
-	if (nsent<=0)
+	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
 				<< nsent << std::endl;
 }
