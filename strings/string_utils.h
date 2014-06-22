@@ -65,4 +65,6 @@ std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to);
 
 std::string getUrlPath(const std::string &_url);
 
+void getFileContents(const std::string &_filename, std::string &_contents);
+
 #endif	/* STRING_UTILS_H */

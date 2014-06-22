@@ -1,6 +1,7 @@
 #include "string_utils.h"
 #include <sstream>
 #include <iostream>
+#include <fstream>
 #include <curl/curl.h>
 #include <set>
 
@@ -413,4 +414,19 @@ std::string getUrlPath(const std::string &_url) {
 	if (qpos == -1)
 		return _url;
 	return _url.substr(0, qpos);
+}
+
+void getFileContents(const std::string &_filename, std::string &_contents) {
+
+	std::ifstream in(_filename.c_str(), std::ios::in | std::ios::binary);
+	if (in) {
+
+		in.seekg(0, std::ios::end);
+		_contents.resize(in.tellg());
+		in.seekg(0, std::ios::beg);
+		in.read(&_contents[0], _contents.size());
+		in.close();
+		return;
+	}
+	throw(errno);
 }
