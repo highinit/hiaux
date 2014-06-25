@@ -12,7 +12,7 @@ HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
 HttpSrv::Request::Request(const std::string &_url)
 {
 	//std::cout << "Request: " << _url << std::endl; 
-	parseGET(_url, values_GET);
+	//parseGET(_url, values_GET);
 }
 
 bool HttpSrv::Request::getField(const std::string &_key, std::string &_value) {
@@ -146,7 +146,8 @@ HttpSrv::Connection::Connection(int sock, ResponseInfoPtr resp_info):
 		m_sock(sock),
 		alive(true),
 		closing(false),
-		m_resp_info(resp_info)
+		m_resp_info(resp_info),
+		m_http_status_code(200)
 {
 	http_parser_init(&m_parser, HTTP_REQUEST);
 	m_parser.data = (void*)this;
@@ -184,6 +185,15 @@ bool HttpSrv::Connection::recv()
 	return read;
 }
 
+void HttpSrv::Connection::setHttpStatus(int _code) {
+	m_http_status_code = _code;
+}
+
+void HttpSrv::Connection::addHeader(const std::string &_header) {
+	
+	m_headers.push_back(_header);
+}
+
 void HttpSrv::Connection::sendResponse(const std::string &_content)
 {
 	//Sat, 28 Dec 2013 18:33:30 GMT
@@ -197,15 +207,19 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 	char time_c[50];
 	sprintf(time_c, "%d", (int)time(0));
 	
-	std::string response = "HTTP/1.1 200 OK\r\n"
+	std::string response = "HTTP/1.1 " + inttostr(m_http_status_code) + "\r\n"
 						"Content-Type: "+m_resp_info->content_type+"\r\n"
 						"Date: "+time_c+"\r\n"
 						"Server: "+m_resp_info->server_name+"\r\n"
 						//"Connection: keep-alive\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Access-Control-Allow-Origin: *\r\n"
-						"Connection: close\r\n"
-						"Content-Length: "+content_len+"\r\n\r\n"+_content;
+						"Connection: close\r\n";
+	
+	for (int i = 0; i<m_headers.size(); i++)
+		response += m_headers[i] + "\r\n";
+	
+	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
 	size_t nsent = ::send(m_sock, response.c_str(), response.size(), 0);
 	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"

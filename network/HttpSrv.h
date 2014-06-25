@@ -69,6 +69,10 @@ public:
 		
 		ResponseInfoPtr m_resp_info;
 		
+		std::vector<std::string> m_headers;
+		
+		int m_http_status_code;
+		
 		bool recv();
 		void parseRequests();
 	public:
@@ -88,6 +92,8 @@ public:
 		void close();
 		int getSock();
 		//void send(const std::string &_mess);
+		void setHttpStatus(int code);
+		void addHeader(const std::string &_header);
 		void sendResponse(const std::string &_content);
 	};
 	

@@ -262,7 +262,7 @@ void parseGET(const std::string &__data,
 	};
 	
 	std::string _data = __data;
-	unescapeUrl(_data);
+//	unescapeUrl(_data);
 	
 	std::string key,value;
 	
@@ -283,7 +283,7 @@ void parseGET(const std::string &__data,
 		} else if (_data[i]=='&') {
 			state = KEY;
 			value = _data.substr(sbeg, i-sbeg);
-			values_GET[key] = value;
+			values_GET[key] =  unescapeUrl(unescapeUrl(value));
 			if (i+1 != _data.size())
 				sbeg = i + 1;
 			else sbeg = i;
@@ -296,7 +296,7 @@ void parseGET(const std::string &__data,
 		key = _data.substr(sbeg, _data.size()-sbeg);
 		value = "";
 	}
-	values_GET[key] = unescapeUrl(value);
+	values_GET[key] = unescapeUrl(unescapeUrl(value));
 }
 
 inline bool isDelimeter(char c)
@@ -372,11 +372,29 @@ std::string float_to_string(float _f)
 	return std::string(bf);
 }
 
+std::string &escapeUrl(std::string &_url) {
+	
+	CURL *curl = curl_easy_init();
+	
+	char *encoded_adv_url = curl_easy_escape(curl, _url.c_str(), _url.size());
+	
+	_url = std::string(encoded_adv_url);
+	
+	curl_free(encoded_adv_url);
+	curl_easy_cleanup(curl);
+}
+
+
 std::string &unescapeUrl(std::string &_value) {
-	char *value_c = curl_easy_unescape(NULL, _value.c_str(), _value.size(), NULL);
+	CURL *curl = curl_easy_init();
+	char *value_c = curl_easy_unescape(curl, _value.c_str(), _value.size(), NULL);
 	if (value_c==NULL) _value = "";
+	
+//	std::cout << "unescapeUrl " << _value;
 	_value = std::string(value_c);
+//	std::cout << " got " << _value << std::endl;
 	curl_free(value_c);
+	curl_easy_cleanup(curl);
 	return _value;
 }
 

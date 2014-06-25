@@ -60,6 +60,7 @@ std::string float_to_string(float _f);
 std::string inttostr (int _i);
 int strtoint(const std::string &_s);
 
+std::string &escapeUrl(std::string &_url);
 std::string &unescapeUrl(std::string &_value);
 std::string &replaceCharUtf8(std::string &_value, uint32_t _what, uint32_t _to);
 
