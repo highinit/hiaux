@@ -7,11 +7,9 @@ HttpOutRequestDisp::OutRequestInfo::OutRequestInfo(int _reqid, int _requester_ca
 }
 
 HttpOutRequestDisp::Requester::Requester(boost::function<void(int, int, const std::string&)> _onCall,
-			boost::function<void(int)> _onFinished,
-			int id):
+			boost::function<void(int)> _onFinished):
 	m_onCall(_onCall),
-	m_onFinished(_onFinished),
-	m_id(id) {
+	m_onFinished(_onFinished) {
 				
 }
 
@@ -25,6 +23,10 @@ void HttpOutRequestDisp::Requester::finished() {
 
 int HttpOutRequestDisp::Requester::getId() {
 	return m_id;
+}
+
+void HttpOutRequestDisp::Requester::setId(int _id) {
+	m_id = _id;
 }
 
 HttpOutRequestDisp::HttpOutRequestDisp(TaskLauncherPtr _launcher):
@@ -94,6 +96,8 @@ void HttpOutRequestDisp::onCallDone(HttpClientAsync::JobInfo _ji) {
 TaskLauncher::TaskRet HttpOutRequestDisp::addRequesterTask(HttpOutRequestDisp::RequesterPtr _req) {
 	
 	hLockTicketPtr ticket = lock.lock();
+	
+	_req->setId(m_requesters.size());
 	
 	m_requesters.insert(std::pair<int, RequesterPtr> (_req->getId(), _req));
 	_req->start();

@@ -18,13 +18,13 @@ public:
 	public:
 		
 		Requester(boost::function<void(int, int, const std::string&)> _onCall,
-					boost::function<void(int)> _onFinished,
-					int id);
+					boost::function<void(int)> _onFinished);
 		
 		void call (int _callid, const std::string &_url);
 		void finished();
 		virtual void onCallDone (int _callid, bool _success, const std::string &_resp) = 0;
 		virtual void start() = 0;
+		void setId(int _id);
 		int getId();
 	};
 

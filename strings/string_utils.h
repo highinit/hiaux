@@ -68,4 +68,6 @@ std::string getUrlPath(const std::string &_url);
 
 void getFileContents(const std::string &_filename, std::string &_contents);
 
+bool isStringInVec(const std::string &_str, std::vector<std::string> &_v);
+
 #endif	/* STRING_UTILS_H */

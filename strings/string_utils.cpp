@@ -448,3 +448,12 @@ void getFileContents(const std::string &_filename, std::string &_contents) {
 	}
 	throw(errno);
 }
+
+bool isStringInVec(const std::string &_str, std::vector<std::string> &_v) {
+	
+	for (int i = 0; i<_v.size(); i++)
+		if (_str == _v[i])
+			return true;
+	return false;
+}
+
