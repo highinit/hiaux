@@ -10,6 +10,7 @@
 
 #include "hiconfig.h"
 
+#include <errno.h>
 #include <string>
 #include <vector>
 #include <cstring>
