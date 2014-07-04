@@ -43,11 +43,13 @@ public:
 		std::string url;
 		std::string path;
 		hiaux::hashtable<std::string, std::string> values_GET;
+		hiaux::hashtable<std::string, std::string> cookies;
 		std::string body;
 		
 		Request() { }
 		Request(const std::string &_url);
 		bool getField(const std::string &_key, std::string &_value);
+		bool getCookie(const std::string &_name, std::string &_value);
 		std::string toJson();
 	};
 	
@@ -63,6 +65,8 @@ public:
 		std::string readbf;
 		http_parser m_parser;
 		http_parser_settings m_parser_settings;
+		
+		std::string m_cur_header_field;
 		
 		Request cur_request;
 		std::queue<RequestPtr> requests;
@@ -94,6 +98,7 @@ public:
 		//void send(const std::string &_mess);
 		void setHttpStatus(int code);
 		void addHeader(const std::string &_header);
+		void setCookie(const std::string &_name, const std::string &_value);
 		void sendResponse(const std::string &_content);
 	};
 	

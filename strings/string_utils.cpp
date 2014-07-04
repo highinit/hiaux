@@ -457,3 +457,28 @@ bool isStringInVec(const std::string &_str, std::vector<std::string> &_v) {
 	return false;
 }
 
+void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std::string> &_cookies) {
+
+//	std::cout << "parseCookies: " << _header << std::endl;
+	std::vector<char> delims;
+	delims.push_back(';');
+	//delims.push_back(' ');
+	std::vector<std::string> elems;
+	split(_header, delims, elems);
+	
+	for (int i = 0; i<elems.size(); i++)
+		if (elems[i] != "") {
+			int eq_pos = elems[i].find('=');
+			if (eq_pos != -1) {
+				if (elems[i][0]==' ') {
+					//std::cout << "cookie: |" << elems[i].substr(1, eq_pos-1) << "|" << elems[i].substr(eq_pos+1, elems[i].size()-eq_pos-1) << std::endl;
+					_cookies[ elems[i].substr(1, eq_pos-1) ] = elems[i].substr(eq_pos+1, elems[i].size()-eq_pos-1);
+				} else {
+					//std::cout << "cookie: |" << elems[i].substr(0, eq_pos) << "|" << elems[i].substr(eq_pos+1, elems[i].size()-eq_pos-1) << std::endl;
+					_cookies[ elems[i].substr(0, eq_pos) ] = elems[i].substr(eq_pos+1, elems[i].size()-eq_pos-1);
+				}
+				//std::cout << "cookie: |" << elems[i] << "|" << std::endl;
+			}
+		}
+}
+

@@ -25,6 +25,15 @@ bool HttpSrv::Request::getField(const std::string &_key, std::string &_value) {
 		return false;
 }
 
+bool HttpSrv::Request::getCookie(const std::string &_name, std::string &_value) {
+	
+	hiaux::hashtable<std::string, std::string>::iterator it = cookies.find(_name);
+	if (it == cookies.end())
+		return false;
+	_value = it->second;
+	return true;
+}
+
 std::string HttpSrv::Request::toJson() {
 	
 	json_t *root = json_object();
@@ -115,12 +124,23 @@ int HttpSrv::Connection::onStatus(const char *at, size_t length) {
 }
 
 int HttpSrv::Connection::onHeadersField(const char *at, size_t length) {
-	//std::cout << "HttpSrv::Connection::onHeadersField" << at << std::endl;
+	char bf[length+1];
+	strncpy(bf, at, length);
+	bf[length] = '\0';
+	m_cur_header_field = std::string(bf);
+	//std::cout << "HttpSrv::Connection::onHeadersField: " << bf << std::endl;
 	return 0;
 }
 
 int HttpSrv::Connection::onHeadersValue(const char *at, size_t length) {
-	//std::cout << "HttpSrv::Connection::onHeadersValue" << at << std::endl;
+	char bf[length+1];
+	strncpy(bf, at, length);
+	bf[length] = '\0';
+	//std::cout << "HttpSrv::Connection::onHeadersValue: " << bf << std::endl;
+	if (m_cur_header_field == "Cookie") {
+		parseCookies(bf, cur_request.cookies);
+	}
+	
 	return 0;
 }
 
@@ -192,6 +212,11 @@ void HttpSrv::Connection::setHttpStatus(int _code) {
 void HttpSrv::Connection::addHeader(const std::string &_header) {
 	
 	m_headers.push_back(_header);
+}
+
+void HttpSrv::Connection::setCookie(const std::string &_name, const std::string &_value) {
+	
+	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
 void HttpSrv::Connection::sendResponse(const std::string &_content)

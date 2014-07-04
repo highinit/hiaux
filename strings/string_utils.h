@@ -70,4 +70,6 @@ void getFileContents(const std::string &_filename, std::string &_contents);
 
 bool isStringInVec(const std::string &_str, std::vector<std::string> &_v);
 
+void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std::string> &_cookies);
+
 #endif	/* STRING_UTILS_H */
