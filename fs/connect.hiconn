@@ -1,0 +1,8 @@
+{
+
+"_NAME" : "hiaux_fs",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ ]
+}
