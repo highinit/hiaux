@@ -5,10 +5,12 @@
 
 EventWatcherEpoll::EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,
-				boost::function<void(int,void*)> _onError):
+				boost::function<void(int,void*)> _onError,
+				boost::function<void(int,void*)> _onAccept):
 		m_onRead(_onRead),
 		m_onWrite(_onWrite),
-		m_onError(_onError)
+		m_onError(_onError),
+		m_onAccept(_onAccept)
 {
 	m_epoll = epoll_create(0x10001);
 }

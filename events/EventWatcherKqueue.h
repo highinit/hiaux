@@ -35,7 +35,7 @@ public:
 	EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,
 				boost::function<void(int,void*)> _onError,
-				boost::function<void(int,void*)> m_onAccept);
+				boost::function<void(int,void*)> _onAccept);
 	~EventWatcherKqueue();
 	virtual void addSocketAccept(int _sock_fd, void *_opaque_info);
 	virtual void addSocketRead(int _sock_fd, void *_opaque_info);
