@@ -13,8 +13,21 @@ EventWatcherEpoll::EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 	m_epoll = epoll_create(0x10001);
 }
 
-void EventWatcherEpoll::addSocket(int _sock_fd, void *_opaque_info)
-{
+void EventWatcherEpoll::addSocketAccept(int _sock_fd, void *_opaque_info) {
+	
+	m_sockets_accept[_sock_fd] = true;
+	epoll_event ev;
+	ev.events = EPOLLET;
+	ev.data.fd = _sock_fd;
+	if (epoll_ctl(m_epoll, EPOLL_CTL_ADD, _sock_fd, &ev) == -1) {
+		std::cout << "EventWatcherEpoll::addSocket epoll_ctl(..) == -1";
+		exit (0);
+	}
+}
+
+void EventWatcherEpoll::addSocketRead(int _sock_fd, void *_opaque_info) {
+	
+	m_sockets_accept[_sock_fd] = true;
 	epoll_event ev;
 	ev.events = EPOLLET;
 	ev.data.fd = _sock_fd;
@@ -48,7 +61,10 @@ void EventWatcherEpoll::handleEvents()
 		int fd = events[i].data.fd;
 		uint32_t fevent = events[i].events;
 		if (fevent & EPOLLIN)
-			m_onRead(fd, NULL);
+			if (m_sockets_accept.find(event.ident) == m_sockets_accept.end())
+				m_onRead(fd, NULL);
+			else
+				m_onAccept(fd, NULL);
 		if (fevent & EPOLLOUT)
 			m_onWrite(fd, NULL);
 		if (fevent & 0x2000)

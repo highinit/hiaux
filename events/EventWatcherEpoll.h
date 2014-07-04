@@ -14,6 +14,8 @@
 
 class EventWatcherEpoll {
 	int m_epoll;
+	size_t m_nsockets;
+	hiaux::hashtable<int, bool> m_sockets_accept;
 	boost::function<void(int,void*)> m_onRead;
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
@@ -22,8 +24,11 @@ public:
 	EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,
 				boost::function<void(int,void*)> _onError);
-	virtual void addSocket(int _sock_fd, void *_opaque_info);
+	
+	virtual void addSocketAccept(int _sock_fd, void *_opaque_info);
+	virtual void addSocketRead(int _sock_fd, void *_opaque_info);
 	virtual void delSocket(int _sock_fd, void *_opaque_info);
+	
 	virtual void handleEvents();
 };
 
