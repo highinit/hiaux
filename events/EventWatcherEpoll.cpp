@@ -63,7 +63,7 @@ void EventWatcherEpoll::handleEvents()
 		int fd = events[i].data.fd;
 		uint32_t fevent = events[i].events;
 		if (fevent & EPOLLIN)
-			if (m_sockets_accept.find(event.ident) == m_sockets_accept.end())
+			if (m_sockets_accept.find(fd) == m_sockets_accept.end())
 				m_onRead(fd, NULL);
 			else
 				m_onAccept(fd, NULL);
