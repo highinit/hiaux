@@ -5,6 +5,8 @@
 
 #include "hiconfig.h"
 
+#include "hiaux/structs/hashtable.h"
+
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 
