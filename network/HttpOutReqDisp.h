@@ -1,7 +1,6 @@
 #ifndef _HTTP_OUT_REQ_DISP_H_
 #define _HTTP_OUT_REQ_DISP_H_
 
-#include <ecl/ecl.h>
 #include <boost/function.hpp>
 #include "hiaux/network/HttpSrv.h"
 #include "hiaux/network/HttpClientAsync.h"
