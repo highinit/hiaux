@@ -54,14 +54,14 @@
 		class hashtable : public ::std::tr1::unordered_map<K,V> {
 		};
 	}
-	
+	/*
 	template <>
 	struct ::std::tr1::hash<std::pair<uint64_t, uint64_t> > {
 	public:
 	        size_t operator()(std::pair<uint64_t, uint64_t> x) const throw() {   
 	             return ::std::tr1::hash()(x.first) ^ ::std::tr1::hash()(x.second);
 	        }
-	};
+	};*/
 	
 #endif
 
