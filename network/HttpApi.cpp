@@ -95,8 +95,16 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 		_conn->sendResponse( m_buildApiError( err_mess ) );
 	} else {
 		std::string resp;
-		m_methods_callbacks[ _req->values_GET["method"] ] ( _req->values_GET , resp);
-		_conn->sendResponse(resp);
+		hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
+			m_methods_callbacks.find(_req->values_GET["method"]);
+		if (it == m_methods_callbacks.end()) {
+			_conn->sendResponse("No such method");
+		}
+		else
+		{
+			it->second( _req->values_GET , resp);
+			_conn->sendResponse(resp);
+		}
 	}
 	_conn->close();
 }
