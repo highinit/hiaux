@@ -74,8 +74,8 @@ void EventWatcherEpoll::handleEvents()
 				m_onAccept(fd, NULL);
 		if (fevent & EPOLLOUT)
 			m_onWrite(fd, NULL);*/
-		if (fevent & 0x2000)
-			m_onError(fd, NULL);
+		//if (fevent & 0x2000)
+		//	m_onError(fd, NULL);
 	}
 }
 
