@@ -29,7 +29,6 @@ void EventWatcherEpoll::addSocketAccept(int _sock_fd, void *_opaque_info) {
 
 void EventWatcherEpoll::addSocketRead(int _sock_fd, void *_opaque_info) {
 	
-	m_sockets_accept[_sock_fd] = true;
 	epoll_event ev;
 	ev.events = EPOLLET;
 	ev.data.fd = _sock_fd;
