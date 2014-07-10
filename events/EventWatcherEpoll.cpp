@@ -61,13 +61,19 @@ void EventWatcherEpoll::handleEvents()
 	for (int i = 0; i<nfds; i++) {
 		int fd = events[i].data.fd;
 		uint32_t fevent = events[i].events;
+		
+		if (m_sockets_accept.find(fd) == m_sockets_accept.end())
+			m_onRead(fd, NULL);
+		else
+			m_onAccept(fd, NULL);
+		/*
 		if (fevent & EPOLLIN)
 			if (m_sockets_accept.find(fd) == m_sockets_accept.end())
 				m_onRead(fd, NULL);
 			else
 				m_onAccept(fd, NULL);
 		if (fevent & EPOLLOUT)
-			m_onWrite(fd, NULL);
+			m_onWrite(fd, NULL);*/
 		if (fevent & 0x2000)
 			m_onError(fd, NULL);
 	}
