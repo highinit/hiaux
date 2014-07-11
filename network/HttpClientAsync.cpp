@@ -6,12 +6,27 @@ userdata(_userdata) {
 	
 }
 
+hLock g_curl_lock;
+
+void lock_function(CURL *handle, curl_lock_data data, curl_lock_access access, void *userptr) {
+	g_curl_lock.lock();
+}
+
+void unlock_function(CURL *handle, curl_lock_data data, void *userptr) {
+	g_curl_lock.unlock();
+}
+
 HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _ji)> _onCalled):
  m_onCalled(_onCalled) {
 	 
+	 m_curl_sh = curl_share_init();
 	 m_curl = curl_multi_init();
 	 long timeout = 200;
 	 curl_multi_timeout(m_curl, &timeout);
+	 
+	 curl_share_setopt(m_curl_sh, CURLSHOPT_LOCKFUNC, &lock_function);
+	 curl_share_setopt(m_curl_sh, CURLSHOPT_UNLOCKFUNC, &unlock_function);
+	 
 }
 
 HttpClientAsync::~HttpClientAsync() {
@@ -39,7 +54,8 @@ void HttpClientAsync::call (void* userdata, const std::string &_url) {
 	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(userdata)));
 
 	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(e_curl);
-
+	
+	curl_easy_setopt(e_curl, CURLOPT_SHARE, m_curl_sh);
 	curl_easy_setopt(e_curl, CURLOPT_URL, _url.c_str());
 	curl_easy_setopt(e_curl, CURLOPT_WRITEFUNCTION, crawl_function_pt);
 	curl_easy_setopt(e_curl, CURLOPT_WRITEDATA, &it->second.resp);
