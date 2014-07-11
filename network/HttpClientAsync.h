@@ -27,7 +27,7 @@ private:
 	hiaux::hashtable<CURL*, JobInfo> m_e_curls;
 	
 	CURLM *m_curl;
-	CURLSH *m_curl_sh;
+	//CURLSH *m_curl_sh;
 	boost::function<void(HttpClientAsync::JobInfo _ji)> m_onCalled;
 	int m_nrunning;
 	
