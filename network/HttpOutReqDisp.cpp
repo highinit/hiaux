@@ -122,6 +122,7 @@ TaskLauncher::TaskRet HttpOutRequestDisp::onRequesterFinishedTask(int _reqid) {
 	} else {
 		std::cout << "HttpOutRequestDisp::onRequesterFinished Requester dont exists\n";
 	}
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
