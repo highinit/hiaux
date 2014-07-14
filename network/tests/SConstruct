@@ -22,7 +22,7 @@ b.connectLib("../../threads/")
 b.addPath(hicore_path+"thirdparty/http-parser/")
 b.connectLib(hicore_path+"thirdparty/http-parser/")
 
-b.addCCFlags(["-g"])
+b.addCCFlags(["-g3"])
 #b.addLinkFlags(["-g"])
 
 b.addCppGlob("*.cpp")

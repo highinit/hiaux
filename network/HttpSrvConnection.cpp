@@ -86,15 +86,16 @@ int HttpSrv::Connection::getSock() {
 void HttpSrv::Connection::performRecv() {
 	
 	std::string readbf;
-	char bf[128];
-	int nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
-	bool read = false;
+	char bf[2049];
+	int nread = ::recv(m_sock, bf, 2048, MSG_DONTWAIT);
+	
 	while (true) {
 		if (nread > 0) {
-			read = true;
+			
+			bf[ nread ] = '\0';
 			std::string add (bf);
 			readbf.append( add );
-			nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
+			nread = ::recv(m_sock, bf, 2048, MSG_DONTWAIT);
 		} 
 		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			
@@ -130,9 +131,11 @@ void HttpSrv::Connection::performRecv() {
 		}
 	}
 	
+	//std::cout << "recv: " << readbf << std::endl;
+	
 	//m_readbf += std::string(bf);
-	bf[nread] = '\0';
-	http_parser_execute(&m_parser, &m_parser_settings, bf, strlen(bf));
+	if (readbf.size() > 0)
+		http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
 }
 
 void HttpSrv::Connection::performSend() {
