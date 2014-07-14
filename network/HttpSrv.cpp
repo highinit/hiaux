@@ -190,6 +190,7 @@ HttpSrv::Connection::~Connection()
 }
 
 bool HttpSrv::Connection::recv() {
+	std::cout << "HttpSrv::Connection::recv\n";
 	char bf[128];
 	int nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
 	bool read = false;
@@ -201,7 +202,8 @@ bool HttpSrv::Connection::recv() {
 			nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
 		} 
 		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-			std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN";
+			
+			std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN\n";
 			break;
 		}
 		else if (errno == EBADF) {
