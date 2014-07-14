@@ -236,6 +236,7 @@ bool HttpSrv::Connection::recv() {
 		}
 	}
 	
+	std::cout << "nread " << nread << std::endl;
 	return read;
 }
 
