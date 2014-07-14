@@ -384,8 +384,8 @@ std::string &escapeUrl(std::string &_url) {
 	
 	curl_free(encoded_adv_url);
 	curl_easy_cleanup(curl);
+	return _url;
 }
-
 
 std::string &unescapeUrl(std::string &_value) {
 	CURL *curl = curl_easy_init();
