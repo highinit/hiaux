@@ -189,8 +189,7 @@ HttpSrv::Connection::~Connection()
 	//std::cout << "http connection closed\n";
 }
 
-bool HttpSrv::Connection::recv()
-{
+bool HttpSrv::Connection::recv() {
 	char bf[128];
 	int nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
 	bool read = false;
@@ -202,12 +201,38 @@ bool HttpSrv::Connection::recv()
 			nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
 		} 
 		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
-			return read;
-		} else if (nread == 0)
-			return read;
+			std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN";
+			break;
+		}
+		else if (errno == EBADF) {
+			std::cout << "HttpSrv::Connection::recv EBADF\n";
+			break;
+		} else if (errno == ECONNREFUSED) {
+			std::cout << "HttpSrv::Connection::recv ECONNREFUSED\n";
+			break;
+		} else if (errno == EFAULT) {
+			std::cout << "HttpSrv::Connection::recv EFAULT\n";
+			break;
+		} else if (errno == EINTR) {
+			std::cout << "HttpSrv::Connection::recv EINTR\n";
+			break;
+		} else if (errno == EINVAL) {
+			std::cout << "HttpSrv::Connection::recv EINVAL\n";
+			break;
+		} else if (errno == ENOMEM) {
+			std::cout << "HttpSrv::Connection::recv ENOMEM\n";
+			break;
+		} else if (errno == ENOTCONN) {
+			std::cout << "HttpSrv::Connection::recv ENOTCONN\n";
+			break;
+		} else if (errno == ENOTSOCK) {
+			std::cout << "HttpSrv::Connection::recv ENOTSOCK\n";
+			break;
+		} else if (nread == 0) {
+			
+			break;
+		}
 	}
-	
-	//std::cout << "req:\n" << readbf << std::endl;
 	
 	return read;
 }
