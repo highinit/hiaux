@@ -12,11 +12,11 @@ hLock g_curl_lock;
 void lock_function(CURL *handle, curl_lock_data data, curl_lock_access access, void *userptr) {
 	g_curl_lock.lock();
 }
-*/
+
 void unlock_function(CURL *handle, curl_lock_data data, void *userptr) {
 	g_curl_lock.unlock();
 }
-
+*/
 HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _ji)> _onCalled):
  m_onCalled(_onCalled) {
 	 
