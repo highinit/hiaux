@@ -25,18 +25,22 @@ public:
 	public:
 		int m_sock;
 		bool closing;
+		bool readmode;
 		std::string ip;
 		int port;
 		
 		boost::function<void(int)> m_onClose;
+		boost::function<void(int)> m_onSetWrite;
 		
 		uint64_t getCreateTs();
 		//void recv(std::string &_bf);
 		//void send(const std::string &_mess);
 		void close();
+		void setWriteMode();
 
 		Connection(std::string _ip, int _port, int _sock,
-				boost::function<void(int)> _onClose);
+				boost::function<void(int)> _onClose,
+				boost::function<void(int)> _onSetWrite);
 		~Connection();
 	};
 	
@@ -45,7 +49,10 @@ public:
 private:
 	
 	TaskLauncherPtr m_launcher;
-	boost::function<void(ConnectionPtr)> m_handler;
+	boost::function<void(ConnectionPtr)> m_onRead;
+	boost::function<void(ConnectionPtr)> m_onWrite;
+	boost::function<void(ConnectionPtr)> m_onError;
+	
 	int m_listen_socket;
 	uint64_t m_idle_timeout;
 	bool m_isrunning;
@@ -58,7 +65,6 @@ private:
 	std::queue<int> m_sockets_to_close_q;
 	hAutoLock m_sockets_to_close_q_lock;
 	
-	int startClient(const std::string &_ip, int portno);
 	int startServer(int port);
 	
 public:
@@ -68,15 +74,21 @@ public:
 	void onError(int _sock, void *_opaque_info);
 	void onAccept(int _sock_fd, void *_opaque_info);
 	
-	TaskLauncher::TaskRet handleReadTask(ConnectionPtr _conn);
+	void onSetWrite(int _sock);
+	
+//	TaskLauncher::TaskRet handleReadTask(ConnectionPtr _conn);
 	TaskLauncher::TaskRet acceptTask(int _sock);
 	
 	void onCloseConnection(int _sock_fd);
 	TaskLauncher::TaskRet readThread();
 
 	hPoolServer(TaskLauncherPtr launcher,
-			boost::function<void(ConnectionPtr)> handler);
+			boost::function<void(ConnectionPtr)> _onRead,
+			boost::function<void(ConnectionPtr)> _onWrite,
+			boost::function<void(ConnectionPtr)> _onError);
 	~hPoolServer();
+
+	static int startClient(const std::string &_ip, int portno);
 
 	void start(int port);
 	void stop();

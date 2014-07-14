@@ -5,8 +5,8 @@
  * Created on December 28, 2013, 7:07 PM
  */
 
-#ifndef HTTPSRV_H
-#define	HTTPSRV_H
+#ifndef _HTTPSRV_H_
+#define	_HTTPSRV_H_
 
 #include "hiconfig.h"
 #include <cstdio>
@@ -55,21 +55,21 @@ public:
 	
 	typedef boost::shared_ptr<Request> RequestPtr;
 	
-	class Connection
-	{
+	class Connection {
 	public:
 		bool alive;
 		bool closing;
 	private:
 		int m_sock;
-		std::string readbf;
+		std::string m_readbf;
+		std::string m_sendbf;
 		http_parser m_parser;
 		http_parser_settings m_parser_settings;
 		
 		std::string m_cur_header_field;
 		
-		Request cur_request;
-		std::queue<RequestPtr> requests;
+		Request m_cur_request;
+		std::queue<RequestPtr> m_requests;
 		
 		ResponseInfoPtr m_resp_info;
 		
@@ -77,10 +77,13 @@ public:
 		
 		int m_http_status_code;
 		
-		bool recv();
+		boost::function<void(int, HttpSrv::RequestPtr)> m_onRequest;
+		
 		void parseRequests();
 	public:
-		Connection(int sock, ResponseInfoPtr resp_info);
+		Connection(int _sock,
+					ResponseInfoPtr _resp_info,
+					boost::function<void(int, HttpSrv::RequestPtr)> _onRequest);
 		~Connection();
 		
 		int onMessageBegin();
@@ -92,7 +95,7 @@ public:
 		int onBody(const char *at, size_t length);
 		int onMessageComplete();
 		
-		RequestPtr getNextRequest();
+		//RequestPtr getNextRequest();
 		void close();
 		int getSock();
 		//void send(const std::string &_mess);
@@ -100,6 +103,9 @@ public:
 		void addHeader(const std::string &_header);
 		void setCookie(const std::string &_name, const std::string &_value);
 		void sendResponse(const std::string &_content);
+		
+		void performRecv();
+		void performSend();
 	};
 	
 	typedef boost::shared_ptr<Connection> ConnectionPtr;
@@ -119,10 +125,18 @@ private:
 	void closeHttpConn(int socket);
 public:
 	
-	void handler(hPoolServer::ConnectionPtr pool_conn);
+//	void handler(hPoolServer::ConnectionPtr pool_conn);
+	
+	void onRead(hPoolServer::ConnectionPtr _pool_conn);
+	void onWrite(hPoolServer::ConnectionPtr _pool_conn);
+	void onError(hPoolServer::ConnectionPtr _pool_conn);
+	
+	void onRequest(int _fd, HttpSrv::RequestPtr _req);
 	
 	ConnectionPtr getHttpConn(int socket);
 	ConnectionPtr getHttpConnConst(int socket);
+	
+	void checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn);
 	
 	HttpSrv(TaskLauncherPtr launcher,
 			const ResponseInfo &_resp_info,
@@ -134,5 +148,14 @@ public:
 
 typedef boost::shared_ptr<HttpSrv> HttpSrvPtr;
 
-#endif	/* HTTPSRV_H */
+int HttpSrv_onMessageBegin(http_parser* parser);
+int HttpSrv_onUrl(http_parser* parser, const char *at, size_t length);
+int HttpSrv_onStatus(http_parser* parser, const char *at, size_t length);
+int HttpSrv_onHeadersField(http_parser* parser, const char *at, size_t length);
+int HttpSrv_onHeadersValue(http_parser* parser, const char *at, size_t length);
+int HttpSrv_onHeadersComplete(http_parser* parser);
+int HttpSrv_onBody(http_parser* parser, const char *at, size_t length);
+int HttpSrv_onMessageComplete(http_parser* parser);
+
+#endif	/* _HTTPSRV_H_ */
 

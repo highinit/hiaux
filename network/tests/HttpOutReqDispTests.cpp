@@ -5,7 +5,7 @@ TestRequester::TestRequester(boost::function<void(int, int, const std::string&)>
 				int id,
 				boost::function<void()> _onWrongResp,
 				boost::function<void()> _onResp):
-	HttpOutRequestDisp::Requester(_onCall, _onFinished, id),
+	HttpOutRequestDisp::Requester(_onCall, _onFinished),
 	m_onWrongResp(_onWrongResp),
 	m_onResp(_onResp) {
 		

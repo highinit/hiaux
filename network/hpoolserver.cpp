@@ -22,53 +22,63 @@ class PoolException : public std::exception
 };
 
 hPoolServer::Connection::Connection(std::string _ip, int _port, int _sock,
-			boost::function<void(int)> _onClose):
+			boost::function<void(int)> _onClose,
+			boost::function<void(int)> _onSetWrite):
 		create_ts(time(0)),
 		ip(_ip),
 		port(_port),
 		m_sock(_sock),
+		readmode(true),
 		closing(false),
-		m_onClose(_onClose)
-{
+		m_onClose(_onClose),
+		m_onSetWrite(_onSetWrite) {
 }
 
-hPoolServer::Connection::~Connection()
-{
+hPoolServer::Connection::~Connection() {
 	if (!closing)
 		close();
 }
 
-uint64_t hPoolServer::Connection::getCreateTs()
-{
+uint64_t hPoolServer::Connection::getCreateTs() {
 	return create_ts;
 }
 
-void hPoolServer::Connection::close()
-{
+void hPoolServer::Connection::close() {
 	closing = true;
 	m_onClose(m_sock);
+	//std::cout << "pool connection closing\n";
+}
+
+void hPoolServer::Connection::setWriteMode() {
+	
+	if (readmode) {
+		m_onSetWrite(m_sock);
+		readmode = false;
+	}
 }
 
 hPoolServer::hPoolServer(TaskLauncherPtr launcher, 
-					boost::function<void(ConnectionPtr)> handler)
-{
+					boost::function<void(ConnectionPtr)> _onRead,
+					boost::function<void(ConnectionPtr)> _onWrite,
+					boost::function<void(ConnectionPtr)> _onError) {
 	m_launcher = launcher;
-	m_handler = handler;
+	m_onRead = _onRead;
+	m_onWrite = _onWrite;
+	m_onError = _onError;
+	
 	m_istopped = 0;
 	m_events_watcher.reset(new EventWatcher(
 			boost::bind(&hPoolServer::onRead, this, _1, _2),
 			boost::bind(&hPoolServer::onWrite, this, _1, _2),
 			boost::bind(&hPoolServer::onError, this, _1, _2),
-			boost::bind(&hPoolServer::onAccept, this, _1, _2) ));
+			boost::bind(&hPoolServer::onAccept, this, _1, _2)));
 }
 
 hPoolServer::~hPoolServer() {
 	stop();
-//	std::cout << "hPoolServer::~hPoolServer\n";
 }
 
-void hPoolServer::onCloseConnection(int _sock_fd)
-{
+void hPoolServer::onCloseConnection(int _sock_fd) {
 	{
 		hLockTicketPtr ticket = m_connections_lock.lock();
 	
@@ -82,47 +92,51 @@ void hPoolServer::onCloseConnection(int _sock_fd)
 	//m_events_watcher->delSocket(_sock_fd, NULL);
 }
 
-void hPoolServer::onRead(int _sock_fd, void *_opaque_info)
-{
-//	std::cout << "hPoolServer::onRead\n";
+void hPoolServer::onRead(int _sock_fd, void *_opaque_info) {
+
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
 	if (it != m_connections.end()) {
 		ticket->unlock();
-		//m_launcher->addTask(NEW_LAUNCHER_TASK3(&hPoolServer::handleReadTask, this, it->second));
-		m_handler(it->second);
+		m_onRead(it->second);
 	}
 }
 
+/*
 TaskLauncher::TaskRet hPoolServer::handleReadTask(ConnectionPtr _conn) {
 	m_handler(_conn);
 	return TaskLauncher::NO_RELAUNCH;
-}
+}*/
 
-void hPoolServer::onWrite(int _sock_fd, void *_opaque_info)
-{
-//	std::cout << "hPoolServer::onWrite\n";
+void hPoolServer::onWrite(int _sock_fd, void *_opaque_info) {
+
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
 	if (it != m_connections.end()) {
 		ticket->unlock();
-		m_handler(it->second);
+		m_onWrite(it->second);
 	}
 }
 
-void hPoolServer::onError(int _sock_fd, void *_opaque_info)
-{
-//	std::cout << "hPoolServer::onError\n";
+void hPoolServer::onError(int _sock_fd, void *_opaque_info) {
+
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock_fd);
 	if (it != m_connections.end()) {
 		ticket->unlock();
-		m_handler(it->second);
+		m_onError(it->second);
 	}
 }
 
-TaskLauncher::TaskRet hPoolServer::readThread()
-{
+void hPoolServer::onSetWrite(int _sock) {
+	
+//	m_events_watcher->delSocket(sock_fd, NULL);
+//	m_events_watcher->delSocket(sock_fd, NULL);
+	
+}
+
+TaskLauncher::TaskRet hPoolServer::readThread() {
+	
 	while (m_isrunning) {
 		m_events_watcher->handleEvents();
 		
@@ -142,18 +156,21 @@ TaskLauncher::TaskRet hPoolServer::readThread()
 }
 
 void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {
+	
 	struct sockaddr_in cli_addr;
 	size_t clilen = sizeof(cli_addr);
 	int accepted_socket = accept(_sock_fd, 
 			 (struct sockaddr *) &cli_addr, 
 			 (socklen_t*)&clilen);
 
-	if (accepted_socket < 0) //throw new PoolException("hsock_t::server: err accepting");
+	if (accepted_socket < 0)
 		return;
+	
 	ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
-			 cli_addr.sin_port,
-			 accepted_socket,
-			boost::bind(&hPoolServer::onCloseConnection, this, _1) ));
+							cli_addr.sin_port,
+							accepted_socket,
+							boost::bind(&hPoolServer::onCloseConnection, this, _1),
+							boost::bind(&hPoolServer::onSetWrite, this, _1)));
 	
 	{
 		hLockTicketPtr ticket = m_connections_lock.lock();

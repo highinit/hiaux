@@ -12,6 +12,7 @@
 
 #include <boost/bind.hpp>
 
+#include "PoolServerTests.h"
 #include "HttpClientAsyncTests.h"
 #include "HttpOutReqDispTests.h"
 
@@ -27,12 +28,18 @@ public:
 	void onFinished() {
 	}
 
+	void XtestPoolServer() {
+		PoolServerTests();
+		exit(0);
+	}
+
 	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req)
 	{
+		std::cout << "onHttpRequest\n";
 		hiaux::hashtable<std::string, std::string>::iterator it =
 					req->values_GET.begin();
 		while (it != req->values_GET.end()) {
-			//std::cout << it->first << "/" << it->second << std::endl;
+			std::cout << it->first << "/" << it->second << std::endl;
 			it++;
 		}
 		
@@ -40,7 +47,7 @@ public:
 		http_conn->close();
 	}
 	
-	void XtestHttpServer()
+	void testHttpServer()
 	{
 		try {
 			//std::cout << "testHttpServer\n";
@@ -59,7 +66,7 @@ public:
 			
 			HttpClient cli;
 			std::string resp;
-			cli.callSimple("http://localhost:1234/", resp);
+			cli.callSimple("http://localhost:1234/?zhi=123&est=37", resp);
 			
 			TS_ASSERT(resp == "SERVER RESPONSE!")
 			//std::cout << "resp: " << resp;
@@ -158,7 +165,7 @@ public:
 		HttpClientAsyncTests();
 	}
 	
-	void testHttpOutReqDisp() {
+	void XtestHttpOutReqDisp() {
 		HttpOutReqDispTests();
 	}
 };
