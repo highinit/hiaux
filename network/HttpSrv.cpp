@@ -2,6 +2,8 @@
 
 #include "HttpSrv.h"
 
+extern int errno;
+
 HttpSrv::ResponseInfo::ResponseInfo(const std::string &_content_type,
 					const std::string &_server_name):
 		content_type(_content_type),
@@ -189,15 +191,20 @@ HttpSrv::Connection::~Connection()
 
 bool HttpSrv::Connection::recv()
 {
-	char bf[1024];
-	int nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
+	char bf[128];
+	int nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
 	bool read = false;
-	while (nread > 0) {
-		read = true;
-		std::string add (bf);
-		//unescapeUrl(add);
-		readbf.append( add );
-		nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
+	while (true) {
+		if (nread > 0) {
+			read = true;
+			std::string add (bf);
+			readbf.append( add );
+			nread = ::recv(m_sock, bf, 128, MSG_DONTWAIT);
+		} 
+		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+			return read;
+		} else if (nread == 0)
+			return read;
 	}
 	
 	//std::cout << "req:\n" << readbf << std::endl;
