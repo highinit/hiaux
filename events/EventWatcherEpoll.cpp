@@ -50,7 +50,7 @@ void EventWatcherEpoll::delSocket(int _sock_fd, void *_opaque_info) {
 void EventWatcherEpoll::handleEvents() {
 	
 	epoll_event events[4096];
-	int nfds = epoll_wait(m_epoll, events, 4096, -1);
+	int nfds = epoll_wait(m_epoll, events, 4096, 200);
 	if (nfds < 0) {
 		if (errno == EINTR)
 			return;
@@ -62,11 +62,7 @@ void EventWatcherEpoll::handleEvents() {
 		int fd = events[i].data.fd;
 		uint32_t fevent = events[i].events;
 		
-		if (m_sockets_accept.find(fd) == m_sockets_accept.end())
-			m_onRead(fd, NULL);
-		else
-			m_onAccept(fd, NULL);
-		
+	
 		if (fevent & EPOLLIN)
 			if (m_sockets_accept.find(fd) == m_sockets_accept.end())
 				m_onRead(fd, NULL);
