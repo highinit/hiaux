@@ -50,7 +50,7 @@ void EventWatcherEpoll::delSocket(int _sock_fd, void *_opaque_info) {
 void EventWatcherEpoll::handleEvents() {
 	
 	epoll_event events[4096];
-	int nfds = epoll_wait(m_epoll, events, 4096, 200);
+	int nfds = epoll_wait(m_epoll, events, 4096, -1);
 	if (nfds < 0) {
 		if (errno == EINTR)
 			return;

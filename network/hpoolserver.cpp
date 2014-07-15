@@ -166,6 +166,7 @@ hPoolServer::ConnectionPtr hPoolServer::getConnection(int _fd) {
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_fd);
 	if (it != m_connections.end())
 		return it->second;
+	std::cout << "hPoolServer::getConnection no such connection\n";
 	return hPoolServer::ConnectionPtr();
 }
 

@@ -70,7 +70,7 @@ void HttpSrv::Connection::sendResponse(const std::string &_content) {
 	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
 	size_t nsent = ::send(m_sock, response.c_str(), response.size(), 0);
 	
-	std::cout << "send: " << response << std::endl;
+//	std::cout << "send: " << response << std::endl;
 	
 	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
@@ -147,8 +147,8 @@ void HttpSrv::Connection::performRecv() {
 	//std::cout << "recv: " << readbf << std::endl;
 	//m_readbf += std::string(bf);
 	if (readbf.size() > 0) {
-		m_req_text += readbf;
-		std::cout << m_req_text << std::endl;
+		//m_req_text += readbf;
+		//std::cout << m_req_text << std::endl;
 		http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
 	}
 }
