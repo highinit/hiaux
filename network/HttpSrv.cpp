@@ -164,6 +164,8 @@ void HttpSrv::checkConnClose(int _fd) {
 
 bool HttpSrv::checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn) {
 	
+	if (!_pool_conn || !_conn)
+		return true;
 	
 	uint64_t now = time(0);
 
