@@ -107,29 +107,38 @@ void HttpSrv::Connection::performRecv() {
 			break;
 		}
 		else if (errno == EBADF) {
+			
 			std::cout << "HttpSrv::Connection::recv EBADF\n";
-			break;
+			close();
+			return;
 		} else if (errno == ECONNREFUSED) {
 			std::cout << "HttpSrv::Connection::recv ECONNREFUSED\n";
-			break;
+			close();
+			return;
 		} else if (errno == EFAULT) {
 			std::cout << "HttpSrv::Connection::recv EFAULT\n";
-			break;
+			close();
+			return;
 		} else if (errno == EINTR) {
 			std::cout << "HttpSrv::Connection::recv EINTR\n";
-			break;
+			close();
+			return;
 		} else if (errno == EINVAL) {
 			std::cout << "HttpSrv::Connection::recv EINVAL\n";
-			break;
+			close();
+			return;
 		} else if (errno == ENOMEM) {
 			std::cout << "HttpSrv::Connection::recv ENOMEM\n";
-			break;
+			close();
+			return;
 		} else if (errno == ENOTCONN) {
 			std::cout << "HttpSrv::Connection::recv ENOTCONN\n";
-			break;
+			close();
+			return;
 		} else if (errno == ENOTSOCK) {
 			std::cout << "HttpSrv::Connection::recv ENOTSOCK\n";
-			break;
+			close();
+			return;
 		} else if (nread == 0) {		
 			break;
 		}
