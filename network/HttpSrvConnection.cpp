@@ -24,7 +24,7 @@ HttpSrv::Connection::Connection(int _sock,
 
 
 HttpSrv::Connection::~Connection() {
-	//std::cout << "http connection closed\n";
+	std::cout << "http connection closed\n";
 }
 
 void HttpSrv::Connection::setHttpStatus(int _code) {
@@ -41,8 +41,9 @@ void HttpSrv::Connection::setCookie(const std::string &_name, const std::string 
 	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
-void HttpSrv::Connection::sendResponse(const std::string &_content)
-{
+void HttpSrv::Connection::sendResponse(const std::string &_content) {
+	
+	
 	//Sat, 28 Dec 2013 18:33:30 GMT
 	char content_len_c[50];
 	sprintf(content_len_c, "%d", (int)_content.size());
@@ -68,13 +69,16 @@ void HttpSrv::Connection::sendResponse(const std::string &_content)
 	
 	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
 	size_t nsent = ::send(m_sock, response.c_str(), response.size(), 0);
+	
+	std::cout << "send: " << response << std::endl;
+	
 	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
 				<< nsent << std::endl;
 }
 
 void HttpSrv::Connection::close() {
-	
+	std::cout << "HttpSrv::Connection::close\n";
 	closing = true;
 }
 
@@ -132,10 +136,12 @@ void HttpSrv::Connection::performRecv() {
 	}
 	
 	//std::cout << "recv: " << readbf << std::endl;
-	
 	//m_readbf += std::string(bf);
-	if (readbf.size() > 0)
+	if (readbf.size() > 0) {
+		m_req_text += readbf;
+		std::cout << m_req_text << std::endl;
 		http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
+	}
 }
 
 void HttpSrv::Connection::performSend() {

@@ -144,6 +144,13 @@ void HttpSrv::onRequest(int _fd, HttpSrv::RequestPtr _req) {
 	
 	std::cout << "HttpSrv::onRequest\n";
 	m_request_hdl(getHttpConnConst(_fd), _req);
+	ConnectionPtr http_conn = getHttpConn(_fd);
+	
+	hPoolServer::ConnectionPtr pool_conn = m_poolserver->getConnection(_fd);
+	if (!pool_conn)
+		closeHttpConn(_fd);
+	else
+		checkConnClose(pool_conn, http_conn);
 }
 
 void HttpSrv::checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn) {

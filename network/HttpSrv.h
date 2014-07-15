@@ -61,7 +61,7 @@ public:
 		bool closing;
 	private:
 		int m_sock;
-		//std::string m_readbf;
+		std::string m_req_text;
 		std::string m_sendbf;
 		http_parser m_parser;
 		http_parser_settings m_parser_settings;

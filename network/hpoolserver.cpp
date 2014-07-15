@@ -159,6 +159,16 @@ TaskLauncher::TaskRet hPoolServer::readThread() {
 	return TaskLauncher::NO_RELAUNCH;
 }
 
+hPoolServer::ConnectionPtr hPoolServer::getConnection(int _fd) {
+	
+	hLockTicketPtr ticket = m_connections_lock.lock();
+
+	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_fd);
+	if (it != m_connections.end())
+		return it->second;
+	return hPoolServer::ConnectionPtr();
+}
+
 void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {
 	
 	struct sockaddr_in cli_addr;
@@ -169,6 +179,8 @@ void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {
 
 	if (accepted_socket < 0)
 		return;
+	
+	setSocketNonBlock(accepted_socket);
 	
 	ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
 							cli_addr.sin_port,
@@ -201,12 +213,19 @@ void hPoolServer::stop() {
 	}
 }
 
+void hPoolServer::setSocketNonBlock(int _fd) {
+	
+	int flags = fcntl(_fd, F_GETFL);
+	fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
+}
+
 int hPoolServer::startServer(int port)
 {
 	char bf[255];
 	struct sockaddr_in serv_addr;
 
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	setSocketNonBlock(sockfd);
 
 	if (sockfd < 0)
 			throw new std::string("hsock_t::server: ERROR opening server socket");

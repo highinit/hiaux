@@ -67,6 +67,8 @@ private:
 	
 	int startServer(int port);
 	
+	void setSocketNonBlock(int _fd);
+	
 public:
     
 	void onRead(int _sock, void *_opaque_info);
@@ -81,6 +83,8 @@ public:
 	
 	void onCloseConnection(int _sock_fd);
 	TaskLauncher::TaskRet readThread();
+
+	hPoolServer::ConnectionPtr getConnection(int _fd);
 
 	hPoolServer(TaskLauncherPtr launcher,
 			boost::function<void(ConnectionPtr)> _onRead,

@@ -69,27 +69,39 @@ public:
 			//cli.callSimple("http://localhost:1234/?zhi=123&est=37", resp);
 			
 			int c_fd = hPoolServer::startClient("127.0.0.1", port);
-			char chunk_0[50];
-			char chunk_1[50];
+			char chunk_0[512];
+			char chunk_1[512];
+			char chunk_2[512];
 			
-			strcpy(chunk_0, "GET /developer/js/common.js HTTP/1.1\n"
+			strcpy(chunk_0, "GE");
+				
+			strcpy(chunk_1,	"T /developer/js/common.js HTTP/1.1\n"
 							"Host: marketing.adobe.com\n"
 							"Connection: keep-alive\n"
 							"Cache-Control: max-age=0\n"
 							"Accept: */*\n"
-							"User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36\n"
+							"User-Age");
+							
+			strcpy(chunk_2,	"nt: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36\n"
 							"Referer: https://marketing.adobe.com/developer/en_US/documentation/data-insertion/r-sample-http-get\n"
 							"Accept-Encoding: gzip,deflate,sdch\n"
 							"Accept-Language: en-US,en;q=0.8,ru;q=0.6\n\n");
 
-			//strcpy(chunk_1, "/1.1\r\n Host: [rsid].112.2o7.net\r\n");
-	
 			send(c_fd, chunk_0, strlen(chunk_0), 0);
-			//sleep(1);
-			//send(c_fd, chunk_1, strlen(chunk_1), 0);
-			sleep(4);
+			sleep(1);
+			send(c_fd, chunk_1, strlen(chunk_1), 0);
+			sleep(1);
+			send(c_fd, chunk_2, strlen(chunk_2), 0);
+			sleep(1);
 			
-			TS_ASSERT(resp == "SERVER RESPONSE!")
+			char bf[1024];
+			
+			size_t nrecv = recv(c_fd, bf, 1024, 0);
+			bf[nrecv] = '\0';
+			
+			std::cout << "response: " << bf << std::endl;
+			
+			TS_ASSERT(std::string(bf) == "SERVER RESPONSE!")
 			//std::cout << "resp: " << resp;
 			exit(0);
 		
