@@ -216,8 +216,8 @@ void hPoolServer::stop() {
 
 void hPoolServer::setSocketNonBlock(int _fd) {
 	
-	int flags = fcntl(_fd, F_GETFL);
-	fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
+//	int flags = fcntl(_fd, F_GETFL);
+//	fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
 int hPoolServer::startServer(int port)
