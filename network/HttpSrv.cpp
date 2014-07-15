@@ -90,7 +90,8 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
 							connections.find(socket); 
 	if (it==connections.end()) {
-		http_conn.reset(new Connection(socket, m_resp_info, boost::bind(&HttpSrv::onRequest, this, _1, _2)));
+		http_conn.reset(new Connection(socket, m_resp_info, boost::bind(&HttpSrv::onRequest, this, _1, _2),
+									boost::bind(&HttpSrv::checkConnClose, this, _1 )	));
 		connections.insert(std::pair<int,ConnectionPtr>(socket, http_conn));
 		return http_conn;
 	} else
@@ -143,17 +144,25 @@ void HttpSrv::onError(hPoolServer::ConnectionPtr _pool_conn) {
 void HttpSrv::onRequest(int _fd, HttpSrv::RequestPtr _req) {
 	
 	std::cout << "HttpSrv::onRequest\n";
-	m_request_hdl(getHttpConnConst(_fd), _req);
+	
 	ConnectionPtr http_conn = getHttpConn(_fd);
 	
 	hPoolServer::ConnectionPtr pool_conn = m_poolserver->getConnection(_fd);
 	if (!pool_conn)
 		closeHttpConn(_fd);
 	else
-		checkConnClose(pool_conn, http_conn);
+		if (!checkConnClose(pool_conn, http_conn))
+			m_request_hdl(getHttpConnConst(_fd), _req);
 }
 
-void HttpSrv::checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn) {
+void HttpSrv::checkConnClose(int _fd) {
+	
+	hPoolServer::ConnectionPtr pool_conn = m_poolserver->getConnection(_fd);
+	ConnectionPtr http_conn = getHttpConnConst(_fd);
+	checkConnClose(pool_conn, http_conn);
+}
+
+bool HttpSrv::checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn) {
 	
 	
 	uint64_t now = time(0);
@@ -162,8 +171,9 @@ void HttpSrv::checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPt
 		
 		closeHttpConn(_pool_conn->m_sock);
 		_pool_conn->close();
-		return;
+		return true;
 	}
+	return false;
 }
 
 /*

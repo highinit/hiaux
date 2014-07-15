@@ -30,7 +30,6 @@ public:
 		int port;
 		
 		boost::function<void(int)> m_onClose;
-		boost::function<void(int)> m_onSetWrite;
 		
 		uint64_t getCreateTs();
 		//void recv(std::string &_bf);
@@ -39,8 +38,7 @@ public:
 		void setWriteMode();
 
 		Connection(std::string _ip, int _port, int _sock,
-				boost::function<void(int)> _onClose,
-				boost::function<void(int)> _onSetWrite);
+				boost::function<void(int)> _onClose);
 		~Connection();
 	};
 	

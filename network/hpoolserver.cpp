@@ -22,16 +22,14 @@ class PoolException : public std::exception
 };
 
 hPoolServer::Connection::Connection(std::string _ip, int _port, int _sock,
-			boost::function<void(int)> _onClose,
-			boost::function<void(int)> _onSetWrite):
+			boost::function<void(int)> _onClose):
 		create_ts(time(0)),
 		ip(_ip),
 		port(_port),
 		m_sock(_sock),
 		readmode(true),
 		closing(false),
-		m_onClose(_onClose),
-		m_onSetWrite(_onSetWrite) {
+		m_onClose(_onClose) {
 }
 
 hPoolServer::Connection::~Connection() {
@@ -49,13 +47,6 @@ void hPoolServer::Connection::close() {
 	m_onClose(m_sock);
 }
 
-void hPoolServer::Connection::setWriteMode() {
-	
-	if (readmode) {
-		m_onSetWrite(m_sock);
-		readmode = false;
-	}
-}
 
 hPoolServer::hPoolServer(TaskLauncherPtr launcher, 
 					boost::function<void(ConnectionPtr)> _onRead,
@@ -186,8 +177,7 @@ void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {
 	ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
 							cli_addr.sin_port,
 							accepted_socket,
-							boost::bind(&hPoolServer::onCloseConnection, this, _1),
-							boost::bind(&hPoolServer::onSetWrite, this, _1)));
+							boost::bind(&hPoolServer::onCloseConnection, this, _1)));
 	
 	{
 		hLockTicketPtr ticket = m_connections_lock.lock();

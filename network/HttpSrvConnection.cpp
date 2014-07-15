@@ -2,13 +2,15 @@
 
 HttpSrv::Connection::Connection(int _sock,
 								ResponseInfoPtr _resp_info,
-								boost::function<void(int, HttpSrv::RequestPtr)> _onRequest):
+								boost::function<void(int, HttpSrv::RequestPtr)> _onRequest,
+								boost::function<void(int)> _checkConnClose):
 		m_sock(_sock),
 		alive(true),
 		closing(false),
 		m_resp_info(_resp_info),
 		m_http_status_code(200),
-		m_onRequest(_onRequest) {
+		m_onRequest(_onRequest),
+		m_checkConnClose(_checkConnClose) {
 	
 	http_parser_init(&m_parser, HTTP_REQUEST);
 	m_parser.data = (void*)this;
@@ -75,6 +77,8 @@ void HttpSrv::Connection::sendResponse(const std::string &_content) {
 	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
 				<< nsent << std::endl;
+	close();
+	m_checkConnClose(m_sock);
 }
 
 void HttpSrv::Connection::close() {

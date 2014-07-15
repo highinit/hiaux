@@ -78,12 +78,14 @@ public:
 		int m_http_status_code;
 		
 		boost::function<void(int, HttpSrv::RequestPtr)> m_onRequest;
+		boost::function<void(int)> m_checkConnClose;
 		
 		void parseRequests();
 	public:
 		Connection(int _sock,
 					ResponseInfoPtr _resp_info,
-					boost::function<void(int, HttpSrv::RequestPtr)> _onRequest);
+					boost::function<void(int, HttpSrv::RequestPtr)> _onRequest,
+					boost::function<void(int)> _checkConnClose);
 		~Connection();
 		
 		int onMessageBegin();
@@ -136,7 +138,8 @@ public:
 	ConnectionPtr getHttpConn(int socket);
 	ConnectionPtr getHttpConnConst(int socket);
 	
-	void checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn);
+	void checkConnClose(int _fd);
+	bool checkConnClose(hPoolServer::ConnectionPtr _pool_conn, ConnectionPtr _conn);
 	
 	HttpSrv(TaskLauncherPtr launcher,
 			const ResponseInfo &_resp_info,
