@@ -42,7 +42,7 @@ uint64_t hPoolServer::Connection::getCreateTs() {
 }
 
 void hPoolServer::Connection::close() {
-	std::cout << "pool connection closing\n";
+//	std::cout << "pool connection closing\n";
 	closing = true;
 	m_onClose(m_sock);
 }
@@ -136,10 +136,10 @@ TaskLauncher::TaskRet hPoolServer::readThread() {
 		{
 			hLockTicketPtr ticket = m_sockets_to_close_q_lock.lock();
 			while (!m_sockets_to_close_q.empty()) {
-				std::cout << "removing socket from m_events_watcher\n";
+//				std::cout << "removing socket from m_events_watcher\n";
 				int sock_fd = m_sockets_to_close_q.front();
 				m_events_watcher->delSocket(sock_fd, NULL);
-				std::cout << "removed socket from m_events_watcher\n";
+//				std::cout << "removed socket from m_events_watcher\n";
 				::close(sock_fd);
 				::shutdown(sock_fd, SHUT_RDWR);
 				m_sockets_to_close_q.pop();
@@ -157,7 +157,7 @@ hPoolServer::ConnectionPtr hPoolServer::getConnection(int _fd) {
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_fd);
 	if (it != m_connections.end())
 		return it->second;
-	std::cout << "hPoolServer::getConnection no such connection\n";
+//	std::cout << "hPoolServer::getConnection no such connection\n";
 	return hPoolServer::ConnectionPtr();
 }
 

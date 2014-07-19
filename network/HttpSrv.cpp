@@ -108,9 +108,8 @@ HttpSrv::ConnectionPtr HttpSrv::getHttpConnConst(int socket) {
 	return it->second;
 }
 
-void HttpSrv::closeHttpConn(int socket)
-{
-	std::cout << "HttpSrv::closeHttpConn\n";
+void HttpSrv::closeHttpConn(int socket) {
+//	std::cout << "HttpSrv::closeHttpConn\n";
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	ConnectionPtr http_conn;
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
@@ -121,7 +120,7 @@ void HttpSrv::closeHttpConn(int socket)
 
 void HttpSrv::onRead(hPoolServer::ConnectionPtr _pool_conn) {
 	
-	std::cout << "HttpSrv::onRead\n";
+//	std::cout << "HttpSrv::onRead\n";
 	ConnectionPtr http_conn = getHttpConn(_pool_conn->m_sock);
 	checkConnClose(_pool_conn, http_conn);
 	http_conn->performRecv();
@@ -143,7 +142,7 @@ void HttpSrv::onError(hPoolServer::ConnectionPtr _pool_conn) {
 
 void HttpSrv::onRequest(int _fd, HttpSrv::RequestPtr _req) {
 	
-	std::cout << "HttpSrv::onRequest\n";
+//	std::cout << "HttpSrv::onRequest\n";
 	
 	ConnectionPtr http_conn = getHttpConn(_fd);
 	

@@ -26,7 +26,7 @@ HttpSrv::Connection::Connection(int _sock,
 
 
 HttpSrv::Connection::~Connection() {
-	std::cout << "http connection closed\n";
+//	std::cout << "http connection closed\n";
 }
 
 void HttpSrv::Connection::setHttpStatus(int _code) {
@@ -82,7 +82,7 @@ void HttpSrv::Connection::sendResponse(const std::string &_content) {
 }
 
 void HttpSrv::Connection::close() {
-	std::cout << "HttpSrv::Connection::close\n";
+//	std::cout << "HttpSrv::Connection::close\n";
 	closing = true;
 }
 
