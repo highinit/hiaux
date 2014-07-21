@@ -2,9 +2,10 @@
 
 "_NAME" : "hiaux_http_server",
 
-"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+	 			{ "type": "Glob", "mask": "*.cc" }],
 
-"_LINKFLAGS": ["-lcurl", "-ljansson"],
+"_LINKFLAGS": ["-lcurl", "-ljansson", "-lprotobuf"],
 
 "_DEPS" : ["../threads/",
 			"../strings/",

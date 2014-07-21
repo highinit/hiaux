@@ -11,15 +11,18 @@ public:
 	class Requester {
 		
 		boost::function<void(int, int, const std::string&)> m_onCall;
+		boost::function<void(int, int, const std::string&, const std::string&)> m_onCallPost;
 		boost::function<void(int)> m_onFinished;
 	protected:
 		int m_id;
 	public:
 		
 		Requester(boost::function<void(int, int, const std::string&)> _onCall,
+					boost::function<void(int, int, const std::string&, const std::string&)> _onCallPost,
 					boost::function<void(int)> _onFinished);
 		
 		void call (int _callid, const std::string &_url);
+		void callPost (int _callid, const std::string &_url, const std::string &_postdata);
 		void finished();
 		virtual void onCallDone (int _callid, bool _success, const std::string &_resp) = 0;
 		virtual void start() = 0;
@@ -51,6 +54,7 @@ public:
 	bool isKickStopped();
 	
 	TaskLauncher::TaskRet onCallTask(int _reqid, int _reqcallid, const std::string &_url);
+	TaskLauncher::TaskRet onCallPostTask(int _reqid, int _reqcallid, const std::string &_url, const std::string &_postdata);
 	TaskLauncher::TaskRet onCallDoneTask(HttpClientAsync::JobInfo _ji);
 	TaskLauncher::TaskRet onRequesterFinishedTask(int _reqid);
 	TaskLauncher::TaskRet addRequesterTask(HttpOutRequestDisp::RequesterPtr _req);
@@ -61,6 +65,7 @@ public:
 	~HttpOutRequestDisp();
 	
 	void onCall(int _reqid, int _reqcallid, const std::string &_url);
+	void onCallPost(int _reqid, int _reqcallid, const std::string &_url, const std::string &_postdata);
 	void onCallDone(HttpClientAsync::JobInfo _ji);
 	void onRequesterFinished(int _reqid);
 	

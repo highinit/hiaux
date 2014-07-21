@@ -8,6 +8,8 @@
 #include "HttpClient.h"
 #include "curl/curl.h"
 
+#include "HttpApiPostData.pb.h"
+
 class HttpApiClient {
 	std::string m_url;
 	std::string m_api_userid;
@@ -34,12 +36,19 @@ public:
 						const hiaux::hashtable<std::string, std::string> &_get_params,
 						std::string &_requrl) const;
 	
+	void buildPostRequestUrlSigned(const std::string &_method,
+						std::string &_requrl) const;
+	
 	void call(const std::string &_method,
 				const hiaux::hashtable<std::string, std::string> &_get_params,
 				std::string &_resp) const;
 	
 	void callSigned(const std::string &_method,
 				const hiaux::hashtable<std::string, std::string> &_get_params,
+				std::string &_resp) const;
+	
+	void callSignedPost(const std::string &_method,
+				const hiaux::hashtable<std::string, std::string> &_params,
 				std::string &_resp) const;
 };
 

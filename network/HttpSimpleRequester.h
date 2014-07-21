@@ -24,6 +24,7 @@ private:
 public:
 	
 	HttpSimpleRequester(boost::function<void(int, int, const std::string&)> _onCall,
+						boost::function<void(int, int, const std::string&, const std::string&)> _onCallPost,
 							boost::function<void(int)> _onFinished,
 							CallContextPtr _context,
 							const std::string &_call_url,

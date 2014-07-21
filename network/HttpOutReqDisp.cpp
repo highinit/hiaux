@@ -7,14 +7,20 @@ HttpOutRequestDisp::OutRequestInfo::OutRequestInfo(int _reqid, int _requester_ca
 }
 
 HttpOutRequestDisp::Requester::Requester(boost::function<void(int, int, const std::string&)> _onCall,
+			boost::function<void(int, int, const std::string&, const std::string&)> _onCallPost,
 			boost::function<void(int)> _onFinished):
 	m_onCall(_onCall),
+	m_onCallPost(_onCallPost),
 	m_onFinished(_onFinished) {
 				
 }
 
 void HttpOutRequestDisp::Requester::call (int _callid, const std::string &_url) {
 	m_onCall(m_id, _callid, _url);
+}
+
+void HttpOutRequestDisp::Requester::callPost (int _callid, const std::string &_url, const std::string &_postdata) {
+	m_onCallPost(m_id, _callid, _url, _postdata);
 }
 
 void HttpOutRequestDisp::Requester::finished() {
@@ -61,6 +67,18 @@ TaskLauncher::TaskRet HttpOutRequestDisp::onCallTask(int _reqid, int _reqcallid,
 void HttpOutRequestDisp::onCall(int _reqid, int _reqcallid, const std::string &_url) {
 	
 	m_launcher->addTask(NEW_LAUNCHER_TASK5 (&HttpOutRequestDisp::onCallTask, this, _reqid, _reqcallid, _url) );
+}
+
+TaskLauncher::TaskRet HttpOutRequestDisp::onCallPostTask(int _reqid, int _reqcallid, const std::string &_url, const std::string &_postdata) {
+	
+	hLockTicketPtr ticket = lock.lock();
+	m_http_client->callPost((void*)new OutRequestInfo(_reqid, _reqcallid), _url, _postdata);
+	return TaskLauncher::NO_RELAUNCH;
+}
+
+void HttpOutRequestDisp::onCallPost(int _reqid, int _reqcallid, const std::string &_url, const std::string &_postdata) {
+	
+	m_launcher->addTask(NEW_LAUNCHER_TASK6 (&HttpOutRequestDisp::onCallPostTask, this, _reqid, _reqcallid, _url, _postdata) );
 }
 
 /////

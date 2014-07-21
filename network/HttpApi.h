@@ -4,6 +4,8 @@
 #include "hiconfig.h"
 #include "HttpSrv.h"
 
+#include "HttpApiPostData.pb.h"
+
 class HttpApi {
 	hiaux::hashtable<std::string, std::vector<std::string> > m_methods_args;
 	hiaux::hashtable<std::string, int> m_signed;
@@ -15,6 +17,8 @@ class HttpApi {
 	hiaux::hashtable<std::string, std::string> m_keys;
 	
 	boost::function<std::string(const std::string&)> m_buildApiError;
+	
+	void mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body);
 	
 public:
 	

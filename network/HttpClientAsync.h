@@ -39,6 +39,7 @@ public:
 	~HttpClientAsync();
 
 	void call (void* userdata, const std::string &_url);
+	void callPost (void* userdata, const std::string &_url, const std::string &_postdata);
 	void kick();
 };
 

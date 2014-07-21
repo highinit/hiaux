@@ -87,22 +87,40 @@ void HttpApi::addMethodSigned(const std::string &_name,
 	m_signed[_name] = true;
 }
 
+void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body) {
+	
+	//std::cout << "mergePostParams: " << _body << std::endl;
+	try {
+		HttpApiPostData pb;
+		pb.ParseFromString(_body);
+		for (int i = 0; i<pb.fields_size(); i++) {
+			HttpApiPostDataField field = pb.fields(i);
+			_params[field.field()] = field.value();
+			//std::cout << field.field() << "/" << field.value() << std::endl;
+		}
+	} catch (...) {
+		std::cout << "HttpApi::mergePostParams HttpApiPostData protobuf parsing exception\n";
+	}
+}
+
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
+	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
+	mergePostParams(params, _req->body);
+	
 	std::string err_mess;
 
-	if (!checkFields (_req->values_GET, err_mess)) {
+	if (!checkFields (params, err_mess)) {
 		_conn->sendResponse( m_buildApiError( err_mess ) );
 	} else {
 		std::string resp;
 		hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
-			m_methods_callbacks.find(_req->values_GET["method"]);
+			m_methods_callbacks.find(params["method"]);
 		if (it == m_methods_callbacks.end()) {
 			_conn->sendResponse("No such method");
 		}
-		else
-		{
-			it->second( _req->values_GET , resp);
+		else {
+			it->second(params, resp);
 			_conn->sendResponse(resp);
 		}
 	}
