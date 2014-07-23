@@ -83,8 +83,8 @@ HttpSrv::~HttpSrv() {
 	m_poolserver->stop();
 }
 
-HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket)
-{
+HttpSrv::ConnectionPtr HttpSrv::getHttpConn(int socket) {
+	
 	hLockTicketPtr ticket = m_connections_lock.lock();
 	ConnectionPtr http_conn;
 	hiaux::hashtable<int, ConnectionPtr>::iterator it = 
