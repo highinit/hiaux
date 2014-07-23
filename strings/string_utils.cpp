@@ -484,3 +484,11 @@ void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std:
 		}
 }
 
+void replaceSubstring(std::string &_str, const std::string &_from, const std::string &_to) {
+	
+	size_t index = _str.find(_from);
+	if (index != std::string::npos) {
+		_str.replace(index, _from.size(), _to);
+	}
+}
+

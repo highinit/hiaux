@@ -73,4 +73,6 @@ bool isStringInVec(const std::string &_str, std::vector<std::string> &_v);
 
 void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std::string> &_cookies);
 
+void replaceSubstring(std::string &_str, const std::string &_from, const std::string &_to);
+
 #endif	/* STRING_UTILS_H */
