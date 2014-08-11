@@ -14,6 +14,14 @@ bool HttpApi::isSigned(const std::string &_method) const {
 		return false;
 }
 
+bool HttpApi::isAsync(const std::string &_method) const {
+	hiaux::hashtable<std::string, int>::const_iterator it = m_async.find(_method);
+	if (it != m_async.end())
+		return true;
+	else
+		return false;
+}
+
 bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, std::string &_err_mess) const {
 	if (_fields.find("method") == _fields.end()) {
 		_err_mess = "method not set";
@@ -87,6 +95,18 @@ void HttpApi::addMethodSigned(const std::string &_name,
 	m_signed[_name] = true;
 }
 
+void HttpApi::addMethodSignedAsync(const std::string &_name,
+					const std::vector<std::string> &_args_names,
+					boost::function<void(hiaux::hashtable<std::string, std::string> &,
+											boost::function <void(const std::string&)>  )> _onreq,
+					uint64_t _max_ts_range) {
+	
+	m_methods_args[_name] = _args_names;
+	m_methods_callbacks_async[_name] = _onreq;
+	m_signed[_name] = true;
+	m_async[_name] = true;				
+}
+
 void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body) {
 	
 	//std::cout << "mergePostParams: " << _body << std::endl;
@@ -103,6 +123,12 @@ void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_param
 	}
 }
 
+void HttpApi::onAsyncCallDone(const std::string &_resp, HttpSrv::ConnectionPtr _conn) {
+	
+	_conn->sendResponse(_resp);
+	_conn->close();
+}
+
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
@@ -114,15 +140,33 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 		_conn->sendResponse( m_buildApiError( err_mess ) );
 	} else {
 		std::string resp;
-		hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
-			m_methods_callbacks.find(params["method"]);
-		if (it == m_methods_callbacks.end()) {
-			_conn->sendResponse("No such method");
-		}
-		else {
-			it->second(params, resp);
-			_conn->sendResponse(resp);
+		
+		if (isAsync(params["method"])) {
+			
+			hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, 
+																boost::function <void(const std::string&)> )> >::iterator it =
+																	 m_methods_callbacks_async.find(params["method"]);
+			
+			if (it == m_methods_callbacks_async.end()) {
+				_conn->sendResponse("No such method");
+				_conn->close();
+			}
+			else {
+				it->second(params, boost::bind(&HttpApi::onAsyncCallDone, this, _1, _conn));
+			}
+			
+		} else {
+		
+			hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
+				m_methods_callbacks.find(params["method"]);
+			if (it == m_methods_callbacks.end()) {
+				_conn->sendResponse("No such method");
+			}
+			else {
+				it->second(params, resp);
+				_conn->sendResponse(resp);
+			}
+			_conn->close();
 		}
 	}
-	_conn->close();
 }
