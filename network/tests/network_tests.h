@@ -118,6 +118,11 @@ public:
 		_resp = "onGetStatsCalled\r\n";
 	}
 	
+	void onGetStatsCalledAsync(hiaux::hashtable<std::string, std::string> &_args,  boost::function< void(const std::string&)> _onDone) {
+
+		_onDone ("onGetStatsCalled\r\n");
+	}
+	
 	void XtestHttpApiClient_simpleMethod() {
 		
 		std::string userid = "_userid_";
@@ -195,7 +200,47 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpApiClient_postData() {
+	void testHttpApiClient_signedMethodAsync() {
+
+		std::string userid = "_userid_";
+		std::string key = "_key_";
+		int port = 6732;
+		
+		HttpApiPtr api (new HttpApi(boost::bind(&NetworkTests::onGenError, this, _1)));
+		api->addUser(userid, key);
+		std::vector<std::string> args;
+		args.push_back("ts1");
+		args.push_back("ts2");
+		
+		api->addMethodSignedAsync("get-stats", args, boost::bind(&NetworkTests::onGetStatsCalledAsync, this, _1, _2));
+		
+		hThreadPoolPtr pool (new hThreadPool(4));
+		pool->run();
+		
+		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
+		
+		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+										"highinit nazareth server"),
+										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+		
+		srv->start(port);
+		
+		sleep(2);
+
+		// make client and call
+		char endpoint[255];
+		sprintf(endpoint, "http://127.0.0.1:%d/", port);
+		HttpApiClient c(endpoint, userid, key);
+		std::string req;
+		hiaux::hashtable<std::string, std::string> params;
+		params["ts1"] = "_ts1_";
+		params["ts2"] = "_ts2_";
+		c.callSigned("get-stats", params, req);
+	//	std::cout << "req: " << req << std::endl;
+		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
+	}
+	
+	void XtestHttpApiClient_postData() {
 
 		std::string userid = "_userid_";
 		std::string key = "_key_";

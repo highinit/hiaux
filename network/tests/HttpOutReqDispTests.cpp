@@ -1,11 +1,12 @@
 #include "HttpOutReqDispTests.h"
 
 TestRequester::TestRequester(boost::function<void(int, int, const std::string&)> _onCall,
+				boost::function<void(int, int, const std::string&, const std::string&)> _onCallPost,
 				boost::function<void(int)> _onFinished,
 				int id,
 				boost::function<void()> _onWrongResp,
 				boost::function<void()> _onResp):
-	HttpOutRequestDisp::Requester(_onCall, _onFinished),
+	HttpOutRequestDisp::Requester(_onCall, _onCallPost, _onFinished),
 	m_onWrongResp(_onWrongResp),
 	m_onResp(_onResp) {
 		
@@ -84,6 +85,7 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	for (int i = 0; i<ncalls; i++) {
 	
 		TestRequesterPtr requester(new TestRequester(boost::bind(&HttpOutRequestDisp::onCall, m_req_disp.get(), _1, _2, _3),
+													boost::bind(&HttpOutRequestDisp::onCallPost, m_req_disp.get(), _1, _2, _3, _4),
 													boost::bind(&HttpOutRequestDisp::onRequesterFinished, m_req_disp.get(), _1),
 													i,
 													boost::bind(&HttpOutReqDispTests::onWrongResp, this),

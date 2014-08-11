@@ -8,6 +8,7 @@ class TestRequester : public HttpOutRequestDisp::Requester {
 public:
 	
 	TestRequester(boost::function<void(int, int, const std::string&)> _onCall,
+					boost::function<void(int, int, const std::string&, const std::string&)> _onCallPost,
 					boost::function<void(int)> _onFinished,
 					int id,
 					boost::function<void()> _onWrongResp,
