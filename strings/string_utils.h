@@ -75,4 +75,6 @@ void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std:
 
 void replaceSubstring(std::string &_str, const std::string &_from, const std::string &_to);
 
+std::string booltostr(bool _a);
+
 #endif	/* STRING_UTILS_H */

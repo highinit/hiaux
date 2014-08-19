@@ -492,3 +492,9 @@ void replaceSubstring(std::string &_str, const std::string &_from, const std::st
 	}
 }
 
+std::string booltostr(bool _a) {
+	if (_a)
+		return "true";
+	else
+		return "false";
+}
