@@ -1,0 +1,15 @@
+{
+
+"_NAME" : "hiaux_tools",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+	 			{ "type": "Glob", "mask": "*.cc" }],
+
+"_LINKFLAGS": [],
+
+"_DEPS" : ["../loadconf/",
+			"../threads/",
+			"../strings/",
+			"../network/",
+			"../crypt/"]
+}
