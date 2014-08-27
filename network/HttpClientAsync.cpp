@@ -81,7 +81,8 @@ void HttpClientAsync::callPost (void* userdata, const std::string &_url, const s
 	curl_easy_setopt(e_curl, CURLOPT_URL, _url.c_str());
 	curl_easy_setopt(e_curl, CURLOPT_WRITEFUNCTION, crawl_function_pt);
 	curl_easy_setopt(e_curl, CURLOPT_WRITEDATA, &it->second.resp);
-	curl_easy_setopt(e_curl, CURLOPT_ENCODING, "UTF-8");
+//	curl_easy_setopt(e_curl, CURLOPT_ENCODING, "UTF-8");
+	curl_easy_setopt(e_curl, CURLOPT_CUSTOMREQUEST, "PUT");
 	curl_easy_setopt(e_curl, CURLOPT_TIMEOUT, 5);
 	curl_easy_setopt(e_curl, CURLOPT_USERAGENT, "hiaux HttpClient");
 	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDS, _postdata.c_str());

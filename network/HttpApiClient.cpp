@@ -101,5 +101,8 @@ void HttpApiClient::callSignedPost(const std::string &_method,
 		it++;
 	}
 	
-	m_http_cli->callPost(req_url, pb.SerializeAsString(), _resp);
+	std::string dump = pb.SerializeAsString();
+	//escapeUrl(dump);
+	
+	m_http_cli->callPost(req_url, dump, _resp);
 }

@@ -109,14 +109,17 @@ void HttpApi::addMethodSignedAsync(const std::string &_name,
 
 void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body) {
 	
-	//std::cout << "mergePostParams: " << _body << std::endl;
+//	std::cout << "mergePostParams: " << _body << std::endl;
 	try {
 		HttpApiPostData pb;
+		std::string body = _body;
+		//unescapeUrl(body);
 		pb.ParseFromString(_body);
+//		std::cout << "pb.fields_size(): " << pb.fields_size() << std::endl;
 		for (int i = 0; i<pb.fields_size(); i++) {
 			HttpApiPostDataField field = pb.fields(i);
 			_params[field.field()] = field.value();
-			//std::cout << field.field() << "/" << field.value() << std::endl;
+//			std::cout << "HttpApi::mergePostParams " <<  field.field() << "/" << field.value() << std::endl;
 		}
 	} catch (...) {
 		std::cout << "HttpApi::mergePostParams HttpApiPostData protobuf parsing exception\n";
@@ -132,7 +135,7 @@ void HttpApi::onAsyncCallDone(const std::string &_resp, HttpSrv::ConnectionPtr _
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
-	mergePostParams(params, _req->body);
+//	mergePostParams(params, _req->body);
 	
 	std::string err_mess;
 

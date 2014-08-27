@@ -45,8 +45,8 @@ bool RefParser::parseEngineReferer(const std::string &_ref, const std::string &_
 
 bool RefParser::parse(const std::string &_ref, std::string &_query) {
 	
-	std::map<std::string, std::string>::iterator it = m_engines.begin();
-	std::map<std::string, std::string>::iterator end = m_engines.end();
+	std::map<std::string, std::string>::const_iterator it = m_engines.begin();
+	std::map<std::string, std::string>::const_iterator end = m_engines.end();
 	
 	std::string ref(_ref);
 	unescapeUrl(ref);
