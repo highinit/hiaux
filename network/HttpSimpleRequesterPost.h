@@ -1,5 +1,5 @@
-#ifndef _HTTP_SIMPLE_REQUESTER_
-#define _HTTP_SIMPLE_REQUESTER_
+#ifndef _HTTP_SIMPLE_REQUESTER_POST_H_
+#define _HTTP_SIMPLE_REQUESTER_POST_H_
 
 #include "hiconfig.h"
 #include "hiaux/network/HttpOutReqDisp.h"
