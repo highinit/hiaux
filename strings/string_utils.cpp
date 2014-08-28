@@ -499,3 +499,13 @@ std::string booltostr(bool _a) {
 		return "false";
 }
 
+void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams) {
+	
+	std::vector<std::string> words;
+	std::set<uint32_t> delim;
+	delim.insert(0x20);
+	splitUtf8(_q, delim, words);
+	
+	for (int i = 0; i<words.size()-1; i++)
+		_bigrams.push_back( words[i] + " " + words[i+1] );
+}

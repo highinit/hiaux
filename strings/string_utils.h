@@ -78,4 +78,6 @@ void replaceSubstring(std::string &_str, const std::string &_from, const std::st
 
 std::string booltostr(bool _a);
 
+void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams);
+
 #endif	/* STRING_UTILS_H */
