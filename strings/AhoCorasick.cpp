@@ -3,7 +3,6 @@
 int BorNode::m_nnodes = -1;
 
 BorNode::BorNode():
-	 //m_matches(_parent_matches),
 	 fail_node(NULL),
 	 id(++BorNode::m_nnodes) {
 	
@@ -140,9 +139,8 @@ void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<s
 	
 	while (i<_text.size()) {
 		
-//		std::cout << i << std::endl;
-		
 		std::map<char, BorNode*>::iterator it = cur_node->m_children.find(_text[i]);
+		
 		if (it != cur_node->m_children.end()) {
 			cur_node = it->second;
 		} else {
