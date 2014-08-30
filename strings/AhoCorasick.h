@@ -21,7 +21,7 @@ public:
 	std::map<char, BorNode*> m_children;
 	BorNode *fail_node;
 	
-	BorNode(const std::vector<std::string> &_parent_matches);
+	BorNode();
 	void addWord(const std::string &_word, const std::string &_suff);
 	BorNode *getFallNode(char _c);
 	void setFailNode(BorNode *_node);

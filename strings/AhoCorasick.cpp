@@ -2,8 +2,8 @@
 
 int BorNode::m_nnodes = -1;
 
-BorNode::BorNode(const std::vector<std::string> &_parent_matches):
-	 m_matches(_parent_matches),
+BorNode::BorNode():
+	 //m_matches(_parent_matches),
 	 fail_node(NULL),
 	 id(++BorNode::m_nnodes) {
 	
@@ -19,7 +19,7 @@ void BorNode::addWord(const std::string &_word, const std::string &_suff) {
 	
 	std::map<char, BorNode*>::iterator it = m_children.find(_suff[0]);
 	if (it == m_children.end())
-		m_children.insert(std::pair<char, BorNode*>(_suff[0], new BorNode(m_matches)));
+		m_children.insert(std::pair<char, BorNode*>(_suff[0], new BorNode()));
 	
 	m_children[ _suff[0] ]->addWord( _word, _suff.substr(1) );
 }
@@ -90,8 +90,7 @@ void BorNode::print(size_t _ntabs) {
 AhoCorasick::AhoCorasick(const std::vector<std::string> &_dict) {
 
 	m_dict = _dict;
-	std::vector<std::string> root_matches;
-	m_root = new BorNode(root_matches);
+	m_root = new BorNode();
 	m_root->setFailNode(m_root);
 
 	for (int i = 0; i<m_dict.size(); i++)
@@ -138,58 +137,26 @@ void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<s
 	BorNode *cur_node = m_root;
 	
 	size_t i = 0;
+	
 	while (i<_text.size()) {
 		
-		bool inc = false;
-		/*
-   while (current_state) {
-            BorNode *candidate = current_state->getLink(c);
-            if (candidate) {
-                current_state = candidate;
-                return;
-            }
-            current_state = current_state->fail;
-        }
-        current_state = &root;
-		*/
-		
-		//bool node_set = false;
-		/*
-		while (1) {
-			
-			if (cur_node->m_children.size() == 0) break;
-			
-			std::map<char, BorNode*>::iterator it = cur_node->m_children.find(_text[i]);
-			if (it != cur_node->m_children.end()) {
-				cur_node = it->second;
-				break;
-			} 
-			cur_node = cur_node->fail_node;
-			
-		}
-		*/
+//		std::cout << i << std::endl;
 		
 		std::map<char, BorNode*>::iterator it = cur_node->m_children.find(_text[i]);
 		if (it != cur_node->m_children.end()) {
 			cur_node = it->second;
-			//inc = true;
 		} else {
-			cur_node = cur_node->fail_node;
 			
-			//it = cur_node->fail_node->m_children.find(_text[i]);
-			//cur_node = it->second;
+			if (cur_node == cur_node->fail_node)
+				i++;
+			
+			cur_node = cur_node->fail_node;
+			continue;
 		}
-		
+	
 		for (int j = 0; j<cur_node->m_matches.size(); j++)
 			_matches.push_back(std::pair<std::string, size_t>(cur_node->m_matches[j], i - cur_node->m_matches[j].size() + 1 ));
-		
-		//if (inc)
-			i++;
-		//if (cur_node->m_children.size() == 0) {
-		//	cur_node = m_root;
-		//	continue;
-		//}
-
+		i++;
 	}
 	
 }
