@@ -22,7 +22,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 	 
 //	 m_curl_sh = curl_share_init();
 	 m_curl = curl_multi_init();
-	 long timeout = 200;
+	 long timeout = 5000;
 	 curl_multi_timeout(m_curl, &timeout);
 	 
 //	 curl_share_setopt(m_curl_sh, CURLSHOPT_LOCKFUNC, &lock_function);

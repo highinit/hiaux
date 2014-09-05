@@ -155,8 +155,7 @@ void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<s
 		for (int j = 0; j<cur_node->m_matches.size(); j++)
 			_matches.push_back(std::pair<std::string, size_t>(cur_node->m_matches[j], i - cur_node->m_matches[j].size() + 1 ));
 		i++;
-	}
-	
+	}	
 }
 
 void AhoCorasick::print() {

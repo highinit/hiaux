@@ -10,9 +10,21 @@ HttpClient::~HttpClient() {
 }
 
 size_t crawl_function_pt(void *ptr, size_t size, size_t nmemb, std::string *stream) {
+	/*
 	std::string bf = *stream + std::string((char*)ptr);
 	stream->clear();
-	*stream = bf;
+	*stream = bf;*/
+
+	if (size*nmemb == 0)
+		return 0;
+	
+	char bf[size * nmemb + 1];
+	
+	memcpy(bf, ptr, size * nmemb);
+	bf[size * nmemb] = '\0';
+		
+	*stream += std::string(bf);
+	
 	return size*nmemb;
 }
 
