@@ -11,7 +11,8 @@ HttpOutRequestDisp::Requester::Requester(boost::function<void(int, int, const st
 			boost::function<void(int)> _onFinished):
 	m_onCall(_onCall),
 	m_onCallPost(_onCallPost),
-	m_onFinished(_onFinished) {
+	m_onFinished(_onFinished),
+	m_isfinished(false) {
 				
 }
 
@@ -23,8 +24,9 @@ void HttpOutRequestDisp::Requester::callPost (int _callid, const std::string &_u
 	m_onCallPost(m_id, _callid, _url, _postdata);
 }
 
-void HttpOutRequestDisp::Requester::finished() {
-	m_onFinished(m_id);
+bool HttpOutRequestDisp::Requester::finished() {
+	//m_onFinished(m_id);
+	return m_isfinished;
 }
 
 int HttpOutRequestDisp::Requester::getId() {
@@ -39,7 +41,8 @@ HttpOutRequestDisp::HttpOutRequestDisp(TaskLauncherPtr _launcher):
 	m_http_client(new HttpClientAsync(boost::bind(&HttpOutRequestDisp::onCallDone, this, _1))),
 	m_launcher(_launcher),
 	cond_kicking(boost::bind(&HttpOutRequestDisp::isKickStopped, this)) {
-
+		
+	m_req_id = 0;
 	kick_running = true;
 	kick_stopped = false;
 	_launcher->addTask( NEW_LAUNCHER_TASK2 (&HttpOutRequestDisp::kickTask, this));
@@ -85,18 +88,29 @@ void HttpOutRequestDisp::onCallPost(int _reqid, int _reqcallid, const std::strin
 
 TaskLauncher::TaskRet HttpOutRequestDisp::onCallDoneTask(HttpClientAsync::JobInfo _ji) {
 	
-	hLockTicketPtr ticket = lock.lock();
-	
+	RequesterPtr requester;
 	OutRequestInfo *reqinfo = (OutRequestInfo*)_ji.userdata;
 	
-	hiaux::hashtable<int, RequesterPtr>::iterator it = m_requesters.find(reqinfo->reqid);
+	{
+		hLockTicketPtr ticket = lock.lock();
 	
-	if (it != m_requesters.end()) {
-		it->second->onCallDone(reqinfo->requester_callid, _ji.success, _ji.resp);
-	} else
-		std::cout << "HttpOutRequestDisp::onCallDone Requester dont exists\n";
+		hiaux::hashtable<int, RequesterPtr>::iterator it = m_requesters.find(reqinfo->reqid);
+	
+		if (it != m_requesters.end()) {
+			requester = it->second;
+		} else
+			std::cout << "HttpOutRequestDisp::onCallDone Requester " << reqinfo->reqid << " dont exists\n";
+	}
+	
+	if (requester) {
+		requester->onCallDone(reqinfo->requester_callid, _ji.success, _ji.resp);
+		
+		if (requester->finished())
+			onRequesterFinished(requester->getId());
+	}
 	
 	delete reqinfo;
+
 	
 	return TaskLauncher::NO_RELAUNCH;
 }
@@ -115,7 +129,9 @@ TaskLauncher::TaskRet HttpOutRequestDisp::addRequesterTask(HttpOutRequestDisp::R
 	
 	hLockTicketPtr ticket = lock.lock();
 	
-	_req->setId(m_requesters.size());
+	_req->setId(++m_req_id); //m_requesters.size());
+	
+	//std::cout << "HttpOutRequestDisp::addRequesterTask " << _req->getId() << std::endl;
 	
 	m_requesters.insert(std::pair<int, RequesterPtr> (_req->getId(), _req));
 	_req->start();
@@ -133,6 +149,8 @@ void HttpOutRequestDisp::addRequester(RequesterPtr _requester) {
 TaskLauncher::TaskRet HttpOutRequestDisp::onRequesterFinishedTask(int _reqid) {
 	
 	hLockTicketPtr ticket = lock.lock();
+	
+//	std::cout << "HttpOutRequestDisp::onRequesterFinishedTask " << _reqid << std::endl;
 	
 	hiaux::hashtable<int, RequesterPtr>::iterator it = m_requesters.find(_reqid);
 	if (it != m_requesters.end()) {

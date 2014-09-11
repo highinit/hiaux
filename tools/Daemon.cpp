@@ -24,7 +24,7 @@ void Daemon::parseConfig(const std::string &_config_file) {
 }
 
 Daemon::Daemon() {
-	
+	srand(time(0));
 }
 
 void Daemon::loadConfig(const std::string &_config_file) {

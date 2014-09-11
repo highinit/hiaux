@@ -10,10 +10,6 @@ HttpClient::~HttpClient() {
 }
 
 size_t crawl_function_pt(void *ptr, size_t size, size_t nmemb, std::string *stream) {
-	/*
-	std::string bf = *stream + std::string((char*)ptr);
-	stream->clear();
-	*stream = bf;*/
 
 	if (size*nmemb == 0)
 		return 0;
@@ -42,7 +38,7 @@ bool HttpClient::callSimple(const std::string &_url, std::string &_resp) {
 
 	long http_code = 0;
 	curl_easy_getinfo (m_curl, CURLINFO_RESPONSE_CODE, &http_code);
-		
+	
 	if (http_code != 200)
 		return false;
 
@@ -70,5 +66,4 @@ bool HttpClient::callPost(const std::string &_url, const std::string &_postdata,
 		return false;
 
 	return true;
-	
 }

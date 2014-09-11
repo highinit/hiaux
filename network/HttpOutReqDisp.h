@@ -15,6 +15,7 @@ public:
 		boost::function<void(int)> m_onFinished;
 	protected:
 		int m_id;
+		bool m_isfinished;
 	public:
 		
 		Requester(boost::function<void(int, int, const std::string&)> _onCall,
@@ -23,7 +24,7 @@ public:
 		
 		void call (int _callid, const std::string &_url);
 		void callPost (int _callid, const std::string &_url, const std::string &_postdata);
-		void finished();
+		bool finished();
 		virtual void onCallDone (int _callid, bool _success, const std::string &_resp) = 0;
 		virtual void start() = 0;
 		void setId(int _id);
@@ -38,6 +39,8 @@ public:
 		int reqid;
 		int requester_callid;
 	};
+	
+	int m_req_id;
 	
 	// requester_id / formatid
 	hiaux::hashtable<int, RequesterPtr> m_requesters;
