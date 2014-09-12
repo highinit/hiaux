@@ -6,6 +6,8 @@
 
 #include "HttpApiPostData.pb.h"
 
+#include "hiaux/crypt/base64.h"
+
 class HttpApi {
 	hiaux::hashtable<std::string, std::vector<std::string> > m_methods_args;
 	hiaux::hashtable<std::string, int> m_signed;

@@ -131,7 +131,7 @@ TaskLauncher::TaskRet HttpOutRequestDisp::addRequesterTask(HttpOutRequestDisp::R
 	
 	_req->setId(++m_req_id); //m_requesters.size());
 	
-	//std::cout << "HttpOutRequestDisp::addRequesterTask " << _req->getId() << std::endl;
+//	std::cout << "HttpOutRequestDisp::addRequesterTask " << _req->getId() << std::endl;
 	
 	m_requesters.insert(std::pair<int, RequesterPtr> (_req->getId(), _req));
 	_req->start();

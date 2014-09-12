@@ -1,8 +1,9 @@
 #include "HttpClientAsync.h"
 
-HttpClientAsync::JobInfo::JobInfo(void* _userdata):
+HttpClientAsync::JobInfo::JobInfo(void* _userdata, const std::string &_postdata):
 success(false),
-userdata(_userdata) {
+userdata(_userdata),
+postdata(_postdata) {
 	
 }
 
@@ -52,7 +53,7 @@ void HttpClientAsync::call (void* userdata, const std::string &_url) {
 
 	CURL *e_curl = curl_easy_init();
 
-	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(userdata)));
+	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(userdata, "")));
 
 	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(e_curl);
 	
@@ -71,21 +72,27 @@ void HttpClientAsync::callPost (void* userdata, const std::string &_url, const s
 	
 	hLockTicketPtr ticket = lock.lock();
 
+//	std::cout << "HttpClientAsync::callPost " << _postdata << std::endl;
+
 	CURL *e_curl = curl_easy_init();
 
-	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo(userdata)));
-
+	m_e_curls.insert(std::pair<CURL*, JobInfo>(e_curl, JobInfo (userdata, _postdata)));
+ 
 	hiaux::hashtable<CURL*, JobInfo>::iterator it = m_e_curls.find(e_curl);
 	
 //	curl_easy_setopt(e_curl, CURLOPT_SHARE, m_curl_sh);
 	curl_easy_setopt(e_curl, CURLOPT_URL, _url.c_str());
 	curl_easy_setopt(e_curl, CURLOPT_WRITEFUNCTION, crawl_function_pt);
 	curl_easy_setopt(e_curl, CURLOPT_WRITEDATA, &it->second.resp);
-//	curl_easy_setopt(e_curl, CURLOPT_ENCODING, "UTF-8");
-	curl_easy_setopt(e_curl, CURLOPT_CUSTOMREQUEST, "PUT");
+
+	curl_easy_setopt(e_curl, CURLOPT_ENCODING, "UTF-8");
+	curl_easy_setopt(e_curl, CURLOPT_CUSTOMREQUEST, "POST");
+
+	curl_easy_setopt(e_curl, CURLOPT_POST, 1);
 	curl_easy_setopt(e_curl, CURLOPT_TIMEOUT, 5);
 	curl_easy_setopt(e_curl, CURLOPT_USERAGENT, "hiaux HttpClient");
-	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDS, _postdata.c_str());
+	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDS, it->second.postdata.data());
+	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDSIZE_LARGE, it->second.postdata.size()); 
 
 	curl_multi_add_handle(m_curl, e_curl);
 }

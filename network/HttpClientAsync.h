@@ -17,10 +17,11 @@ class HttpClientAsync {
 public:
 	class JobInfo {
 	public:
-		JobInfo(void* _userdata);
+		JobInfo(void* _userdata, const std::string &_postdata);
 		void* userdata;
 		std::string resp;
 		bool success;
+		std::string postdata;
 	};
 	
 private:

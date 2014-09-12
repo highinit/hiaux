@@ -47,6 +47,9 @@ int HttpSrv::Connection::onMessageBegin() {
 
 int HttpSrv::Connection::onUrl(const char *at, size_t length) {
 
+	char bf[length+1];
+	memcpy(bf, at, length);
+	bf[length] = '\0';
 	m_cur_request.url = std::string(at);
 	m_cur_request.url = m_cur_request.url.substr(0, m_cur_request.url.find(' '));
 	//fix_utf8_string(cur_request.url);
@@ -61,8 +64,9 @@ int HttpSrv::Connection::onStatus(const char *at, size_t length) {
 }
 
 int HttpSrv::Connection::onHeadersField(const char *at, size_t length) {
+	
 	char bf[length+1];
-	strncpy(bf, at, length);
+	memcpy(bf, at, length);
 	bf[length] = '\0';
 	m_cur_header_field = std::string(bf);
 	//std::cout << "HttpSrv::Connection::onHeadersField: " << bf << std::endl;
@@ -71,7 +75,7 @@ int HttpSrv::Connection::onHeadersField(const char *at, size_t length) {
 
 int HttpSrv::Connection::onHeadersValue(const char *at, size_t length) {
 	char bf[length+1];
-	strncpy(bf, at, length);
+	memcpy(bf, at, length);
 	bf[length] = '\0';
 	//std::cout << "HttpSrv::Connection::onHeadersValue: " << bf << std::endl;
 	if (m_cur_header_field == "Cookie") {
@@ -89,7 +93,11 @@ int HttpSrv::Connection::onHeadersComplete() {
 int HttpSrv::Connection::onBody(const char *at, size_t length) {
 
 //	std::cout << "HttpSrv::Connection::onBody size:" << length << std::endl;
-	m_cur_request.body = std::string(at);
+	char bf[length+1];
+	memcpy(bf, at, length);
+	bf[length] = '\0';
+	m_cur_request.body = std::string(bf);
+	
 //	std::cout << "body: " << m_cur_request.body << std::endl;
 //	fix_utf8_string(m_cur_request.body);
 	return 0;

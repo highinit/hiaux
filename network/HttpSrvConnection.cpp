@@ -158,6 +158,7 @@ void HttpSrv::Connection::performRecv() {
 	
 	//std::cout << "recv: " << readbf << std::endl;
 	//m_readbf += std::string(bf);
+	//std::cout << readbf;
 	if (readbf.size() > 0) {
 		//m_req_text += readbf;
 		//std::cout << m_req_text << std::endl;

@@ -1,7 +1,7 @@
 
 message HttpApiPostDataField {
 	required string field = 1;
-	required string value = 2;
+	required bytes value = 2;
 }
 
 message HttpApiPostData {

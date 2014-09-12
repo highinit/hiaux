@@ -22,11 +22,13 @@ void HttpSimpleRequesterPost::onCallDone (int _callid, bool _success, const std:
 	
 	if (!_success) {
 		m_onCalledFail(m_context);
-		finished();
+		m_isfinished = true;
+		///finished();
 	}
 	else {
 		m_onCalledOk(m_context, _resp);
-		finished();
+		m_isfinished = true;
+		//finished();
 	}
 }
 

@@ -112,9 +112,9 @@ void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_param
 //	std::cout << "mergePostParams: " << _body << std::endl;
 	try {
 		HttpApiPostData pb;
-		std::string body = _body;
+		std::string body = base64_decode(_body);
 		//unescapeUrl(body);
-		pb.ParseFromString(_body);
+		pb.ParseFromString(body);
 //		std::cout << "pb.fields_size(): " << pb.fields_size() << std::endl;
 		for (int i = 0; i<pb.fields_size(); i++) {
 			HttpApiPostDataField field = pb.fields(i);
@@ -135,7 +135,7 @@ void HttpApi::onAsyncCallDone(const std::string &_resp, HttpSrv::ConnectionPtr _
 void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
-//	mergePostParams(params, _req->body);
+	mergePostParams(params, _req->body);
 	
 	std::string err_mess;
 
