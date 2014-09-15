@@ -92,7 +92,7 @@ void HttpClientAsync::callPost (void* userdata, const std::string &_url, const s
 	curl_easy_setopt(e_curl, CURLOPT_TIMEOUT, 5);
 	curl_easy_setopt(e_curl, CURLOPT_USERAGENT, "hiaux HttpClient");
 	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDS, it->second.postdata.data());
-	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDSIZE_LARGE, it->second.postdata.size()); 
+//	curl_easy_setopt(e_curl, CURLOPT_POSTFIELDS_SIZE, it->second.postdata.size()); 
 
 	curl_multi_add_handle(m_curl, e_curl);
 }

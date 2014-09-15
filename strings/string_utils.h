@@ -80,4 +80,6 @@ std::string booltostr(bool _a);
 
 void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams);
 
+std::string escape_quote(const std::string &_str);
+
 #endif	/* STRING_UTILS_H */

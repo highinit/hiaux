@@ -509,3 +509,23 @@ void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams) {
 	for (int i = 0; i<words.size()-1; i++)
 		_bigrams.push_back( words[i] + " " + words[i+1] );
 }
+
+std::string escape_quote(const std::string &_str) {
+	
+	char bf[_str.size()*2 + 1];
+	size_t j = 0;
+	for (int i = 0; i<_str.size(); i++) {
+		
+		if (_str[i] == '\'') {
+			bf[j] = '\\';
+			bf[j+1] = '\'';
+			j += 2;
+			
+		} else {
+			bf[j] = _str[i];
+			j++;
+		}
+	}
+	bf[j] = '\0';
+	return std::string(bf);
+}
