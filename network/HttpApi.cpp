@@ -141,6 +141,7 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	if (!checkFields (params, err_mess)) {
 		_conn->sendResponse( m_buildApiError( err_mess ) );
+		_conn->close();
 	} else {
 		std::string resp;
 		

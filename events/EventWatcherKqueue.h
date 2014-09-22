@@ -30,7 +30,7 @@ class EventWatcherKqueue {
 	boost::function<void(int,void*)> m_onWrite;
 	boost::function<void(int,void*)> m_onError;
 	boost::function<void(int,void*)> m_onAccept;
-//	hAutoLockPtr m_lock;
+	hAutoLock m_lock;
 public:
 	EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 				boost::function<void(int,void*)> _onWrite,

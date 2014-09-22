@@ -5,6 +5,7 @@
 #include "curl/curl.h"
 
 #include <boost/shared_ptr.hpp>
+#include <string.h>
 
 class HttpClient {
 	CURL *m_curl;

@@ -27,6 +27,7 @@ HttpSrv::Connection::Connection(int _sock,
 
 HttpSrv::Connection::~Connection() {
 //	std::cout << "http connection closed\n";
+	close();
 }
 
 void HttpSrv::Connection::setHttpStatus(int _code) {
@@ -108,6 +109,7 @@ void HttpSrv::Connection::performRecv() {
 		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			
 			//std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN\n";
+			//performRecv();
 			break;
 		}
 		else if (errno == EBADF) {

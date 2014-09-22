@@ -129,6 +129,7 @@ public:
 	
 //	void handler(hPoolServer::ConnectionPtr pool_conn);
 	
+	TaskLauncher::TaskRet onReadTask(ConnectionPtr http_conn);
 	void onRead(hPoolServer::ConnectionPtr _pool_conn);
 	void onWrite(hPoolServer::ConnectionPtr _pool_conn);
 	void onError(hPoolServer::ConnectionPtr _pool_conn);

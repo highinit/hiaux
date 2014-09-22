@@ -168,6 +168,7 @@ void HttpOutRequestDisp::onRequesterFinished(int _reqid) {
 
 TaskLauncher::TaskRet HttpOutRequestDisp::kickTask() {
 	
+	std::cout << "HttpOutRequestDisp::kickTask\n";
 	while (kick_running)
 		m_http_client->kick();
 	

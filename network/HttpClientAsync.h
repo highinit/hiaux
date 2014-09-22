@@ -33,6 +33,7 @@ private:
 	int m_nrunning;
 	
 	hAutoLock lock;
+	hAutoLock select_lock;
 	
 	void performTransfers();
 public:

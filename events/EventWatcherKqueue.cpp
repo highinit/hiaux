@@ -27,7 +27,7 @@ EventWatcherKqueue::~EventWatcherKqueue() {
 
 void EventWatcherKqueue::addSocketAccept(int _sock_fd, void *_opaque_info) {
 	
-	//hLockTicketPtr ticket = m_lock->lock();
+//	hLockTicketPtr ticket = m_lock.lock();
 	
 	m_sockets_accept[_sock_fd] = true;
 	struct kevent ev;
@@ -43,7 +43,7 @@ void EventWatcherKqueue::addSocketAccept(int _sock_fd, void *_opaque_info) {
 
 void EventWatcherKqueue::addSocketRead(int _sock_fd, void *_opaque_info) {
 	//m_nsockets++;
-	//hLockTicketPtr ticket = m_lock->lock();
+//	hLockTicketPtr ticket = m_lock.lock();
 	
 	struct kevent ev;
 	struct timespec timeout;
@@ -52,7 +52,7 @@ void EventWatcherKqueue::addSocketRead(int _sock_fd, void *_opaque_info) {
 	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_ADD, 0, 0, _opaque_info);
 	if (kevent(m_kqueue, &ev, 1, NULL, 0, &timeout) == -1 ) {
 		std::cout << "EventWatcher::addEvent kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
-		exit (0);
+		//exit (0);
 	}
 }
 
@@ -60,20 +60,20 @@ void EventWatcherKqueue::delSocket(int _sock_fd, void *_opaque_info) {
 	//m_nsockets--;
 	//std::cout << "EventWatcher::delSocket\n";
 	
-	//hLockTicketPtr ticket = m_lock->lock();
+//	hLockTicketPtr ticket = m_lock.lock();
 	
 	struct kevent ev;
 	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_DELETE, 0, 0, _opaque_info);
 	if (kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1 ) {
-		std::cout << "EventWatcher::delSocket kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
-		exit(0);
+				std::cout << "EventWatcher::delSocket kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
+//		exit(0);
 	}
 }
 
 void EventWatcherKqueue::handleEvents() {
 	//std::cout << "m_nsockets: " << m_nsockets << std::endl;
 	
-	//hLockTicketPtr ticket = m_lock->lock();
+//	hLockTicketPtr ticket = m_lock.lock();
 	
 	struct kevent events[4096];
 	timespec timeout = {0, 250000000};

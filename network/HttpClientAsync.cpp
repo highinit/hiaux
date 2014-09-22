@@ -23,7 +23,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 	 
 //	 m_curl_sh = curl_share_init();
 	 m_curl = curl_multi_init();
-	 long timeout = 5000;
+	 long timeout = 1000;
 	 curl_multi_timeout(m_curl, &timeout);
 	 
 //	 curl_share_setopt(m_curl_sh, CURLSHOPT_LOCKFUNC, &lock_function);
@@ -100,7 +100,9 @@ void HttpClientAsync::callPost (void* userdata, const std::string &_url, const s
 void HttpClientAsync::performTransfers() {
 
 	hLockTicketPtr ticket = lock.lock();
-	curl_multi_perform(m_curl, &m_nrunning);
+	while (curl_multi_perform(m_curl, &m_nrunning) == CURLM_CALL_MULTI_PERFORM) {
+		std::cout << "HttpClientAsync::performTransfers curl_multi_perform == CURLM_CALL_MULTI_PERFORM\n";
+	}
 	
 	int nmsg;
 	CURLMsg* msg = curl_multi_info_read(m_curl, &nmsg);
@@ -134,23 +136,27 @@ void HttpClientAsync::performTransfers() {
 
 void HttpClientAsync::kick() {
 	
-	fd_set readfds;
-	fd_set writefds;
-	fd_set excfds;
+	int retval;
+	{
+		hLockTicketPtr ticket = select_lock.lock();
+		fd_set readfds;
+		fd_set writefds;
+		fd_set excfds;
 	
-	FD_ZERO(&readfds);
-	FD_ZERO(&writefds);
-	FD_ZERO(&excfds);
+		FD_ZERO(&readfds);
+		FD_ZERO(&writefds);
+		FD_ZERO(&excfds);
 	
-	int max_fd;
+		int max_fd;
 	
-	curl_multi_fdset(m_curl, &readfds, &writefds, &excfds, &max_fd);
+		curl_multi_fdset(m_curl, &readfds, &writefds, &excfds, &max_fd);
 	
-    struct timeval tv;
-	tv.tv_sec = 0;
-	tv.tv_usec = 50000;
+	    struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 50000;
 	
-    int retval = select(max_fd+1, &readfds, &writefds, &excfds, &tv);
+	    retval = select(max_fd+1, &readfds, &writefds, &excfds, &tv);
+	}
 	if (retval != -1)
 		performTransfers();
 }
