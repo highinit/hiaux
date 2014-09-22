@@ -2,7 +2,7 @@
 #define _HTTP_OUT_REQ_DISP_H_
 
 #include <boost/function.hpp>
-#include "hiaux/network/HttpSrv.h"
+#include "hiaux/threads/tasklauncher.h"
 #include "hiaux/network/HttpClientAsync.h"
 
 class HttpOutRequestDisp {

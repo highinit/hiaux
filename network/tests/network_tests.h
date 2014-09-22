@@ -16,6 +16,8 @@
 #include "HttpClientAsyncTests.h"
 #include "HttpOutReqDispTests.h"
 
+#include "HttpServer.h"
+
 void onFinished() {
 	
 }
@@ -33,7 +35,7 @@ public:
 		exit(0);
 	}
 
-	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req)
+	void onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req)
 	{
 		std::cout << "onHttpRequest\n";
 		hiaux::hashtable<std::string, std::string>::iterator it =
@@ -44,10 +46,9 @@ public:
 		}
 		
 		http_conn->sendResponse("SERVER RESPONSE!");
-		http_conn->close();
 	}
 	
-	void XtestHttpServer()
+	void testHttpServer()
 	{
 		try {
 			//std::cout << "testHttpServer\n";
@@ -55,33 +56,38 @@ public:
 			hThreadPoolPtr pool (new hThreadPool(10));
 			TaskLauncherPtr launcher (new TaskLauncher(
 							pool, 10, boost::bind(&NetworkTests::onFinished, this)));
-			HttpSrvPtr http_srv(new HttpSrv(launcher,
-							HttpSrv::ResponseInfo("text/html; charset=utf-8",
+			HttpServerPtr http_srv(new HttpServer(launcher,
+							ResponseInfo("text/html; charset=utf-8",
 												"highinit suggest server"),
-							boost::bind(&NetworkTests::onHttpRequest, this, _1, _2)));
-			http_srv->start(port);
+							boost::bind(&NetworkTests::onHttpRequest, this, _1, _2),
+							port));
+			
 			pool->run();
-			//pool->join();
-			sleep(1);
+			
+			sleep(100);
+			
+			pool->join();
+	
+	/*		sleep(1);
 			
 			HttpClient cli;
 			std::string resp;
 			//cli.callSimple("http://localhost:1234/?zhi=123&est=37", resp);
-			
+	
 			int c_fd = hPoolServer::startClient("127.0.0.1", port);
 			char chunk_0[512];
 			char chunk_1[512];
 			char chunk_2[512];
 			
 			strcpy(chunk_0, "GE");
-				
-			strcpy(chunk_1,	"T /developer/js/common.js HTTP/1.1\n"
-							"Host: marketing.adobe.com\n"
-							"Connection: keep-alive\n"
-							"Cache-Control: max-age=0\n"
-							"Accept: */*\n"
-							"User-Age");
-							
+	*/			
+		//	strcpy(chunk_1,	"T /developer/js/common.js HTTP/1.1\n"
+		//					"Host: marketing.adobe.com\n"
+		//					"Connection: keep-alive\n"
+		//					"Cache-Control: max-age=0\n"
+		//					"Accept: */*\n"
+		//					"User-Age");
+	/*						
 			strcpy(chunk_2,	"nt: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.153 Safari/537.36\n"
 							"Referer: https://marketing.adobe.com/developer/en_US/documentation/data-insertion/r-sample-http-get\n"
 							"Accept-Encoding: gzip,deflate,sdch\n"
@@ -104,7 +110,7 @@ public:
 			TS_ASSERT(std::string(bf) == "SERVER RESPONSE!")
 			//std::cout << "resp: " << resp;
 			exit(0);
-		
+		*/
 		} catch (const char *s) {
 			std::cout << "Exception: " << s << std::endl;
 		}
@@ -200,7 +206,7 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpApiClient_signedMethodAsync() {
+	void XtestHttpApiClient_signedMethodAsync() {
 
 		std::string userid = "_userid_";
 		std::string key = "_key_";

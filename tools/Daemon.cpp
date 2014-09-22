@@ -37,10 +37,10 @@ void Daemon::startListening (size_t _nthreads, int _port) {
 	
 	m_pool.reset(new hThreadPool(_nthreads));
 	m_srv_tasklauncher.reset(new TaskLauncher(m_pool, _nthreads, boost::bind(&Daemon::onFinished, this)));
-	m_srv.reset(new HttpSrv(m_srv_tasklauncher,
-							HttpSrv::ResponseInfo("text/html; charset=utf-8", "hiaux"),
-							boost::bind(&Daemon::connHandler, this, _1, _2)));
-	m_srv->start(_port);
+	m_srv.reset(new HttpServer(m_srv_tasklauncher,
+							ResponseInfo("text/html; charset=utf-8", "hiaux"),
+							boost::bind(&Daemon::connHandler, this, _1, _2),
+							_port));
 	m_pool->run();
 }
 

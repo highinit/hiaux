@@ -1,6 +1,6 @@
 {
 
-"_NAME" : "hiaux_http_server",
+"_NAME" : "hiaux_network",
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
 	 			{ "type": "Glob", "mask": "*.cc" }],

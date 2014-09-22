@@ -1,0 +1,16 @@
+{
+
+"_NAME" : "hiaux_network_http_server",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+	 			{ "type": "Glob", "mask": "*.cc" }],
+
+"_LINKFLAGS": ["-lcurl", "-ljansson", "-lprotobuf"],
+
+"_DEPS" : ["../../threads/",
+			"../../strings/",
+			"../../events/",
+			"../../crypt/",
+			"../../../thirdparty/http-parser/"]
+
+}

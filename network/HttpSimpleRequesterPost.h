@@ -3,7 +3,7 @@
 
 #include "hiconfig.h"
 #include "hiaux/network/HttpOutReqDisp.h"
-#include "hiaux/network/HttpSrv.h"
+//#include "hiaux/network/HttpSrv.h"
 #include "hiaux/network/CallContext.h"
 
 /*

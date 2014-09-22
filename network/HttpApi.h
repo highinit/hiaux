@@ -2,7 +2,7 @@
 #define _HTTPAPI_H_
 
 #include "hiconfig.h"
-#include "HttpSrv.h"
+#include "HttpServer/HttpServer.h"
 
 #include "HttpApiPostData.pb.h"
 
@@ -28,7 +28,7 @@ class HttpApi {
 	
 	void mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body);
 	
-	void onAsyncCallDone(const std::string &, HttpSrv::ConnectionPtr _conn);
+	void onAsyncCallDone(const std::string &, HttpConnectionPtr _conn);
 	
 public:
 	
@@ -52,7 +52,7 @@ public:
 												boost::function <void(const std::string&)>  )> _onreq,
 						uint64_t _max_ts_range = 15);
 	
-	void handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req);
+	void handle(HttpConnectionPtr _conn, HttpRequestPtr _req);
 };
 
 typedef boost::shared_ptr<HttpApi> HttpApiPtr;

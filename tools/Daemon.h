@@ -2,7 +2,7 @@
 #define _DAEMON_H_
 
 #include "hiconfig.h"
-#include "hiaux/network/HttpSrv.h"
+#include "hiaux/network/HttpServer/HttpServer.h"
 #include "hiaux/network/HttpOutReqDisp.h"
 #include "hiaux/threads/threadpool.h"
 #include "hiaux/threads/tasklauncher.h"
@@ -24,7 +24,7 @@ protected:
 
 	hThreadPoolPtr m_pool;
 	TaskLauncherPtr m_srv_tasklauncher;
-	HttpSrvPtr m_srv;
+	HttpServerPtr m_srv;
 
 	void fallDown(std::string _s);
 	void onFinished();
@@ -34,7 +34,7 @@ protected:
 
 	virtual void setParamsList(std::vector<std::string> &_required_params, std::vector<std::string> &_optional_params) = 0;
 	virtual void doStart() = 0;
-	virtual void connHandler(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) = 0;
+	virtual void connHandler(HttpConnectionPtr _conn, HttpRequestPtr _req) = 0;
 	
 public:
 	

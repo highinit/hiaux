@@ -126,13 +126,13 @@ void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_param
 	}
 }
 
-void HttpApi::onAsyncCallDone(const std::string &_resp, HttpSrv::ConnectionPtr _conn) {
+void HttpApi::onAsyncCallDone(const std::string &_resp, HttpConnectionPtr _conn) {
 	
 	_conn->sendResponse(_resp);
-	_conn->close();
+	//_conn->close();
 }
 
-void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
+void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 
 	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
 	mergePostParams(params, _req->body);
@@ -141,7 +141,7 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 
 	if (!checkFields (params, err_mess)) {
 		_conn->sendResponse( m_buildApiError( err_mess ) );
-		_conn->close();
+		//_conn->close();
 	} else {
 		std::string resp;
 		
@@ -153,7 +153,7 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 			
 			if (it == m_methods_callbacks_async.end()) {
 				_conn->sendResponse("No such method");
-				_conn->close();
+				//_conn->close();
 			}
 			else {
 				it->second(params, boost::bind(&HttpApi::onAsyncCallDone, this, _1, _conn));
@@ -170,7 +170,7 @@ void HttpApi::handle(HttpSrv::ConnectionPtr _conn, HttpSrv::RequestPtr _req) {
 				it->second(params, resp);
 				_conn->sendResponse(resp);
 			}
-			_conn->close();
+			//_conn->close();
 		}
 	}
 }
