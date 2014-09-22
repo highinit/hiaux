@@ -84,4 +84,5 @@ TaskLauncher::TaskRet HttpServer::eventLoop() {
 TaskLauncher::TaskRet HttpServer::workerTask(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 
 	m_request_hdl(_conn, _req);
+	return TaskLauncher::NO_RELAUNCH;
 }
