@@ -5,7 +5,8 @@ HttpConnection::HttpConnection(int _sock, ResponseInfo _resp_info):
 	create_ts(time(0)),
 	request_finished(false),
 	recv_ok(true),
-	m_resp_info(_resp_info)
+	m_resp_info(_resp_info),
+	m_http_status_code(200)
 	{
 	
 	request.reset(new HttpRequest);
@@ -36,6 +37,7 @@ bool HttpConnection::notDead() {
 
 void HttpConnection::setHttpStatus(int code) {
 	
+	m_http_status_code = code;
 }
 
 void HttpConnection::addHeader(const std::string &_header) {
