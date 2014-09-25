@@ -25,7 +25,7 @@ HttpConnection::HttpConnection(int _sock, ResponseInfo _resp_info):
 }
 
 HttpConnection::~HttpConnection() {
-	
+
 	::close(sock);
 	::shutdown(sock, SHUT_RDWR);
 }
