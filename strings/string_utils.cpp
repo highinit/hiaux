@@ -529,3 +529,28 @@ std::string escape_quote(const std::string &_str) {
 	bf[j] = '\0';
 	return std::string(bf);
 }
+
+void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes) {
+	
+	if (_word.size()==0)
+		return;
+	
+	const char *it = _word.data();
+	const char *end = _word.data()+_word.size();
+	char *res = new char [_word.size()+1];
+	char *res_end = res;
+	
+	memset(res, 0, _word.size()+1);
+	try {
+		do {
+			uint32_t symbol = utf8::next(it, end);
+			res_end = utf8::append(symbol, res_end);
+			_prefixes.push_back(std::string(res));
+
+		} while (it < end);
+	}
+	catch (...) {	
+	}
+	res_end = 0;
+	delete [] res;
+}

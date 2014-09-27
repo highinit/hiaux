@@ -82,4 +82,6 @@ void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams);
 
 std::string escape_quote(const std::string &_str);
 
+void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes);
+
 #endif	/* STRING_UTILS_H */
