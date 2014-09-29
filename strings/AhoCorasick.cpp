@@ -8,6 +8,17 @@ BorNode::BorNode():
 	
 }
 
+BorNode::~BorNode() {
+	
+	std::map<char, BorNode*>::iterator it = m_children.begin();
+	std::map<char, BorNode*>::iterator end = m_children.end();
+	
+	while (it != end) {
+		delete it->second;
+		it++;
+	}
+}
+
 void BorNode::addWord(const std::string &_word, const std::string &_suff) {
 	
 	if (_suff.size() == 0) {
@@ -131,7 +142,12 @@ AhoCorasick::AhoCorasick(const std::vector<std::string> &_dict) {
 	}
 }
 
-void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<std::string, size_t> > &_matches) {
+AhoCorasick::~AhoCorasick() {
+	
+	delete m_root;
+}
+
+void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<std::string, size_t> > &_matches) const {
 	
 	BorNode *cur_node = m_root;
 	
@@ -139,7 +155,7 @@ void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<s
 	
 	while (i<_text.size()) {
 		
-		std::map<char, BorNode*>::iterator it = cur_node->m_children.find(_text[i]);
+		std::map<char, BorNode*>::const_iterator it = cur_node->m_children.find(_text[i]);
 		
 		if (it != cur_node->m_children.end()) {
 			cur_node = it->second;

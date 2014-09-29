@@ -8,9 +8,10 @@
 #include <iostream>
 #include <queue>
 
+#include <boost/shared_ptr.hpp>
+
 class BorNode {
 private:
-	
 	
 	static int m_nnodes;
 public:
@@ -22,6 +23,7 @@ public:
 	BorNode *fail_node;
 	
 	BorNode();
+	~BorNode();
 	void addWord(const std::string &_word, const std::string &_suff);
 	BorNode *getFallNode(char _c);
 	void setFailNode(BorNode *_node);
@@ -37,8 +39,11 @@ class AhoCorasick {
 public:
 	
 	AhoCorasick(const std::vector<std::string> &_dict);
-	void findMatches(const std::string &_text, std::vector< std::pair<std::string, size_t> > &_matches);
+	~AhoCorasick();
+	void findMatches(const std::string &_text, std::vector< std::pair<std::string, size_t> > &_matches) const;
 	void print();
 };
+
+typedef boost::shared_ptr<AhoCorasick> AhoCorasickPtr;
 
 #endif
