@@ -512,7 +512,8 @@ void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams) {
 
 std::string escape_quote(const std::string &_str) {
 	
-	char bf[_str.size()*2 + 1];
+	return escape_symbol(_str, '\'');
+	/*char bf[_str.size()*2 + 1];
 	size_t j = 0;
 	for (int i = 0; i<_str.size(); i++) {
 		
@@ -527,7 +528,32 @@ std::string escape_quote(const std::string &_str) {
 		}
 	}
 	bf[j] = '\0';
+	return std::string(bf);*/
+}
+
+std::string escape_symbol(const std::string &_str, char sym) {
+	
+	char bf[_str.size()*2 + 1];
+	size_t j = 0;
+	for (int i = 0; i<_str.size(); i++) {
+		
+		if (_str[i] == sym) {
+			bf[j] = '\\';
+			bf[j+1] = sym;
+			j += 2;
+			
+		} else {
+			bf[j] = _str[i];
+			j++;
+		}
+	}
+	bf[j] = '\0';
 	return std::string(bf);
+}
+
+std::string add_newline_backslash(const std::string &_str) {
+	
+	return escape_symbol(_str, '\n');
 }
 
 void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes) {

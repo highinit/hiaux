@@ -80,7 +80,9 @@ std::string booltostr(bool _a);
 
 void getBigrams(const std::string &_q, std::vector<std::string> &_bigrams);
 
+std::string escape_symbol(const std::string &_str, char sym);
 std::string escape_quote(const std::string &_str);
+std::string add_newline_backslash(const std::string &_str);
 
 void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes);
 
