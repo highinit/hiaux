@@ -19,7 +19,7 @@ void EventWatcherEpoll::addSocketAccept(int _sock_fd, void *_opaque_info) {
 	
 	m_sockets_accept[_sock_fd] = true;
 	epoll_event ev;
-	ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
+	ev.events = EPOLLET | EPOLLIN;// | EPOLLOUT;
 	ev.data.fd = _sock_fd;
 	if (epoll_ctl(m_epoll, EPOLL_CTL_ADD, _sock_fd, &ev) == -1) {
 		std::cout << "EventWatcherEpoll::addSocket epoll_ctl(..) == -1";
@@ -30,7 +30,7 @@ void EventWatcherEpoll::addSocketAccept(int _sock_fd, void *_opaque_info) {
 void EventWatcherEpoll::addSocketRead(int _sock_fd, void *_opaque_info) {
 	
 	epoll_event ev;
-	ev.events = EPOLLET | EPOLLIN | EPOLLOUT;
+	ev.events = EPOLLET | EPOLLIN;// | EPOLLOUT;
 	ev.data.fd = _sock_fd;
 	if (epoll_ctl(m_epoll, EPOLL_CTL_ADD, _sock_fd, &ev) == -1) {
 		std::cout << "EventWatcherEpoll::addSocket epoll_ctl(..) == -1";
