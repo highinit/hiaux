@@ -23,7 +23,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 	 
 //	 m_curl_sh = curl_share_init();
 	 m_curl = curl_multi_init();
-	 long timeout = 1000;
+	 long timeout = 2000;
 	 curl_multi_timeout(m_curl, &timeout);
 	 
 //	 curl_share_setopt(m_curl_sh, CURLSHOPT_LOCKFUNC, &lock_function);
@@ -153,7 +153,7 @@ void HttpClientAsync::kick() {
 	
 	    struct timeval tv;
 		tv.tv_sec = 0;
-		tv.tv_usec = 50000;
+		tv.tv_usec = 100000;
 	
 	    retval = select(max_fd+1, &readfds, &writefds, &excfds, &tv);
 	}
