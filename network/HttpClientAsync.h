@@ -13,6 +13,8 @@
 
 #include <sys/select.h>
 
+#include "hiaux/threads/tasklauncher.h"
+
 class HttpClientAsync {
 public:
 	class JobInfo {
@@ -34,9 +36,13 @@ private:
 	
 	hAutoLock lock;
 	hAutoLock select_lock;
+	TaskLauncherPtr m_launcher;
 	
 	void performTransfers();
 public:
+	
+	TaskLauncher::TaskRet callHandler(JobInfo ji);
+	
 	HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _ji)> _onCalled);
 	~HttpClientAsync();
 
