@@ -9,6 +9,9 @@
 #include "Request.h"
 #include "thirdparty/http-parser/http_parser.h"
 
+#include <sys/types.h>
+#include <sys/socket.h>
+
 class HttpConnection {
 public:
 	int sock;
