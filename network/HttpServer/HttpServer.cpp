@@ -39,8 +39,7 @@ void HttpServer::onRead(int _sock, void *_opaque_info) {
 		m_reading_connections.erase(it);
 		m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::workerTask, this, connection, connection->request));
 	}
-	
-	if (!connection->notDead()) {
+	else if (!connection->notDead()) {
 		
 		m_events_watcher->delSocket(_sock, NULL);
 		m_reading_connections.erase(it);
