@@ -34,6 +34,11 @@ hThread::~hThread() {
 }
 
 void hThread::run() {
+	
+	sigset_t set;
+	sigfillset(&set);
+	pthread_sigmask(SIG_SETMASK, &set, NULL);
+	
 	m_nrunning_threads->fetch_add(1);
 	boost::function<void()> *f;
 	while (m_running)

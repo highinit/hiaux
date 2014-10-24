@@ -28,6 +28,7 @@
 #include <boost/atomic.hpp>
 //#include <pthread_rwlock.h>
 
+#include <signal.h>
 #include "locks.h"
 
 #define NEWTASK1(a) (new boost::function<void()>(boost::bind(a)))
@@ -108,7 +109,7 @@ class hThreadPool
 	
 	boost::atomic<size_t> m_nrunning_threads;
 	
-	void kill();
+	
 public:
 
 	hThreadPool(int nthreads);
@@ -116,6 +117,7 @@ public:
 
 	void addTask(boost::function<void()>* f);
 	void run();
+	void kill();
 	void join();
 };
 
