@@ -75,7 +75,13 @@ void HttpConnection::sendResponse(const std::string &_content) {
 		response += m_headers[i] + "\r\n";
 	
 	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
-	size_t nsent = ::send(sock, response.c_str(), response.size(), 0);
+	size_t nsent;
+		
+	#if defined __linux__
+		nsent = ::send(sock, response.c_str(), response.size(), SO_NOSIGPIPE);
+	#else
+		nsent = ::send(sock, response.c_str(), response.size(), 0);
+	#endif
 	
 	if (nsent<=0 || nsent < response.size())
 		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"

@@ -174,8 +174,8 @@ void hPoolServer::onAccept(int _sock_fd, void *_opaque_info) {
 	
 	//setSocketNonBlock(accepted_socket);
 	
-	int set = 1;
-	setsockopt(accepted_socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+//	int set = 1;
+//	setsockopt(accepted_socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 	
 	ConnectionPtr connection(new Connection(inet_ntoa(cli_addr.sin_addr),
 							cli_addr.sin_port,
@@ -195,8 +195,8 @@ void hPoolServer::start(int port) {
 	m_isrunning = true;
 	m_listen_socket = startServer(port);
 	
-	int set = 1;
-	setsockopt(m_listen_socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+//	int set = 1;
+//	setsockopt(m_listen_socket, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
 	
 	m_events_watcher->addSocketAccept(m_listen_socket, NULL);
 	m_launcher->addTask(new boost::function<TaskLauncher::TaskRet()> (
