@@ -12,7 +12,7 @@ EventWatcherEpoll::EventWatcherEpoll(boost::function<void(int,void*)> _onRead,
 		m_onError(_onError),
 		m_onAccept(_onAccept) {
 	
-	m_epoll = epoll_create(0x10001);
+	m_epoll = epoll_create(4096);
 }
 
 void EventWatcherEpoll::addSocketAccept(int _sock_fd, void *_opaque_info) {
