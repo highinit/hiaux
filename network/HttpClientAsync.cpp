@@ -112,6 +112,7 @@ void HttpClientAsync::callPost (void* userdata, const std::string &_url, const s
 TaskLauncher::TaskRet HttpClientAsync::callHandler(JobInfo ji) {
 	
 	m_onCalled(ji);
+	return TaskLauncher::NO_RELAUNCH;
 }
 
 void HttpClientAsync::performTransfers() {
