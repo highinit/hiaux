@@ -75,7 +75,7 @@ void EventWatcherKqueue::handleEvents() {
 	
 //	hLockTicketPtr ticket = m_lock.lock();
 	
-	struct kevent events[4096];
+	struct kevent events[4097];
 	timespec timeout = {0, 250000000};
 	int nevents = kevent(m_kqueue, NULL, 0, events, 4096, &timeout);
 	
