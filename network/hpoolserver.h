@@ -20,7 +20,7 @@ class hPoolServer
 {
 public:
 	class Connection
-	{	
+	{
 		uint64_t create_ts;
 	public:
 		int m_sock;
