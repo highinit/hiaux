@@ -101,13 +101,18 @@ void HttpConnection::performRecv() {
 			std::string add (bf);
 			readbf.append( add );
 			nread = ::recv(sock, bf, 2048, MSG_DONTWAIT);
+			break;
 		} 
-		else if (errno == EWOULDBLOCK || errno == EAGAIN) {
+		else { //if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			
 			//std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN\n";
 			//performRecv();
-			break;
+			recv_ok = false;
+			return;
 		}
+		//else 
+		//	break;
+		/*
 		else if (errno == EBADF) {
 			
 			std::cout << "HttpSrv::Connection::recv EBADF\n";
@@ -143,7 +148,7 @@ void HttpConnection::performRecv() {
 			return;
 		} else if (nread == 0) {		
 			break;
-		}
+		}*/
 	}
 	
 	//std::cout << "recv: " << readbf << std::endl;
