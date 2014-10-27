@@ -76,7 +76,9 @@ void HttpConnection::sendResponse(const std::string &_content) {
 	
 	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
 	size_t nsent;
-		
+	
+	setSocketBlock(sock, true);
+	
 	//#if defined __linux__
 		nsent = ::send(sock, response.c_str(), response.size(), 0);
 	//#else

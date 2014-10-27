@@ -11,11 +11,13 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include <fcntl.h>
 #include <string>
 
 #include <iostream>
 
+
+void setSocketBlock(int _fd, bool _isblock);
 int startListening(int port);
 
 #endif

@@ -65,8 +65,6 @@ private:
 	
 	int startServer(int port);
 	
-	void setSocketNonBlock(int _fd);
-	
 public:
     
 	void onRead(int _sock, void *_opaque_info);

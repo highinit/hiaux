@@ -211,19 +211,12 @@ void hPoolServer::stop() {
 	}
 }
 
-void hPoolServer::setSocketNonBlock(int _fd) {
-	
-//	int flags = fcntl(_fd, F_GETFL);
-//	fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
-}
-
 int hPoolServer::startServer(int port) {
 	
 	char bf[255];
 	struct sockaddr_in serv_addr;
 
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	setSocketNonBlock(sockfd);
 
 	if (sockfd < 0)
 			throw new std::string("hsock_t::server: ERROR opening server socket");

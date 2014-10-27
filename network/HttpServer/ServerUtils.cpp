@@ -6,6 +6,7 @@ int startListening(int port) {
 	struct sockaddr_in serv_addr;
 
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	setSocketBlock(sockfd, false);
 
 	if (sockfd < 0)
 			throw new std::string("hsock_t::server: ERROR opening server socket");
@@ -32,4 +33,20 @@ int startListening(int port) {
 	listen(sockfd, 1024);
 	return sockfd;
 }
+
+void setSocketBlock(int _fd, bool _isblock) {
+	
+	int flags = fcntl(_fd, F_GETFL);
+	
+	if (!_isblock) {
+		
+		flags |= O_NONBLOCK;
+	} else {
+		
+		flags &= !O_NONBLOCK;
+	}
+	
+	fcntl(_fd, F_SETFL, flags);
+}
+
 
