@@ -91,25 +91,30 @@ void HttpConnection::sendResponse(const std::string &_content) {
 void HttpConnection::performRecv() {
 	
 	std::string readbf;
-	char bf[2049];
-	int nread = ::recv(sock, bf, 2048, MSG_DONTWAIT);
+	char bf[4097];
+	int nread = ::recv(sock, bf, 4096, MSG_DONTWAIT);
 	
-	while (true) {
+	//while (true) {
 		if (nread > 0) {
 			
 			bf[ nread ] = '\0';
 			std::string add (bf);
 			readbf.append( add );
-			nread = ::recv(sock, bf, 2048, MSG_DONTWAIT);
-			break;
+//			nread = ::recv(sock, bf, 2048, MSG_DONTWAIT);
+		
 		} 
-		else { //if (errno == EWOULDBLOCK || errno == EAGAIN) {
+		else  {//if (nread < 0) { //if (errno == EWOULDBLOCK || errno == EAGAIN) {
 			
 			//std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN\n";
 			//performRecv();
 			recv_ok = false;
 			return;
 		}
+//		else if (readbf.size() == 0) {
+//			recv_ok = false;
+//			return;
+//		}
+		
 		//else 
 		//	break;
 		/*
@@ -149,7 +154,7 @@ void HttpConnection::performRecv() {
 		} else if (nread == 0) {		
 			break;
 		}*/
-	}
+		//}
 	
 	//std::cout << "recv: " << readbf << std::endl;
 	//m_readbf += std::string(bf);
