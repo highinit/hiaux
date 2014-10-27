@@ -91,8 +91,8 @@ void HttpConnection::sendResponse(const std::string &_content) {
 void HttpConnection::performRecv() {
 	
 	std::string readbf;
-	char bf[4097];
-	int nread = ::recv(sock, bf, 4096, MSG_DONTWAIT);
+	char bf[8193];
+	int nread = ::recv(sock, bf, 8192, MSG_DONTWAIT);
 	
 	//while (true) {
 		if (nread > 0) {
