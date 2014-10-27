@@ -6,7 +6,7 @@
 #include "hpoolserver.h"
 
 #include "hiaux/strings/string_utils.h"
-#include "HttpSrv.h"
+#include "HttpServer.h"
 #include "HttpApi.h"
 #include "HttpApiClient.h"
 
@@ -48,7 +48,7 @@ public:
 		http_conn->sendResponse("SERVER RESPONSE!");
 	}
 	
-	void testHttpServer()
+	void XtestHttpServer()
 	{
 		try {
 			//std::cout << "testHttpServer\n";
@@ -146,11 +146,11 @@ public:
 		pool->run();
 		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
-		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+		HttpServerPtr srv (new HttpServer(launcher, ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
-										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+										boost::bind(&HttpApi::handle, api.get(), _1, _2),
+										port));
 		
-		srv->start(port);
 		
 		sleep(2);
 		
@@ -185,11 +185,11 @@ public:
 		
 		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
-		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+		HttpServerPtr srv (new HttpServer(launcher, ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
-										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+										boost::bind(&HttpApi::handle, api.get(), _1, _2),
+										port));
 		
-		srv->start(port);
 		
 		sleep(2);
 
@@ -225,11 +225,11 @@ public:
 		
 		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
-		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+		HttpServerPtr srv (new HttpServer(launcher, ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
-										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+										boost::bind(&HttpApi::handle, api.get(), _1, _2),
+										port));
 		
-		srv->start(port);
 		
 		sleep(2);
 
@@ -265,11 +265,11 @@ public:
 		
 		TaskLauncherPtr launcher (new TaskLauncher(pool, 4, boost::bind(&NetworkTests::onFinished, this))); 
 		
-		HttpSrvPtr srv (new HttpSrv(launcher, HttpSrv::ResponseInfo("text/html; charset=utf-8",
+		HttpServerPtr srv (new HttpServer(launcher, ResponseInfo("text/html; charset=utf-8",
 										"highinit nazareth server"),
-										boost::bind(&HttpApi::handle, api.get(), _1, _2)));
+										boost::bind(&HttpApi::handle, api.get(), _1, _2),
+										port));
 		
-		srv->start(port);
 		
 		sleep(2);
 
@@ -286,7 +286,7 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void XtestHttpClientAsync() {
+	void testHttpClientAsync() {
 		HttpClientAsyncTests();
 	}
 	

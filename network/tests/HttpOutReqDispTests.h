@@ -1,5 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
+#include "HttpServer.h"
+#include "hiaux/strings/string_utils.h"
 #include "HttpOutReqDisp.h"
 
 class TestRequester : public HttpOutRequestDisp::Requester {
@@ -21,13 +23,13 @@ public:
 typedef boost::shared_ptr<TestRequester> TestRequesterPtr;
 
 class HttpOutReqDispTests : public CxxTest::TestSuite {
-	HttpSrvPtr m_srv;
+	HttpServerPtr m_srv;
 	HttpOutRequestDispPtr m_req_disp;
 	boost::atomic<int> nresps;
 public:
 	void onResp();
 	void onWrongResp();
-	void onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req);
+	void onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req);
 	void onFinished();
 	HttpOutReqDispTests();
 };

@@ -21,7 +21,7 @@ void unlock_function(CURL *handle, curl_lock_data data, void *userptr) {
 }
 */
 
-void onFinished() {
+void _http_client_async_onFinished() {
 	
 }
 
@@ -34,7 +34,7 @@ HttpClientAsync::HttpClientAsync(boost::function<void(HttpClientAsync::JobInfo _
 	 curl_multi_timeout(m_curl, &timeout);
 	 
  	hThreadPoolPtr pool (new hThreadPool(2));
- 	m_launcher = TaskLauncherPtr(new TaskLauncher(pool, 2, boost::bind(&onFinished)));
+ 	m_launcher = TaskLauncherPtr(new TaskLauncher(pool, 2, boost::bind(&_http_client_async_onFinished)));
  	pool->run();
 	 
 //	 curl_share_setopt(m_curl_sh, CURLSHOPT_LOCKFUNC, &lock_function);

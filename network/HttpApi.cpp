@@ -164,6 +164,7 @@ void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 			hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
 				m_methods_callbacks.find(params["method"]);
 			if (it == m_methods_callbacks.end()) {
+				
 				_conn->sendResponse("No such method");
 			}
 			else {

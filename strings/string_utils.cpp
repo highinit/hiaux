@@ -380,6 +380,10 @@ std::string &escapeUrl(std::string &_url) {
 	
 	char *encoded_adv_url = curl_easy_escape(curl, _url.c_str(), _url.size());
 	
+	if (encoded_adv_url == NULL) {
+		std::cout << "escapeUrl got null for " << _url << std::endl;
+	}
+	
 	_url = std::string(encoded_adv_url);
 	
 	curl_free(encoded_adv_url);

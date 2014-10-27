@@ -37,7 +37,7 @@ void HttpOutReqDispTests::onFinished() {
 	
 }
 
-void HttpOutReqDispTests::onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSrv::RequestPtr req) {
+void HttpOutReqDispTests::onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req) {
 	//std::cout << "HttpOutReqDispTests::onHttpRequest\n";
 	hiaux::hashtable<std::string, std::string>::iterator it =
 				req->values_GET.begin();
@@ -50,7 +50,7 @@ void HttpOutReqDispTests::onHttpRequest(HttpSrv::ConnectionPtr http_conn, HttpSr
 	}
 	
 	http_conn->sendResponse(resp);
-	http_conn->close();
+//	http_conn->close();
 }
 
 void HttpOutReqDispTests::onResp() {
@@ -68,12 +68,12 @@ HttpOutReqDispTests::HttpOutReqDispTests() {
 	hThreadPoolPtr pool (new hThreadPool(nthreads));
 	TaskLauncherPtr launcher (new TaskLauncher(
 					pool, nthreads, boost::bind(&HttpOutReqDispTests::onFinished, this)));
-	m_srv.reset(new HttpSrv(launcher,
-					HttpSrv::ResponseInfo("text/html; charset=utf-8",
+	m_srv.reset(new HttpServer(launcher,
+					ResponseInfo("text/html; charset=utf-8",
 										"highinit suggest server"),
-					boost::bind(&HttpOutReqDispTests::onHttpRequest, this, _1, _2)));
+					boost::bind(&HttpOutReqDispTests::onHttpRequest, this, _1, _2),
+						port));
 					
-	m_srv->start(port);
 	pool->run();
 	//pool->join();
 	sleep(1);
