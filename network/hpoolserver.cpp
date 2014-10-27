@@ -217,8 +217,8 @@ void hPoolServer::setSocketNonBlock(int _fd) {
 //	fcntl(_fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-int hPoolServer::startServer(int port)
-{
+int hPoolServer::startServer(int port) {
+	
 	char bf[255];
 	struct sockaddr_in serv_addr;
 
@@ -249,8 +249,8 @@ int hPoolServer::startServer(int port)
 	return sockfd;
 }
 
-int hPoolServer::startClient(const std::string &_ip, int portno)
-{               
+int hPoolServer::startClient(const std::string &_ip, int portno) {
+	
 	int sockfd;
 	struct sockaddr_in serv_addr;
 	struct hostent *server = gethostbyname(_ip.c_str());

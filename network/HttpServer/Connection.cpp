@@ -94,71 +94,31 @@ void HttpConnection::performRecv() {
 	char bf[8193];
 	int nread = ::recv(sock, bf, 8192, MSG_DONTWAIT);
 	
-	//while (true) {
+	while (true) {
 		if (nread > 0) {
 			
 			bf[ nread ] = '\0';
-			std::string add (bf);
-			readbf.append( add );
-//			nread = ::recv(sock, bf, 2048, MSG_DONTWAIT);
-		
+			readbf.append( bf, nread );
 		} 
-		else  {//if (nread < 0) { //if (errno == EWOULDBLOCK || errno == EAGAIN) {
+		else if (nread < 0) { //
 			
-			//std::cout << "HttpSrv::Connection::recv EWOULDBLOCK || EAGAIN\n";
-			//performRecv();
+			if (errno == EWOULDBLOCK || errno == EAGAIN) {
+				
+				break;
+			}
+			else {
+			
+				recv_ok = false;
+				return;
+			}
+		} else  { // nread == 0
+			
 			recv_ok = false;
 			return;
 		}
-//		else if (readbf.size() == 0) {
-//			recv_ok = false;
-//			return;
-//		}
-		
-		//else 
-		//	break;
-		/*
-		else if (errno == EBADF) {
-			
-			std::cout << "HttpSrv::Connection::recv EBADF\n";
-			recv_ok = false;
-			return;
-		} else if (errno == ECONNREFUSED) {
-			std::cout << "HttpSrv::Connection::recv ECONNREFUSED\n";
-			recv_ok = false;
-			return;
-		} else if (errno == EFAULT) {
-			std::cout << "HttpSrv::Connection::recv EFAULT\n";
-			recv_ok = false;
-			return;
-		} else if (errno == EINTR) {
-			std::cout << "HttpSrv::Connection::recv EINTR\n";
-			recv_ok = false;
-			return;
-		} else if (errno == EINVAL) {
-			std::cout << "HttpSrv::Connection::recv EINVAL\n";
-			recv_ok = false;
-			return;
-		} else if (errno == ENOMEM) {
-			std::cout << "HttpSrv::Connection::recv ENOMEM\n";
-			recv_ok = false;
-			return;
-		} else if (errno == ENOTCONN) {
-			std::cout << "HttpSrv::Connection::recv ENOTCONN\n";
-			recv_ok = false;
-			return;
-		} else if (errno == ENOTSOCK) {
-			std::cout << "HttpSrv::Connection::recv ENOTSOCK\n";
-			recv_ok = false;
-			return;
-		} else if (nread == 0) {		
-			break;
-		}*/
-		//}
-	
-	//std::cout << "recv: " << readbf << std::endl;
-	//m_readbf += std::string(bf);
-	//std::cout << readbf;
+		nread = ::recv(sock, bf, 8192, MSG_DONTWAIT);
+	}
+
 	if (readbf.size() > 0) {
 		//m_req_text += readbf;
 		//std::cout << m_req_text << std::endl;
