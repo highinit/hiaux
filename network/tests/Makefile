@@ -3,11 +3,11 @@
 
 default:	all
 all:    
-	cxxtest/bin/cxxtestgen --error-printer -o network_tests_main.cpp network_tests.h && /usr/local/bin/scons
+	cxxtest/bin/cxxtestgen --error-printer -o network_tests_main.cpp network_tests.h && scons
 clean:
-	/usr/local/bin/scons -c
+	scons -c
 install:
-	/usr/local/bin/scons install
+	scons install
 
 #LDFLAGS+= /usr/local/lib/libbson.a
 #LDFLAGS+= /usr/local/lib/libmongoc.a
