@@ -15,13 +15,15 @@ int startListening(int port) {
 
 	int yes = 1;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1)  {
-			perror("setsockopt");
-			exit(1);
+			//perror("setsockopt");
+		std::cout << "startListening setsockopt\n";
+		exit(1);
 	}
 
 	if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(yes)) == -1)  {
-			perror("setsockopt");
-			exit(1);
+			
+		std::cout << "startListening setsockopt\n";
+		exit(1);
 	}
 
 	if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))<0)
