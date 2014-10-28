@@ -29,6 +29,9 @@
 //#include <pthread_rwlock.h>
 
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "locks.h"
 
 #define NEWTASK1(a) (new boost::function<void()>(boost::bind(a)))
