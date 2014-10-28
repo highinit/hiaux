@@ -33,11 +33,19 @@ hThread::~hThread() {
 	delete m_th;
 }
 
+void _thread_signal_callback_handler(int signum) {
+	
+	int status;
+	wait(&status);
+}
+
 void hThread::run() {
 	
 	sigset_t set;
 	sigfillset(&set);
 	pthread_sigmask(SIG_SETMASK, &set, NULL);
+	
+	signal(SIGCHLD, _thread_signal_callback_handler);
 	
 	m_nrunning_threads->fetch_add(1);
 	boost::function<void()> *f;

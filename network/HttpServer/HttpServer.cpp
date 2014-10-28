@@ -62,16 +62,17 @@ void HttpServer::onAccept(int _sock_fd, void *_opaque_info) {
 	size_t clilen = sizeof(cli_addr);
 	int accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
 
-	setSocketBlock(accepted_socket, false);
+	while (accepted_socket > 0) {
 
-	if (accepted_socket < 0)
-		return;
+		setSocketBlock(accepted_socket, false);
 	
-	HttpConnectionPtr connection(new HttpConnection(accepted_socket, m_resp_info));
+		HttpConnectionPtr connection(new HttpConnection(accepted_socket, m_resp_info));
 	
-	m_reading_connections.insert(std::pair<int, HttpConnectionPtr>(connection->sock, connection));
+		m_reading_connections.insert(std::pair<int, HttpConnectionPtr>(connection->sock, connection));
 			
-	m_events_watcher->addSocketRead(connection->sock, NULL);
+		m_events_watcher->addSocketRead(connection->sock, NULL);
+		accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
+	}
 }
 
 TaskLauncher::TaskRet HttpServer::eventLoop() {
