@@ -66,7 +66,7 @@ void HttpConnection::sendResponse(const std::string &_content) {
 						"Content-Type: "+m_resp_info.content_type+"\r\n"
 						"Date: "+time_c+"\r\n"
 						"Server: "+m_resp_info.server_name+"\r\n"
-						//"Connection: keep-alive\r\n"
+						"Connection: close\r\n"
 						"Transfer-Encoding: none\r\n"
 						"Access-Control-Allow-Origin: *\r\n"
 						"Connection: close\r\n";
