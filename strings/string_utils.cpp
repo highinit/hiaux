@@ -584,3 +584,8 @@ void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefix
 	res_end = 0;
 	delete [] res;
 }
+
+uint64_t getBeginningOfDayTs(uint64_t _ts) {
+	
+	return (_ts / (3600*24)) * (3600*24);
+}

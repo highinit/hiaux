@@ -86,4 +86,6 @@ std::string add_newline_backslash(const std::string &_str);
 
 void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes);
 
+uint64_t getBeginningOfDayTs(uint64_t _ts);
+
 #endif	/* STRING_UTILS_H */
