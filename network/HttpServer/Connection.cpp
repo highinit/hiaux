@@ -68,9 +68,8 @@ void HttpConnection::sendResponse(const std::string &_content) {
 						"Server: "+m_resp_info.server_name+"\r\n"
 						"Connection: close\r\n"
 						"Transfer-Encoding: none\r\n"
+						"Access-Control-Allow-Origin: *\r\n"
 						"Connection: close\r\n";
-	
-	//	//	"Access-Control-Allow-Origin: *\r\n"
 	
 	for (int i = 0; i<m_headers.size(); i++) {
 		response += m_headers[i] + "\r\n";
