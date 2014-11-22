@@ -12,10 +12,21 @@
 #include <vector>
 #include <string>
 
+#include <iostream>
+#include <fstream>
+
+#include <fcntl.h>
+#include <sys/resource.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
 class Daemon {
 
 	void parseConfig(const std::string &_config_file);
 protected:
+	
+	int m_lockfile_fd;
 	
 	std::vector<std::string> m_required_params;
 	std::vector<std::string> m_optional_params;	
@@ -28,6 +39,10 @@ protected:
 
 	void fallDown(std::string _s);
 	void onFinished();
+
+	void setDefaultSignalHandlers();
+	int chechLockFile(const std::string &_filename);
+	void daemonize(const std::string &_pidfile, const std::string &_logfile);
 
 	void loadConfig(const std::string &_config_file);
 	void startListening (size_t _nthreads, int _port);
