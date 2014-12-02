@@ -34,6 +34,41 @@ int startListening(int port) {
 	return sockfd;
 }
 
+int createLocalSocket(const std::string &_localsocket) {
+	
+	int fd, size;
+	
+	struct sockaddr_un un;
+	un.sun_family = AF_UNIX;
+	strcpy(un.sun_path, _localsocket.c_str());
+	
+	if ((fd = socket (AF_UNIX, SOCK_STREAM, 0)) < 0) {
+		
+		std::cout << "startListening socket() could not create local socket: " << _localsocket << std::endl;
+		exit(1);
+	}
+	
+	size = offsetof(struct sockaddr_un, sun_path) + strlen(un.sun_path);
+	
+	if (bind(fd, (struct sockaddr *)&un, size) < 0) {
+		
+		std::cout << "startListening error binding\n";
+		exit(1);
+	}
+	
+	return fd;
+}
+
+int startListening(const std::string &_localsocket) {
+	
+	int fd = createLocalSocket(_localsocket);
+	
+	setSocketBlock(fd, false);
+	listen(fd, 1024);
+	
+	return fd;
+}
+
 void setSocketBlock(int _fd, bool _isblock) {
 	
 	int flags = fcntl(_fd, F_GETFL);

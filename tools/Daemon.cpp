@@ -53,7 +53,7 @@ void sigchild_handler(int signum) {
 	wait(&status);
 }
 
-void empty_handler(int signal) {
+static void empty_handler(int signal) {
 	
 	//std::cout << "empty handler\n";
 }
@@ -62,6 +62,39 @@ void Daemon::setDefaultSignalHandlers() {
 	
 	signal(SIGCHLD, sigchild_handler);
 	signal(SIGPIPE, empty_handler);
+}
+
+#define LOCKMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
+
+int Daemon::chechLockFile(const std::string &_filename) {
+	
+	char	buf[16];
+
+	int lockfile_fd = open(_filename.c_str(), O_RDWR|O_CREAT, LOCKMODE);
+	
+	if (lockfile_fd < 0) {
+		std::cout << "cant open pid file\n";
+		exit(1);
+	}
+	if (lockf(lockfile_fd, F_TLOCK, 100) < 0) {
+		
+		std::cout << "Cant lock pid file " << _filename << ". Is service already running?" << std::endl;
+		
+		if (errno == EACCES || errno == EAGAIN) {
+			close(lockfile_fd);
+			exit(1);
+		}
+		
+		exit(1);
+	}
+	
+	std::cout << "acquired lock file\n";
+	
+	ftruncate(lockfile_fd, 0);
+	sprintf(buf, "%ld", (long)getpid());
+	write(lockfile_fd, buf, strlen(buf)+1);
+	
+	return lockfile_fd;
 }
 
 void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile) {
@@ -134,9 +167,6 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	fd0 = open("/dev/null", O_RDWR);
 	fd1 = dup(0);
 	fd2 = dup(0);
-
-	
-
 	/*
 	 * Initialize the log file.
 	 */
@@ -152,44 +182,10 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	std::cout << "daemonize ok\n";
 }
 
-#define LOCKMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
+void Daemon::start(bool _daemonize) {
 
-int Daemon::chechLockFile(const std::string &_filename) {
-	
-	char	buf[16];
-
-	int lockfile_fd = open(_filename.c_str(), O_RDWR|O_CREAT, LOCKMODE);
-	
-	if (lockfile_fd < 0) {
-		std::cout << "cant open pid file\n";
-		//syslog(LOG_ERR, "can't open %s: %s", LOCKFILE, strerror(errno));
-		exit(1);
-	}
-	if (lockf(lockfile_fd, F_TLOCK, 100) < 0) {
-		
-		std::cout << "Cant lock pid file " << _filename << ". Is service already running?" << std::endl;
-		
-		if (errno == EACCES || errno == EAGAIN) {
-			close(lockfile_fd);
-			exit(1);
-		}
-		//syslog(LOG_ERR, "can't lock %s: %s", LOCKFILE, strerror(errno));
-		
-		exit(1);
-	}
-	
-	std::cout << "acquired lock file\n";
-	
-	ftruncate(lockfile_fd, 0);
-	sprintf(buf, "%ld", (long)getpid());
-	write(lockfile_fd, buf, strlen(buf)+1);
-	
-	return lockfile_fd;
-}
-
-void Daemon::start() {
-	
-	daemonize(m_config["pidfile"], m_config["log"]);
+	if (_daemonize)
+		daemonize(m_config["pidfile"], m_config["log"]);
 	
 	std::cout << "daemonize finished\n";
 	

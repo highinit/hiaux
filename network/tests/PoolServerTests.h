@@ -1,7 +1,7 @@
 #include <cxxtest/TestSuite.h>
 
 #include "hpoolserver.h"
-
+/*
 class PoolServerTests {
 	
 	hPoolServerPtr m_pool_server;
@@ -16,3 +16,4 @@ public:
 	PoolServerTests();
 };
 
+*/

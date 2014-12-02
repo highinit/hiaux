@@ -31,7 +31,7 @@ public:
 	}
 
 	void XtestPoolServer() {
-		PoolServerTests();
+		//PoolServerTests();
 		exit(0);
 	}
 
@@ -45,7 +45,7 @@ public:
 			it++;
 		}
 		
-		http_conn->sendResponse("SERVER RESPONSE!");
+		http_conn->sendResponse( HttpResponse(200, "SERVER RESPONSE!") );
 	}
 	
 	void XtestHttpServer()

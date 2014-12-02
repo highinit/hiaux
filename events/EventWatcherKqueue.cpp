@@ -25,6 +25,90 @@ EventWatcherKqueue::~EventWatcherKqueue() {
 //	std::cout << "EventWatcherKqueue::~EventWatcherKqueue\n";
 }
 
+void EventWatcherKqueue::addSocket(int _sock_fd, uint32_t _mask, void *_opaque_info) {
+	
+	unsigned int ev_count = 0;
+	struct kevent ev[2];
+	struct timespec timeout;
+	timeout.tv_nsec = 0;
+	timeout.tv_sec = 10;
+	
+	if (_mask & HI_READ)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD, 0, 0, _opaque_info);
+	
+	if (_mask & HI_WRITE)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD, 0, 0, _opaque_info);
+	
+	m_sockets_masks[_sock_fd] = _mask;
+	
+	if (kevent(m_kqueue, ev, ev_count, NULL, 0, &timeout) == -1 ) {
+		std::cout << "EventWatcher::addEvent kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
+		exit (0);
+	}
+}
+
+void EventWatcherKqueue::enableEvents(int _sock_fd, uint32_t _mask) {
+	
+	hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(_sock_fd);
+	
+	if (it == m_sockets_masks.end()) {
+		
+		return;
+	}
+	
+	unsigned int ev_count = 0;
+	struct kevent ev[2];
+	struct timespec timeout;
+	timeout.tv_nsec = 0;
+	timeout.tv_sec = 10;
+	
+	uint32_t mask = it->second;
+	uint32_t need_enable = (~mask) & _mask;
+	
+	if (need_enable & HI_READ)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+	
+	if (need_enable & HI_WRITE)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+	
+	m_sockets_masks[_sock_fd] = mask | need_enable;
+	
+	if (kevent(m_kqueue, ev, ev_count, NULL, 0, &timeout) == -1) {
+		
+		std::cout << "EventWatcher::enableEvents kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
+		exit (0);
+	}
+	
+}
+
+void EventWatcherKqueue::delSocket(int _sock_fd) {
+
+	hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(_sock_fd);
+	
+	if (it == m_sockets_masks.end()) {
+		
+		return;
+	}
+
+	unsigned int ev_count = 0;
+	struct kevent ev[2];
+	
+	uint32_t mask = it->second;
+	
+	if (mask & HI_READ)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
+	
+	if (mask & HI_WRITE)
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+	
+	if (kevent(m_kqueue, ev, ev_count, NULL, 0, NULL) == -1 ) {
+		
+		std::cout << "EventWatcher::delSocket kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
+	}
+	
+	m_sockets_masks.erase(it);
+}
+/*
 void EventWatcherKqueue::addSocketAccept(int _sock_fd, void *_opaque_info) {
 	
 //	hLockTicketPtr ticket = m_lock.lock();
@@ -55,21 +139,7 @@ void EventWatcherKqueue::addSocketRead(int _sock_fd, void *_opaque_info) {
 		//exit (0);
 	}
 }
-
-void EventWatcherKqueue::delSocket(int _sock_fd, void *_opaque_info) {
-	//m_nsockets--;
-	//std::cout << "EventWatcher::delSocket\n";
-	
-//	hLockTicketPtr ticket = m_lock.lock();
-	
-	struct kevent ev;
-	EV_SET(&ev, _sock_fd, EVFILT_READ, EV_DELETE, 0, 0, _opaque_info);
-	if (kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1 ) {
-				std::cout << "EventWatcher::delSocket kevent(m_kqueue, &ev, 1, NULL, 0, NULL) == -1";
-//		exit(0);
-	}
-}
-
+*/
 void EventWatcherKqueue::handleEvents() {
 	//std::cout << "m_nsockets: " << m_nsockets << std::endl;
 	
@@ -93,10 +163,17 @@ void EventWatcherKqueue::handleEvents() {
 		else if (event.filter == EVFILT_WRITE)
 			m_onWrite(event.ident, event.udata);
 		else if (event.filter == EVFILT_READ) {
-			if (m_sockets_accept.find(event.ident) == m_sockets_accept.end())
+			
+			hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(event.ident);
+			
+			if (it == m_sockets_masks.end())
 				m_onRead(event.ident, event.udata);
-			else
-				m_onAccept(event.ident, event.udata);
+			else {
+				if (it->second & HI_ACCEPT)
+					m_onAccept(event.ident, event.udata);
+				else
+					m_onRead(event.ident, event.udata);
+			}
 		}
 	}
 }

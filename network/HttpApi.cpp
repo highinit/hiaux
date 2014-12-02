@@ -119,7 +119,7 @@ void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_param
 		for (int i = 0; i<pb.fields_size(); i++) {
 			HttpApiPostDataField field = pb.fields(i);
 			_params[field.field()] = field.value();
-//			std::cout << "HttpApi::mergePostParams " <<  field.field() << "/" << field.value() << std::endl;
+			//std::cout << "HttpApi::mergePostParams " <<  field.field() << "/" << field.value() << std::endl;
 		}
 	} catch (...) {
 		std::cout << "HttpApi::mergePostParams HttpApiPostData protobuf parsing exception\n";
@@ -128,7 +128,7 @@ void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_param
 
 void HttpApi::onAsyncCallDone(const std::string &_resp, HttpConnectionPtr _conn) {
 	
-	_conn->sendResponse(_resp);
+	_conn->sendResponse( HttpResponse ( 200, _resp) );
 	//_conn->close();
 }
 
@@ -140,8 +140,8 @@ void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 	std::string err_mess;
 
 	if (!checkFields (params, err_mess)) {
-		_conn->sendResponse( m_buildApiError( err_mess ) );
-		//_conn->close();
+		_conn->sendResponse( HttpResponse(200, m_buildApiError( err_mess ) ) );
+		
 	} else {
 		std::string resp;
 		
@@ -152,8 +152,8 @@ void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 																	 m_methods_callbacks_async.find(params["method"]);
 			
 			if (it == m_methods_callbacks_async.end()) {
-				_conn->sendResponse("No such method");
-				//_conn->close();
+				_conn->sendResponse(HttpResponse(200, "No such method"));
+				
 			}
 			else {
 				it->second(params, boost::bind(&HttpApi::onAsyncCallDone, this, _1, _conn));
@@ -165,13 +165,12 @@ void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
 				m_methods_callbacks.find(params["method"]);
 			if (it == m_methods_callbacks.end()) {
 				
-				_conn->sendResponse("No such method");
+				_conn->sendResponse(HttpResponse(200, "No such method"));
 			}
 			else {
 				it->second(params, resp);
-				_conn->sendResponse(resp);
+				_conn->sendResponse(HttpResponse(200, resp));
 			}
-			//_conn->close();
 		}
 	}
 }

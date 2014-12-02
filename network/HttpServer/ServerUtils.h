@@ -5,6 +5,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/un.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
@@ -16,8 +17,8 @@
 
 #include <iostream>
 
-
 void setSocketBlock(int _fd, bool _isblock);
 int startListening(int port);
+int startListening(const std::string &_localsocket);
 
 #endif

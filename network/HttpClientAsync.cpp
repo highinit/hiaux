@@ -177,7 +177,7 @@ void HttpClientAsync::kick() {
 	
 	    struct timeval tv;
 		tv.tv_sec = 0;
-		tv.tv_usec = 100000;
+		tv.tv_usec = 50000;
 	
 	    retval = select(max_fd+1, &readfds, &writefds, &excfds, &tv);
 		

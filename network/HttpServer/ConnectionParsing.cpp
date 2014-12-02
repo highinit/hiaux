@@ -85,6 +85,13 @@ int HttpConnection::onHeadersValue(const char *at, size_t length) {
 
 int HttpConnection::onHeadersComplete() {
 
+	if (http_should_keep_alive(&m_parser) == 0) {
+		
+		keepalive = false;
+	} else {
+		keepalive = true;
+	}
+
 	return 0;
 }
 

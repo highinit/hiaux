@@ -3,40 +3,56 @@
 
 #include "hiconfig.h"
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/function.hpp>
+#include <queue>
 
 #include "ServerUtils.h"
 #include "ResponseInfo.h"
 #include "Request.h"
+#include "Response.h"
 #include "thirdparty/http-parser/http_parser.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
 
-class HttpConnection {
+class HttpConnection : public boost::noncopyable {
 public:
 	int sock;
 	uint64_t create_ts;
+	uint64_t last_activity_ts;
 	bool request_finished;
-	bool recv_ok;
+	bool alive;
+	bool ever_sent;
+	bool keepalive;
 	
 	HttpRequestPtr request;
+	
+	bool waiting_last_handling;
+	
+	std::queue<HttpRequestPtr> requests;
 	ResponseInfo m_resp_info;
 	
-	HttpConnection(int _sock, ResponseInfo _resp_info);
+	std::queue<std::string> m_resps;
+	std::string m_send_buffer;
+	
+	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response);
 	~HttpConnection();
 	
 	void performRecv();
 	bool notDead();
 	
-	void sendResponse(const std::string &_content);
+	void sendResponse(const HttpResponse &_resp);
+	void addResponse(const HttpResponse &_resp);
+	bool performSend();
+	
+	//void sendResponse(const std::string &_content);
+	//void sendResponse();
+	
 	void setHttpStatus(int code);
 	void addHeader(const std::string &_header);
 	void setCookie(const std::string &_name, const std::string &_value);
 	
-	
-	// Parsing
-	http_parser m_parser;
-	http_parser_settings m_parser_settings;
 	
 	int onMessageBegin();
 	int onUrl(const char *at, size_t length);
@@ -48,9 +64,18 @@ public:
 	int onMessageComplete();
 	
 private:
+	
+	void resetParser();
+	void renderResponse(const HttpResponse &_resp, std::string &_response);
+	
+	boost::function<void(int, const HttpResponse &)> m_on_send_response;
+	
 	std::string m_cur_header_field;
 	std::vector<std::string> m_headers;
 	int m_http_status_code;
+	
+	http_parser m_parser;
+	http_parser_settings m_parser_settings;
 };
 
 typedef boost::shared_ptr<HttpConnection> HttpConnectionPtr;

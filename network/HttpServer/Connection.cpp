@@ -1,13 +1,19 @@
 #include "Connection.h"
 
-HttpConnection::HttpConnection(int _sock, ResponseInfo _resp_info):
+HttpConnection::HttpConnection(int _sock,
+								ResponseInfo _resp_info,
+								const boost::function<void(int, const HttpResponse &)> &_on_send_response):
 	sock(_sock),
 	create_ts(time(0)),
+	last_activity_ts(create_ts),
 	request_finished(false),
-	recv_ok(true),
+	alive(true),
+	ever_sent(false),
+	keepalive(false),
 	m_resp_info(_resp_info),
-	m_http_status_code(200)
-	{
+	m_http_status_code(200),
+	waiting_last_handling(false),
+	m_on_send_response(_on_send_response) {
 	
 	request.reset(new HttpRequest);
 	
@@ -22,17 +28,25 @@ HttpConnection::HttpConnection(int _sock, ResponseInfo _resp_info):
 	m_parser_settings.on_body = &HttpConnection_onBody;
 	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete;
 	
+	std::cout << "HttpConnection::HttpConnection\n";
 }
 
 HttpConnection::~HttpConnection() {
+
+	std::cout << "HttpConnection::~HttpConnection\n";
 
 	::close(sock);
 	::shutdown(sock, SHUT_RDWR);
 }
 
+void HttpConnection::resetParser() {
+	
+	http_parser_init(&m_parser, HTTP_REQUEST);
+}
+
 bool HttpConnection::notDead() {
 	
-	return (time(0) - create_ts < 5) && recv_ok;
+	return (time(0) - create_ts < 5) && alive;
 }
 
 void HttpConnection::setHttpStatus(int code) {
@@ -50,46 +64,84 @@ void HttpConnection::setCookie(const std::string &_name, const std::string &_val
 	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
-void HttpConnection::sendResponse(const std::string &_content) {
+void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_response) {
 	
 	char content_len_c[50];
-	sprintf(content_len_c, "%d", (int)_content.size());
+	sprintf(content_len_c, "%d", (int)_resp.body.size());
 	std::string content_len(content_len_c);
-	
-	//char time_c[50];
-	//sprintf(time_c, "%d", asctime(0));
 	
 	char time_c[50];
 	sprintf(time_c, "%d", (int)time(0));
 	
-	std::string response = "HTTP/1.1 " + inttostr(m_http_status_code) + "\r\n"
+	std::string keepalive_header = "Connection: Keep-Alive\r\n";
+	
+	if (!keepalive)
+		keepalive_header = "Connection: close\r\n";
+	
+	_response = "HTTP/1.1 " + inttostr(_resp.code) + "\r\n"
 						"Content-Type: "+m_resp_info.content_type+"\r\n"
 						"Date: "+time_c+"\r\n"
 						"Server: "+m_resp_info.server_name+"\r\n"
-						"Connection: close\r\n"
+						+keepalive_header+
 						"Transfer-Encoding: none\r\n"
-						"Access-Control-Allow-Origin: *\r\n"
-						"Connection: close\r\n";
+						"Access-Control-Allow-Origin: *\r\n";
 	
-	for (int i = 0; i<m_headers.size(); i++) {
-		response += m_headers[i] + "\r\n";
-		//std::cout << "HttpConnection::sendResponse header: " << m_headers[i] << std::endl;
+//	for (int i = 0; i<m_headers.size(); i++) {
+//		_response += m_headers[i] + "\r\n";
+//	}
+	
+	_response += "Content-Length: "+content_len+"\r\n\r\n"+_resp.body;
+}
+
+void HttpConnection::sendResponse(const HttpResponse &_resp) {
+	
+	m_on_send_response(sock, _resp);
+}
+
+void HttpConnection::addResponse(const HttpResponse &_resp) {
+	
+	std::string dump;
+	
+	renderResponse(_resp, dump);
+	m_resps.push(dump);
+}
+
+bool HttpConnection::performSend() {
+	
+	if (m_send_buffer.size() == 0) {
+		
+		if (ever_sent && !keepalive) {
+			
+			alive = false;
+			return false;
+		}
+		
+		if (m_resps.size() == 0) {
+
+			return false;
+		}
+		
+		m_send_buffer = m_resps.front();
+		m_resps.pop();
+	}
+	//setSocketBlock(sock, false);
+	size_t nsent = ::send(sock, m_send_buffer.c_str(), m_send_buffer.size(), 0);
+	
+	ever_sent = true;
+	
+	if (nsent<=0) {
+		
+		return false;
 	}
 	
-	response +=	"Content-Length: "+content_len+"\r\n\r\n"+_content;
-	size_t nsent;
+	if (nsent < m_send_buffer.size()) {
 	
-	setSocketBlock(sock, true);
+		m_send_buffer = m_send_buffer.substr(nsent, m_send_buffer.size() - nsent);
+		return false;
+	}
 	
-	//#if defined __linux__
-		nsent = ::send(sock, response.c_str(), response.size(), 0);
-	//#else
-	//	nsent = ::send(sock, response.c_str(), response.size(), 0);
-	//#endif
-	
-	if (nsent<=0 || nsent < response.size())
-		std::cout << "HttpSrv::Connection::sendResponse SEND ERROR!!_____________"
-				<< nsent << std::endl;
+	m_send_buffer.clear();
+	return true;
 }
 
 void HttpConnection::performRecv() {
@@ -112,12 +164,12 @@ void HttpConnection::performRecv() {
 			}
 			else {
 			
-				recv_ok = false;
+				alive = false;
 				return;
 			}
 		} else  { // nread == 0
 			
-			recv_ok = false;
+			alive = false;
 			return;
 		}
 		nread = ::recv(sock, bf, 1024, MSG_DONTWAIT);

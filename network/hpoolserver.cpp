@@ -2,7 +2,7 @@
 #include "hpoolserver.h"
 
 using namespace std;
-
+/*
 class PoolException : public std::exception
 {
 	std::string m_message;
@@ -92,13 +92,13 @@ void hPoolServer::onRead(int _sock_fd, void *_opaque_info) {
 		m_onRead(it->second);
 	}
 }
-
+*/
 /*
 TaskLauncher::TaskRet hPoolServer::handleReadTask(ConnectionPtr _conn) {
 	m_handler(_conn);
 	return TaskLauncher::NO_RELAUNCH;
 }*/
-
+/*
 void hPoolServer::onWrite(int _sock_fd, void *_opaque_info) {
 
 	hLockTicketPtr ticket = m_connections_lock.lock();
@@ -138,7 +138,7 @@ TaskLauncher::TaskRet hPoolServer::readThread() {
 			while (!m_sockets_to_close_q.empty()) {
 //				std::cout << "removing socket from m_events_watcher\n";
 				int sock_fd = m_sockets_to_close_q.front();
-				m_events_watcher->delSocket(sock_fd, NULL);
+				m_events_watcher->delSocket(sock_fd);
 //				std::cout << "removed socket from m_events_watcher\n";
 				::close(sock_fd);
 				::shutdown(sock_fd, SHUT_RDWR);
@@ -265,3 +265,4 @@ int hPoolServer::startClient(const std::string &_ip, int portno) {
 			throw new std::string("hsock_t::client: ERROR connecting");
 	return sockfd;
 }
+*/

@@ -1,5 +1,5 @@
 #include "PoolServerTests.h"
-
+/*
 void PoolServerTests::onFinished() {
 	
 }
@@ -54,4 +54,4 @@ PoolServerTests::PoolServerTests() {
 	//pool->kill();
 	//pool->join();
 }
-
+*/

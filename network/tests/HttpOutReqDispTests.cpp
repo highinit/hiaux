@@ -49,7 +49,7 @@ void HttpOutReqDispTests::onHttpRequest(HttpConnectionPtr http_conn, HttpRequest
 		it++;
 	}
 	
-	http_conn->sendResponse(resp);
+	http_conn->sendResponse( HttpResponse(200, resp) );
 //	http_conn->close();
 }
 

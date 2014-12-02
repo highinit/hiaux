@@ -56,7 +56,7 @@ public:
 	Daemon();
 	virtual ~Daemon();
 	
-	void start();
+	void start(bool _daemonize);
 	void join();
 };
 
