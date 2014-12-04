@@ -2,7 +2,9 @@
 
 HttpConnection::HttpConnection(int _sock,
 								ResponseInfo _resp_info,
-								const boost::function<void(int, const HttpResponse &)> &_on_send_response):
+								const boost::function<void(int, const HttpResponse &)> &_on_send_response,
+								const boost::function<void(int, const std::string &)> &_on_send_custom_response,
+								const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> &_getCustomParser):
 	sock(_sock),
 	create_ts(time(0)),
 	last_activity_ts(create_ts),
@@ -10,12 +12,15 @@ HttpConnection::HttpConnection(int _sock,
 	alive(true),
 	ever_sent(false),
 	keepalive(false),
+	custom_protocol(false),
 	m_resp_info(_resp_info),
 	m_http_status_code(200),
 	waiting_last_handling(false),
-	m_on_send_response(_on_send_response) {
+	m_on_send_response(_on_send_response),
+	m_on_send_custom_response(_on_send_custom_response),
+	m_getCustomParser(_getCustomParser) {
 	
-	request.reset(new HttpRequest);
+	m_cur_http_request.reset(new HttpRequest);
 	
 	http_parser_init(&m_parser, HTTP_REQUEST);
 	m_parser.data = (void*)this;
@@ -28,18 +33,18 @@ HttpConnection::HttpConnection(int _sock,
 	m_parser_settings.on_body = &HttpConnection_onBody;
 	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete;
 	
-	std::cout << "HttpConnection::HttpConnection\n";
+	//std::cout << "HttpConnection::HttpConnection\n";
 }
 
 HttpConnection::~HttpConnection() {
 
-	std::cout << "HttpConnection::~HttpConnection\n";
+	//std::cout << "HttpConnection::~HttpConnection\n";
 
 	::close(sock);
 	::shutdown(sock, SHUT_RDWR);
 }
 
-void HttpConnection::resetParser() {
+void HttpConnection::resetHttpParser() {
 	
 	http_parser_init(&m_parser, HTTP_REQUEST);
 }
@@ -62,6 +67,21 @@ void HttpConnection::addHeader(const std::string &_header) {
 void HttpConnection::setCookie(const std::string &_name, const std::string &_value) {
 	
 	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
+}
+
+void HttpConnection::checkUpgrade(HttpRequestPtr request) {
+	
+	std::map<std::string, std::string>::iterator it = request->headers.find("Upgrade");
+	
+	if (it == request->headers.end())
+		return;
+	
+	m_custom_parser = m_getCustomParser(it->second, request);
+	
+	if (m_custom_parser) {
+		custom_protocol = true;
+		custom_protocol_id = it->second;
+	}
 }
 
 void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_response) {
@@ -98,12 +118,22 @@ void HttpConnection::sendResponse(const HttpResponse &_resp) {
 	m_on_send_response(sock, _resp);
 }
 
+void HttpConnection::sendCustomResponse(const std::string &_resp) {
+	
+	m_on_send_custom_response(sock, _resp);
+}
+
 void HttpConnection::addResponse(const HttpResponse &_resp) {
 	
 	std::string dump;
 	
 	renderResponse(_resp, dump);
 	m_resps.push(dump);
+}
+
+void HttpConnection::addCustomResponse(const std::string &_resp) {
+	
+	m_resps.push(_resp);
 }
 
 bool HttpConnection::performSend() {
@@ -178,7 +208,26 @@ void HttpConnection::performRecv() {
 	if (readbf.size() > 0) {
 		//m_req_text += readbf;
 		//std::cout << m_req_text << std::endl;
-		http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
+		
+		if (!custom_protocol)
+			http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
+		else
+			m_custom_parser->execute(readbf, request_finished);
+	}
+	
+	if (request_finished) {
+		
+		if (!custom_protocol) {
+		
+			http_requests.push(m_cur_http_request);
+			m_cur_http_request.reset(new HttpRequest);
+			request_finished = false;
+			
+		} else {
+			
+			custom_requests.push(m_custom_parser->getRequest());
+			request_finished = false;
+		}
 	}
 	
 }

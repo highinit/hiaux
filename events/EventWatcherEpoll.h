@@ -9,12 +9,13 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
+#include <boost/noncopyable.hpp>
 
 #include <sys/epoll.h>
 
 #include "errno.h"
 
-class EventWatcherEpoll {
+class EventWatcherEpoll : public boost::noncopyable {
 	int m_epoll;
 	size_t m_nsockets;
 	hiaux::hashtable<int, bool> m_sockets_accept;

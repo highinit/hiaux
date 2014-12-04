@@ -50,14 +50,15 @@ int HttpConnection::onUrl(const char *at, size_t length) {
 	char bf[length+1];
 	memcpy(bf, at, length);
 	bf[length] = '\0';
-	request->url = std::string(at);
-	request->url = request->url.substr(0, request->url.find(' '));
-	request->path = getUrlPath(request->url);
-	parseGET(request->url, request->values_GET);
+	m_cur_http_request->url = std::string(at);
+	m_cur_http_request->url = m_cur_http_request->url.substr(0, m_cur_http_request->url.find(' '));
+	m_cur_http_request->path = getUrlPath(m_cur_http_request->url);
+	parseGET(m_cur_http_request->url, m_cur_http_request->values_GET);
 	return 0;
 }
 
 int HttpConnection::onStatus(const char *at, size_t length) {
+	
 	return 0;
 }
 
@@ -77,8 +78,11 @@ int HttpConnection::onHeadersValue(const char *at, size_t length) {
 	bf[length] = '\0';
 
 	if (m_cur_header_field == "Cookie") {
-		parseCookies(bf, request->cookies);
+		parseCookies(bf, m_cur_http_request->cookies);
 	}
+	 
+	m_cur_http_request->headers.insert(make_pair(m_cur_header_field, bf));
+	
 	
 	return 0;
 }
@@ -100,7 +104,7 @@ int HttpConnection::onBody(const char *at, size_t length) {
 	char bf[length+1];
 	memcpy(bf, at, length);
 	bf[length] = '\0';
-	request->body = std::string(bf);
+	m_cur_http_request->body = std::string(bf);
 	
 	return 0;
 }

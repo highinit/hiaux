@@ -5,7 +5,7 @@
 #include "hiaux/crypt/sha1.h"
 #include "hiaux/strings/string_utils.h"
 #include "hiaux/crypt/md5.h"
-#include "HttpClient.h"
+#include "../HttpClient.h"
 #include "curl/curl.h"
 
 #include "HttpApiPostData.pb.h"

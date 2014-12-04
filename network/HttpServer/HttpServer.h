@@ -9,6 +9,8 @@
 #include "Request.h"
 #include "Response.h"
 
+#include "CustomParser.h"
+
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"
 
@@ -16,6 +18,16 @@
 #include "hiaux/events/EventsWatcher.h"
 
 #include <boost/noncopyable.hpp>
+
+class CustomProtocolInfo {
+public:
+	
+	CustomProtocolInfo(const boost::function<CustomParserPtr(HttpRequestPtr) > &_requestBuilder,
+					const boost::function<void(HttpConnectionPtr, CustomRequestPtr)> &_handler);
+	
+	boost::function<CustomParserPtr(HttpRequestPtr) > requestBuilder;
+	boost::function<void(HttpConnectionPtr, CustomRequestPtr)> handler;
+};
 
 class HttpServer : public boost::noncopyable {
 	
@@ -35,6 +47,7 @@ class HttpServer : public boost::noncopyable {
 	
 	hAutoLock resp_lock;
 	std::queue< std::pair<HttpConnectionPtr, HttpResponse> > m_resp_queue;
+	std::queue< std::pair<HttpConnectionPtr, std::string> > m_custom_resp_queue;
 	
 	void handleResponse(HttpConnectionPtr _conn);
 	
@@ -42,17 +55,22 @@ class HttpServer : public boost::noncopyable {
 	
 	void cleanUpDeadConnections();
 	
+	std::map<std::string, CustomProtocolInfo> m_customProtocols;
+	
 public:
 	
 	void onSendResponse(int _sock, const HttpResponse &_resp);
-		
+	void onSendCustomResponse(int _sock, const std::string &_resp);
+	CustomParserPtr getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req);
+	
 	void onRead(int _sock, void *_opaque_info);
 	void onWrite(int _sock, void *_opaque_info);
 	void onError(int _sock, void *_opaque_info);
 	void onAccept(int _sock_fd, void *_opaque_info);
 	
 	TaskLauncher::TaskRet eventLoop();
-	TaskLauncher::TaskRet workerTask(HttpConnectionPtr _conn, HttpRequestPtr _req);
+	TaskLauncher::TaskRet customWorkerTask(HttpConnectionPtr _conn, CustomRequestPtr _req);
+	TaskLauncher::TaskRet httpWorkerTask(HttpConnectionPtr _conn, HttpRequestPtr _req);
 	
 	// called from threadpool
 	void sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp);
@@ -68,6 +86,10 @@ public:
 				boost::function<void(HttpConnectionPtr,
 									HttpRequestPtr)> _request_hdl,
 				const std::string &_localsocket);
+
+	void addCustomProtocol(const std::string &_protocol,
+							const CustomProtocolInfo &_info);
+
 };
 
 typedef boost::shared_ptr<HttpServer> HttpServerPtr;

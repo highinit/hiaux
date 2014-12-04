@@ -3,7 +3,11 @@
 "_NAME" : "hiaux_network",
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
-	 			{ "type": "Glob", "mask": "*.cc" }],
+				{ "type": "Glob", "mask": "HttpApi/*.cpp" },
+				{ "type": "Glob", "mask": "HttpApi/BinClient/*.cpp" },
+				{ "type": "Glob", "mask": "HttpApi/BinClient/*.cc" },
+	 			{ "type": "Glob", "mask": "*.cc" },
+				{ "type": "Glob", "mask": "HttpApi/*.cc" }],
 
 "_LINKFLAGS": ["-lcurl", "-ljansson", "-lprotobuf"],
 

@@ -3,6 +3,7 @@
 "_NAME" : "hiaux_network_http_server",
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+				{ "type": "Glob", "mask": "HttpApi/*.cpp" },
 	 			{ "type": "Glob", "mask": "*.cc" }],
 
 "_LINKFLAGS": ["-lcurl", "-ljansson", "-lprotobuf"],

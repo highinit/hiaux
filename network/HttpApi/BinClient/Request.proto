@@ -1,0 +1,14 @@
+
+package hiapi_client;
+
+message RequestParamPb {
+	
+	required string key = 1;
+	required bytes value = 2;
+}
+
+message RequestPb {
+	
+	required string method = 1;
+	repeated RequestParamPb params = 2;
+}

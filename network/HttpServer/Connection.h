@@ -13,6 +13,8 @@
 #include "Response.h"
 #include "thirdparty/http-parser/http_parser.h"
 
+#include "CustomParser.h"
+
 #include <sys/types.h>
 #include <sys/socket.h>
 
@@ -25,25 +27,32 @@ public:
 	bool alive;
 	bool ever_sent;
 	bool keepalive;
-	
-	HttpRequestPtr request;
-	
+	bool custom_protocol;
 	bool waiting_last_handling;
 	
-	std::queue<HttpRequestPtr> requests;
-	ResponseInfo m_resp_info;
+	std::string custom_protocol_id;
 	
-	std::queue<std::string> m_resps;
-	std::string m_send_buffer;
+	std::queue<HttpRequestPtr> http_requests;
+	std::queue<CustomRequestPtr> custom_requests;
 	
-	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response);
+	
+	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response,
+					const boost::function<void(int, const std::string &)> &_on_send_custom_response,
+					const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> &_getCustomParser);
+					
 	~HttpConnection();
+	
+	void checkUpgrade(HttpRequestPtr request);
 	
 	void performRecv();
 	bool notDead();
 	
 	void sendResponse(const HttpResponse &_resp);
+	
+	void sendCustomResponse(const std::string &_resp);
+	
 	void addResponse(const HttpResponse &_resp);
+	void addCustomResponse(const std::string &_resp);
 	bool performSend();
 	
 	//void sendResponse(const std::string &_content);
@@ -65,10 +74,20 @@ public:
 	
 private:
 	
-	void resetParser();
+	void resetHttpParser();
 	void renderResponse(const HttpResponse &_resp, std::string &_response);
 	
 	boost::function<void(int, const HttpResponse &)> m_on_send_response;
+	boost::function<void(int, const std::string &)> m_on_send_custom_response;
+	boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> m_getCustomParser;
+	
+	HttpRequestPtr m_cur_http_request;
+	CustomRequestPtr m_cur_custom_request;
+	
+	ResponseInfo m_resp_info;
+	
+	std::queue<std::string> m_resps;
+	std::string m_send_buffer;
 	
 	std::string m_cur_header_field;
 	std::vector<std::string> m_headers;
@@ -76,6 +95,8 @@ private:
 	
 	http_parser m_parser;
 	http_parser_settings m_parser_settings;
+	
+	CustomParserPtr m_custom_parser;
 };
 
 typedef boost::shared_ptr<HttpConnection> HttpConnectionPtr;

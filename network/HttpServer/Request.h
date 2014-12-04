@@ -10,6 +10,8 @@ class HttpRequest {
 public:
 	std::string url;
 	std::string path;
+	
+	std::map<std::string, std::string> headers;
 	hiaux::hashtable<std::string, std::string> values_GET;
 	hiaux::hashtable<std::string, std::string> cookies;
 	std::string body;

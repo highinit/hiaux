@@ -2,7 +2,7 @@
 #define _HTTPAPI_H_
 
 #include "hiconfig.h"
-#include "HttpServer/HttpServer.h"
+#include "../HttpServer/HttpServer.h"
 
 #include "HttpApiPostData.pb.h"
 
