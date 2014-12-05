@@ -19,6 +19,9 @@ EventWatcherKqueue::EventWatcherKqueue(boost::function<void(int,void*)> _onRead,
 {
 	m_nsockets = 0;
 	m_kqueue = kqueue();
+	
+	if (m_kqueue == -1)
+		throw CannotCreateEventWatcherEx();
 }
 
 EventWatcherKqueue::~EventWatcherKqueue() {
@@ -146,7 +149,7 @@ void EventWatcherKqueue::handleEvents() {
 //	hLockTicketPtr ticket = m_lock.lock();
 	
 	struct kevent events[4097];
-	timespec timeout = {0, 250000000};
+	timespec timeout = {0, 100000000};
 	int nevents = kevent(m_kqueue, NULL, 0, events, 4096, &timeout);
 	
 	if (nevents < 1) {

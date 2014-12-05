@@ -44,14 +44,18 @@ class ResponseParser {
 	std::string m_cur_response;
 	bool m_got_response;
 	
+	
 	void parse();
+	
+	boost::function<void()> m_onHandshaked;
 	
 public:
 	
-	ResponseParser();
+	ResponseParser(boost::function<void()> _onHandshaked);
 	virtual ~ResponseParser();
 
-	bool handshaked();
+	bool justHandshaked();
+	
 	void execute(const std::string &_d);
 	bool hasResponse();
 	void getResponse(std::string &_s);

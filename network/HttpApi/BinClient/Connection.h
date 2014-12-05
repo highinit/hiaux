@@ -8,6 +8,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
+#include <boost/bind.hpp>
 #include <boost/noncopyable.hpp>
 
 #include <string>
@@ -39,10 +40,19 @@ class Connection {
 
 public:
 	
+	enum State {
+		HANDSHAKING,
+		JUST_HANDSHAKED,
+		ACTIVE
+	};
+
+	State state;
+	
 	Connection(int _sock);
 	virtual ~Connection();
 	
-	bool handshaked();
+	void onHandshaked();
+	
 	void addRequest(RequestPtr _req);
 	void performSend();
 	void performRecv();

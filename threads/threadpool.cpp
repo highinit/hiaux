@@ -188,6 +188,7 @@ void hThreadPool::kill() {
 }
 
 void hThreadPool::join() {
+	
 	for (int i = 0; i<threads.size(); i++) {
 		threads[i]->join();
 	}

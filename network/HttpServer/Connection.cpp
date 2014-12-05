@@ -33,12 +33,12 @@ HttpConnection::HttpConnection(int _sock,
 	m_parser_settings.on_body = &HttpConnection_onBody;
 	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete;
 	
-	//std::cout << "HttpConnection::HttpConnection\n";
+	std::cout << "HttpConnection::HttpConnection\n";
 }
 
 HttpConnection::~HttpConnection() {
 
-	//std::cout << "HttpConnection::~HttpConnection\n";
+	std::cout << "HttpConnection::~HttpConnection\n";
 
 	::close(sock);
 	::shutdown(sock, SHUT_RDWR);
@@ -54,7 +54,7 @@ bool HttpConnection::notDead() {
 	//std::cout << "HttpConnection::notDead " << ((time(0) - create_ts < 5) && alive)
 	//	<< " alive: " << alive << std::endl; 
 	
-	return (time(0) - create_ts < 5) && alive;
+	return ((time(0) - create_ts < 5) && alive ) || custom_protocol;
 }
 
 void HttpConnection::setHttpStatus(int code) {
@@ -94,6 +94,8 @@ bool HttpConnection::checkUpgrade(HttpRequestPtr request) {
 		custom_protocol_id = it->second;
 		
 		sendCustomResponse(handshake_message);
+		
+		waiting_last_handling = false;
 		
 		return true;
 	}
@@ -173,7 +175,7 @@ bool HttpConnection::performSend() {
 		m_send_buffer = m_resps.front();
 		m_resps.pop();
 	}
-	//setSocketBlock(sock, false);
+	//setSocketBlock(sock, true);
 	int nsent = ::send(sock, m_send_buffer.c_str(), m_send_buffer.size(), 0);
 	
 	ever_sent = true;
@@ -184,9 +186,14 @@ bool HttpConnection::performSend() {
 			alive = false;
 			std::cout << "nsent<=0 \n";
 		}
+		else {
+			//std::cout << "HttpConnection::performSend EAGAIN\n";
+		}
 			
 		return false;
 	}
+	
+	//std::cout << "HttpConnection::performSend: " << m_send_buffer.substr(0, nsent) << std::endl;
 	
 	if (nsent < m_send_buffer.size()) {
 	
@@ -196,12 +203,6 @@ bool HttpConnection::performSend() {
 	
 	m_send_buffer.clear();
 	return true;
-}
-
-std::string getRecvError(int _errno) {
-	
-//	if (_errno == )
-	return "";
 }
 
 void HttpConnection::performRecv() {
@@ -224,8 +225,7 @@ void HttpConnection::performRecv() {
 			}
 			else {
 			
-				std::cout << "nread < 0: " << strerror(errno) << std::endl;
-				
+				//std::cout << "nread < 0: " << strerror(errno) << std::endl;
 				alive = false;
 				return;
 			}
@@ -233,15 +233,15 @@ void HttpConnection::performRecv() {
 		else  { // nread == 0
 			
 			//std::cout << "nread == 0\n";
-			//alive = false;
-			break;
+			alive = false;
+			return;
 		}
 		nread = ::recv(sock, bf, 1024, MSG_DONTWAIT);
 	}
 
 	if (readbf.size() > 0) {
-		//m_req_text += readbf;
-		//std::cout << m_req_text << std::endl;
+		
+		//std::cout << "HttpConnection::performRecv: " <<  readbf << std::endl;
 		
 		if (!custom_protocol)
 			http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());

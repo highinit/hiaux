@@ -4,10 +4,11 @@ namespace hiapi {
 
 namespace client {
 
-ResponseParser::ResponseParser():
+ResponseParser::ResponseParser(boost::function<void()> _onHandshaked):
 m_got_response(false),
 state(READING_HANDSHAKE),
-m_handshake(HIAPI_HANDSHAKE) {
+m_handshake(HIAPI_HANDSHAKE),
+m_onHandshaked(_onHandshaked) {
 	
 }
 
@@ -35,7 +36,8 @@ void ResponseParser::parse() {
 					throw CannotHandShakeEx();
 				else {
 					state = READING_SIZE;
-					std::cout << "ResponseParser::parse HANDSHAKE OK!\n";
+					//std::cout << "ResponseParser::parse HANDSHAKE OK!\n";
+					m_onHandshaked();
 				}
 			}
 			else
@@ -44,12 +46,14 @@ void ResponseParser::parse() {
 		
 		if (state == READING_SIZE) {
 			
+			//std::cout << "ResponseParser::parse READING_SIZE\n";
+			
 			size_t endlpos = m_cur_token.find("\n");
 			if (endlpos == std::string::npos)
 				return;
 			
-			std::string size_str = m_cur_token.substr(0, m_cur_token.size() - endlpos);
-			m_cur_token = m_cur_token.substr(size_str.size(), m_cur_token.size() - size_str.size());
+			std::string size_str = m_cur_token.substr(0, endlpos);
+			m_cur_token = m_cur_token.substr(size_str.size()+1, m_cur_token.size() - size_str.size() + 1);
 			
 			m_size = string_to_uint64(size_str);
 			
@@ -61,6 +65,8 @@ void ResponseParser::parse() {
 		
 		if (state == READING_MESSAGE) {
 			
+			//std::cout << "ResponseParser::parse READING_MESSAGE\n";
+			
 			if (m_cur_token.size() >= m_size) {
 				
 				m_cur_response = m_cur_token.substr(0, m_size);
@@ -71,12 +77,6 @@ void ResponseParser::parse() {
 			return;
 		}
 	}
-}
-
-
-bool ResponseParser::handshaked() {
-	
-	return state == READING_SIZE || state == READING_MESSAGE;
 }
 
 void ResponseParser::execute(const std::string &_d) {

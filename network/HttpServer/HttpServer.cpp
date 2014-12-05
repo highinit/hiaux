@@ -49,10 +49,10 @@ HttpServer::HttpServer(TaskLauncherPtr launcher,
 	m_request_hdl = _request_hdl;
 
 	m_events_watcher.reset(new EventWatcher(
-			boost::bind(&HttpServer::onRead, this, _1, _2),
-			boost::bind(&HttpServer::onWrite, this, _1, _2),
-			boost::bind(&HttpServer::onError, this, _1, _2),
-			boost::bind(&HttpServer::onAccept, this, _1, _2)));
+		boost::bind(&HttpServer::onRead, this, _1, _2),
+		boost::bind(&HttpServer::onWrite, this, _1, _2),
+		boost::bind(&HttpServer::onError, this, _1, _2),
+		boost::bind(&HttpServer::onAccept, this, _1, _2)));
 
 	m_events_watcher->addSocket(m_listen_socket, HI_READ | HI_ACCEPT, NULL);
 	m_launcher->addTask(NEW_LAUNCHER_TASK2(&HttpServer::eventLoop, this));
@@ -64,10 +64,8 @@ void HttpServer::addCustomProtocol(const std::string &_protocol,
 	m_customProtocols.insert(make_pair(_protocol, _info));
 }
 
-void HttpServer::onAccept(int _sock_fd, void *_opaque_info) {
-	
-	//std::cout << "onAccept\n";
-	
+void HttpServer::performAccept(int _sock_fd) {
+		
 	struct sockaddr_in cli_addr;
 	size_t clilen = sizeof(cli_addr);
 	int accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
@@ -89,13 +87,11 @@ void HttpServer::onAccept(int _sock_fd, void *_opaque_info) {
 
 void HttpServer::onError(int _sock, void *_opaque_info) {
 	
-	//std::cout << "HttpServer::onError\n";
-	m_events_watcher->delSocket(_sock);
-	m_reading_connections.erase( m_reading_connections.find(_sock) );
+	killConnection(_sock);
 }
 
-void HttpServer::onRead(int _sock, void *_opaque_info) {
-	
+void HttpServer::performRecv(int _sock) {
+		
 	try {
 	
 		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
@@ -157,9 +153,8 @@ void HttpServer::onRead(int _sock, void *_opaque_info) {
 	}
 }
 
-void HttpServer::onWrite(int _sock, void *_opaque_info) {
+void HttpServer::performSend(int _sock) {
 	
-	//std::cout << "HttpServer::onWrite\n";
 	try {
 		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
 		if (it == m_reading_connections.end()) {
@@ -186,9 +181,24 @@ void HttpServer::onWrite(int _sock, void *_opaque_info) {
 	}
 }
 
+void HttpServer::onRead(int _sock, void *_opaque_info) {
+	
+	performRecv(_sock);
+}
+
+void HttpServer::onWrite(int _sock, void *_opaque_info) {
+	
+	performSend(_sock);
+}
+
+void HttpServer::onAccept(int _sock, void *_opaque_info) {
+	
+	performAccept(_sock);
+}
+
 void HttpServer::killConnection(int _sock) {
 	
-	std::cout << "HttpServer::killConnection\n";
+	//std::cout << "HttpServer::killConnection\n";
 	
 	m_events_watcher->delSocket(_sock);
 	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
@@ -287,23 +297,26 @@ void HttpServer::handleEvents() {
 	try {
 	
 		m_events_watcher->handleEvents();
-	
-		hLockTicketPtr ticket = resp_lock.lock();
-	
-		while (!m_resp_queue.empty()) {
 		
-			std::pair<HttpConnectionPtr, HttpResponse> resp_context = m_resp_queue.front();
-			resp_context.first->addResponse(resp_context.second);
-			handleResponse(resp_context.first);
-			m_resp_queue.pop();
-		}
+		{
+			hLockTicketPtr ticket = resp_lock.lock();
 	
-		while (!m_custom_resp_queue.empty()) {
+			while (!m_resp_queue.empty()) {
 		
-			std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
-			resp_context.first->addCustomResponse(resp_context.second);
-			handleResponse(resp_context.first);
-			m_custom_resp_queue.pop();
+				std::pair<HttpConnectionPtr, HttpResponse> resp_context = m_resp_queue.front();
+				resp_context.first->addResponse(resp_context.second);
+				handleResponse(resp_context.first);
+				m_resp_queue.pop();
+			}
+	
+			while (!m_custom_resp_queue.empty()) {
+		
+				std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
+				resp_context.first->addCustomResponse(resp_context.second);
+				handleResponse(resp_context.first);
+				m_custom_resp_queue.pop();
+			}
+	
 		}
 	
 		cleanUpDeadConnections();

@@ -23,9 +23,12 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 
-#define	HI_ACCEPT 1
-#define	HI_READ 2
-#define	HI_WRITE 4
+#define	HI_ACCEPT (1<<0)
+#define	HI_READ (1<<2)
+#define	HI_WRITE (1<<3)
+
+class CannotCreateEventWatcherEx {
+};
 
 class EventWatcherKqueue :public boost::noncopyable {	
 	int m_kqueue;
@@ -49,7 +52,6 @@ public:
 	void addSocket(int _sock_fd, uint32_t _mask, void *_opaque_info);
 	void enableEvents(int _sock_fd, uint32_t _mask);
 	virtual void delSocket(int _sock_fd);
-	
 	
 	//virtual void addSocketAccept(int _sock_fd, void *_opaque_info);
 	//virtual void addSocketRead(int _sock_fd, void *_opaque_info);

@@ -58,6 +58,9 @@ private:
 	void reinitConnections();
 	void putRequestsToConnections();
 	
+	void performRecv(int _sock);
+	void performSend(int _sock);
+	
 public:
 	
 	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 1);

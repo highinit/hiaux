@@ -23,8 +23,10 @@ void Parser::parse() {
 			if (endlpos == std::string::npos)
 				return;
 			
-			std::string size_str = m_cur_token.substr(0, m_cur_token.size() - endlpos);
-			m_cur_token = m_cur_token.substr(size_str.size(), m_cur_token.size() - size_str.size());
+			std::string size_str = m_cur_token.substr(0, endlpos);
+			m_cur_token = m_cur_token.substr(size_str.size() + 1, m_cur_token.size() - size_str.size() + 1);
+			
+			//std::cout << "Parser::parse size_str: " << size_str << " m_cur_token:" << m_cur_token << std::endl;
 			
 			m_size = string_to_uint64(size_str);
 			
@@ -35,6 +37,8 @@ void Parser::parse() {
 		}
 		
 		if (state == READING_MESSAGE) {
+			
+			//std::cout << "state == READING_MESSAGE size: " << m_size << " got: " << m_cur_token.size() << std::endl;
 			
 			if (m_cur_token.size() >= m_size) {
 				
@@ -56,8 +60,8 @@ void Parser::execute(const std::string &_d) {
 	
 	//return;
 	m_cur_token.append(_d);
-	std::cout << "Parser::execute " << m_cur_token << std::endl;
-	//parse();
+	//std::cout << "Parser::execute " << m_cur_token << std::endl;
+	parse();
 }
 
 bool Parser::hasRequest() {

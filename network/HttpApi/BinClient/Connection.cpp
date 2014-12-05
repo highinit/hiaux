@@ -8,7 +8,9 @@ namespace client {
 #define HIAPI_PROTOID "hiapi"
 
 Connection::Connection(int _sock):
-m_sock(_sock) {
+m_sock(_sock),
+state(HANDSHAKING),
+m_parser(boost::bind(&Connection::onHandshaked, this)) {
 	
 	std::ostringstream o;
 	
@@ -18,11 +20,14 @@ m_sock(_sock) {
 		<< "Upgrade: " HIAPI_PROTOID HTTP_DELIM HTTP_DELIM;
 
 	m_send_buffer = o.str();
+	performSend();
+	
+	std::cout << "___CLIENT Connection::Connection\n";
 }
 
 Connection::~Connection() {
 	
-	//std::cout << "___CLIENT Connection::~Connection\n";
+	std::cout << "___CLIENT Connection::~Connection\n";
 	
 	::close(m_sock);
 	::shutdown(m_sock, SHUT_RDWR);
@@ -33,18 +38,24 @@ Connection::~Connection() {
 		m_sent_requests.pop();
 		cur_req->onFinished(false, "");
 	}
-	
 }
 
-bool Connection::handshaked() {
+void Connection::onHandshaked() {
 	
-	return m_parser.handshaked();
+	//std::cout << "Connection::onHandshaked\n";
+	state = JUST_HANDSHAKED;
 }
 
 void Connection::addRequest(RequestPtr _req) {
 	
+	state = ACTIVE;
+	
+	std::ostringstream o;
+	o << _req->data.size() << "\n"
+		<< _req->data;
+	
 	m_sent_requests.push(_req);
-	m_send_buffer.append(_req->data);
+	m_send_buffer.append(o.str());
 }
 
 void Connection::onResponse(const std::string &_str) {
@@ -57,12 +68,19 @@ void Connection::onResponse(const std::string &_str) {
 
 void Connection::performSend() {
 	
+	//std::cout << "Connection::performSend\n";
+	
+	if (m_send_buffer.size() == 0)
+		return;
+	
+	//std::cout << "sending " << m_send_buffer << std::endl;
+	
 	int nsent = ::send(m_sock, m_send_buffer.c_str(), m_send_buffer.size(), 0);
 	
 	if (nsent<=0) {
 		
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
-			std::cout << "___CLIENT Connection::performSend error: " << strerror(errno) << std::endl;
+			
 			throw LostConnectionEx();
 		}
 	}
@@ -92,12 +110,12 @@ void Connection::performRecv() {
 			}
 			else {
 				
-				std::cout << "___CLIENT Connection::performRecv error: " << strerror(errno) << std::endl;
+				//std::cout << "___CLIENT Connection::performRecv error: " << strerror(errno) << std::endl;
 				throw LostConnectionEx();
 			}
 		} else  { // nread == 0
 			
-			break;
+			//break;
 			throw LostConnectionEx();
 		}
 		nread = ::recv(m_sock, bf, 1024, MSG_DONTWAIT);
@@ -105,10 +123,14 @@ void Connection::performRecv() {
 
 	if (readbf.size() > 0) {
 		
+		//std::cout << "_CLIENT Connection::performRecv |" << readbf <<  "|" <<  std::endl;
+		
 		m_parser.execute(readbf);
 	}
 	
 	while (m_parser.hasResponse()) {
+	
+		//std::cout << "___CLIENT got response\n";
 		
 		std::string resp;
 		m_parser.getResponse(resp);

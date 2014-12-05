@@ -60,6 +60,10 @@ class HttpServer : public boost::noncopyable {
 	
 	std::map<std::string, CustomProtocolInfo> m_customProtocols;
 	
+	void performRecv(int _sock);
+	void performSend(int _sock);
+	void performAccept(int _sock);
+	
 public:
 	
 	void onSendResponse(int _sock, const HttpResponse &_resp);
@@ -68,8 +72,8 @@ public:
 	
 	void onRead(int _sock, void *_opaque_info);
 	void onWrite(int _sock, void *_opaque_info);
+	void onAccept(int _sock, void *_opaque_info);
 	void onError(int _sock, void *_opaque_info);
-	void onAccept(int _sock_fd, void *_opaque_info);
 	
 	void handleEvents();
 	TaskLauncher::TaskRet eventLoop();
