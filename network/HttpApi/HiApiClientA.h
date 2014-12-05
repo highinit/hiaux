@@ -5,6 +5,18 @@
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
 
+/*
+
+Application Client --> Api Client --> libcurl --> HTTP --> Http Server --> Api handler --> Application
+
+(one connection per request, no keep-alive)
+
+Application Client --> Api Client --> TCP --> Http Server (Upgrade to custom binary protocol) --> Api handler --> Application
+
+(multiple persistent connections, binary lightweight protocol, server is still rest compatible)
+
+*/
+
 class HiApiClientA : public boost::noncopyable {
 
 public:

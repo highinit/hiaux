@@ -38,11 +38,11 @@ public:
 	
 	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response,
 					const boost::function<void(int, const std::string &)> &_on_send_custom_response,
-					const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> &_getCustomParser);
+					const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake)> &_getCustomParser);
 					
 	~HttpConnection();
 	
-	void checkUpgrade(HttpRequestPtr request);
+	bool checkUpgrade(HttpRequestPtr request);
 	
 	void performRecv();
 	bool notDead();
@@ -79,7 +79,7 @@ private:
 	
 	boost::function<void(int, const HttpResponse &)> m_on_send_response;
 	boost::function<void(int, const std::string &)> m_on_send_custom_response;
-	boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> m_getCustomParser;
+	boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &)> m_getCustomParser;
 	
 	HttpRequestPtr m_cur_http_request;
 	CustomRequestPtr m_cur_custom_request;

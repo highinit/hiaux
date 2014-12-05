@@ -4,7 +4,7 @@ HttpConnection::HttpConnection(int _sock,
 								ResponseInfo _resp_info,
 								const boost::function<void(int, const HttpResponse &)> &_on_send_response,
 								const boost::function<void(int, const std::string &)> &_on_send_custom_response,
-								const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req)> &_getCustomParser):
+								const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake)> &_getCustomParser):
 	sock(_sock),
 	create_ts(time(0)),
 	last_activity_ts(create_ts),
@@ -51,6 +51,9 @@ void HttpConnection::resetHttpParser() {
 
 bool HttpConnection::notDead() {
 	
+	//std::cout << "HttpConnection::notDead " << ((time(0) - create_ts < 5) && alive)
+	//	<< " alive: " << alive << std::endl; 
+	
 	return (time(0) - create_ts < 5) && alive;
 }
 
@@ -69,19 +72,33 @@ void HttpConnection::setCookie(const std::string &_name, const std::string &_val
 	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
-void HttpConnection::checkUpgrade(HttpRequestPtr request) {
+bool HttpConnection::checkUpgrade(HttpRequestPtr request) {
 	
 	std::map<std::string, std::string>::iterator it = request->headers.find("Upgrade");
 	
 	if (it == request->headers.end())
-		return;
+		return false;
 	
-	m_custom_parser = m_getCustomParser(it->second, request);
+	//std::cout << "HttpConnection::checkUpgrade " << it->second << std::endl;;
+	//std::cout << "Keep-alive: " << keepalive << std::endl;
+	
+	std::string handshake_message;
+	
+	m_custom_parser = m_getCustomParser(it->second, request, handshake_message);
 	
 	if (m_custom_parser) {
+		
+		//std::cout << "HttpConnection::checkUpgrade potocol upgraded, set custom parser\n";
+		
 		custom_protocol = true;
 		custom_protocol_id = it->second;
+		
+		sendCustomResponse(handshake_message);
+		
+		return true;
 	}
+	
+	return false;
 }
 
 void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_response) {
@@ -140,8 +157,10 @@ bool HttpConnection::performSend() {
 	
 	if (m_send_buffer.size() == 0) {
 		
+		// one response sent
 		if (ever_sent && !keepalive) {
 			
+			//std::cout << "ever_sent && !keepalive\n";
 			alive = false;
 			return false;
 		}
@@ -155,12 +174,17 @@ bool HttpConnection::performSend() {
 		m_resps.pop();
 	}
 	//setSocketBlock(sock, false);
-	size_t nsent = ::send(sock, m_send_buffer.c_str(), m_send_buffer.size(), 0);
+	int nsent = ::send(sock, m_send_buffer.c_str(), m_send_buffer.size(), 0);
 	
 	ever_sent = true;
 	
 	if (nsent<=0) {
 		
+		if (errno != EAGAIN && errno != EWOULDBLOCK) {
+			alive = false;
+			std::cout << "nsent<=0 \n";
+		}
+			
 		return false;
 	}
 	
@@ -172,6 +196,12 @@ bool HttpConnection::performSend() {
 	
 	m_send_buffer.clear();
 	return true;
+}
+
+std::string getRecvError(int _errno) {
+	
+//	if (_errno == )
+	return "";
 }
 
 void HttpConnection::performRecv() {
@@ -194,13 +224,17 @@ void HttpConnection::performRecv() {
 			}
 			else {
 			
+				std::cout << "nread < 0: " << strerror(errno) << std::endl;
+				
 				alive = false;
 				return;
 			}
-		} else  { // nread == 0
+		} 
+		else  { // nread == 0
 			
-			alive = false;
-			return;
+			//std::cout << "nread == 0\n";
+			//alive = false;
+			break;
 		}
 		nread = ::recv(sock, bf, 1024, MSG_DONTWAIT);
 	}
@@ -212,22 +246,25 @@ void HttpConnection::performRecv() {
 		if (!custom_protocol)
 			http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
 		else
-			m_custom_parser->execute(readbf, request_finished);
+			m_custom_parser->execute(readbf);
 	}
 	
-	if (request_finished) {
-		
-		if (!custom_protocol) {
-		
+	if (!custom_protocol) {
+	
+		if (request_finished) {
+	
 			http_requests.push(m_cur_http_request);
 			m_cur_http_request.reset(new HttpRequest);
 			request_finished = false;
-			
-		} else {
-			
-			custom_requests.push(m_custom_parser->getRequest());
-			request_finished = false;
 		}
+		
+	} else {
+		
+		while (m_custom_parser->hasRequest()) {
+		
+			custom_requests.push(m_custom_parser->getRequest());
+		}
+		//request_finished = false;
 	}
 	
 }

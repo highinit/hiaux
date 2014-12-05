@@ -1,4 +1,8 @@
 
+#ifndef _NETWORK_TESTS_
+#define _NETWORK_TESTS_
+
+
 #include "hiconfig.h"
 
 #include <cxxtest/TestSuite.h>
@@ -7,14 +11,16 @@
 
 #include "hiaux/strings/string_utils.h"
 #include "HttpServer.h"
-#include "HttpApi.h"
-#include "HttpApiClient.h"
+#include "HttpApi/HttpApi.h"
+#include "HttpApi/HttpApiClient.h"
 
 #include <boost/bind.hpp>
 
 #include "PoolServerTests.h"
 #include "HttpClientAsyncTests.h"
 #include "HttpOutReqDispTests.h"
+
+#include "BinClientATests.h"
 
 #include "HttpServer.h"
 
@@ -286,11 +292,17 @@ public:
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
 	
-	void testHttpClientAsync() {
+	void XtestHttpClientAsync() {
 		HttpClientAsyncTests();
 	}
 	
 	void XtestHttpOutReqDisp() {
 		HttpOutReqDispTests();
 	}
+	
+	void testBinClientA() {
+		BinClientATests();
+	}
 };
+
+#endif

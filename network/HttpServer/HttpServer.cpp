@@ -1,9 +1,11 @@
 #include "HttpServer.h"
 
-CustomProtocolInfo::CustomProtocolInfo(const boost::function<CustomParserPtr(HttpRequestPtr) > &_requestBuilder,
-				const boost::function<void(HttpConnectionPtr, CustomRequestPtr)> &_handler):
-			requestBuilder(_requestBuilder),
-			handler(_handler) {
+CustomProtocolInfo::CustomProtocolInfo(const boost::function<CustomParserPtr(HttpRequestPtr) > &_parserBuilder,
+				const boost::function<void(HttpConnectionPtr, CustomRequestPtr)> &_handler,
+				const std::string &_handshake_message):
+			parserBuilder(_parserBuilder),
+			handler(_handler),
+			handshake_message(_handshake_message) {
 					
 }
 
@@ -76,7 +78,7 @@ void HttpServer::onAccept(int _sock_fd, void *_opaque_info) {
 	
 		HttpConnectionPtr connection(new HttpConnection(accepted_socket, m_resp_info, boost::bind(&HttpServer::onSendResponse, this, _1, _2),
 														boost::bind(&HttpServer::onSendCustomResponse, this, _1, _2),
-														boost::bind(&HttpServer::getCustomParser, this, _1, _2)));
+														boost::bind(&HttpServer::getCustomParser, this, _1, _2, _3)));
 	
 		m_reading_connections.insert(std::pair<int, HttpConnectionPtr>(connection->sock, connection));
 			
@@ -94,72 +96,107 @@ void HttpServer::onError(int _sock, void *_opaque_info) {
 
 void HttpServer::onRead(int _sock, void *_opaque_info) {
 	
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
-	if (it == m_reading_connections.end()) {
-		m_events_watcher->delSocket(_sock);
-		return;
-	}
+	try {
 	
-	HttpConnectionPtr connection = it->second;
-	
-	connection->performRecv();
-	
-	if (!connection->notDead()) {
-		
-		//std::cout << "HttpServer::onRead connection dead\n";
-		
-		m_events_watcher->delSocket(_sock);
-		m_reading_connections.erase(it);
-		
-		return;
-	}
-	
-	if (!connection->waiting_last_handling) {
-		
-		//m_events_watcher->delSocket(_sock);
-		//m_reading_connections.erase(it);
-		
-		// http
-		if (!connection->custom_protocol && connection->http_requests.size() != 0) {
-		
-			connection->waiting_last_handling = true;
-			HttpRequestPtr request = connection->http_requests.front();
-			connection->http_requests.pop();
-			connection->checkUpgrade(request);
-			m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::httpWorkerTask, this, connection, request));
+		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+		if (it == m_reading_connections.end()) {
+			m_events_watcher->delSocket(_sock);
+			return;
 		}
-		// custom protocol
-		else if (connection->custom_requests.size() != 0) {
+	
+		HttpConnectionPtr connection = it->second;
+	
+		connection->performRecv();
+	
+		if (!connection->notDead()) {
+		
+			//std::cout << "HttpServer::onRead connection dead\n";
+		
+			m_events_watcher->delSocket(_sock);
+			m_reading_connections.erase(it);
+		
+			return;
+		}
+	
+		if (!connection->waiting_last_handling) {
+		
+			//m_events_watcher->delSocket(_sock);
+			//m_reading_connections.erase(it);
+		
+			// http
+			if (!connection->custom_protocol && connection->http_requests.size() != 0) {
+		
+				connection->waiting_last_handling = true;
+				HttpRequestPtr request = connection->http_requests.front();
+				connection->http_requests.pop();
+				if (!connection->checkUpgrade(request))
+					m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::httpWorkerTask, this, connection, request));
+			}
+			// custom protocol
+			else if (connection->custom_requests.size() != 0) {
 			
-			connection->waiting_last_handling = true;
-			CustomRequestPtr request = connection->custom_requests.front();
-			connection->custom_requests.pop();
-			m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::customWorkerTask, this, connection, request));
+				connection->waiting_last_handling = true;
+				CustomRequestPtr request = connection->custom_requests.front();
+				connection->custom_requests.pop();
+				m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::customWorkerTask, this, connection, request));
+			}
 		}
+	}
+	catch (std::bad_alloc e) {
+		
+		std::cout << "HttpServer::onRead bad_aloc\n";
+	}
+	catch (RequestParsingEx e) {
+		
+		std::cout << "HttpServer::onRead RequestParsingEx\n"; 
+		killConnection(_sock);
+	}
+	catch (...) {
+		
+		killConnection(_sock);
 	}
 }
 
 void HttpServer::onWrite(int _sock, void *_opaque_info) {
 	
 	//std::cout << "HttpServer::onWrite\n";
-	
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
-	if (it == m_reading_connections.end()) {
-		//std::cout << "HttpServer::onWrite conneciton not found\n";
-		return;
-	}
-	
-	if (!it->second->performSend()) {
-
-		if (!it->second->notDead()) {
-		
-			//std::cout << "HttpServer::handleResponse connection dead\n";
-		
-			m_events_watcher->delSocket(_sock);
-			m_reading_connections.erase( it );
+	try {
+		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+		if (it == m_reading_connections.end()) {
+			//std::cout << "HttpServer::onWrite conneciton not found\n";
 			return;
 		}
+	
+		if (!it->second->performSend()) {
+
+			if (!it->second->notDead()) {
+		
+				//std::cout << "HttpServer::handleResponse connection dead\n";
+		
+				m_events_watcher->delSocket(_sock);
+				m_reading_connections.erase( it );
+				return;
+			}
+		}
 	}
+	catch (...) {
+		
+		std::cout << "HttpServer::onWrite exception\n";
+		killConnection(_sock);
+	}
+}
+
+void HttpServer::killConnection(int _sock) {
+	
+	std::cout << "HttpServer::killConnection\n";
+	
+	m_events_watcher->delSocket(_sock);
+	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+	if (it == m_reading_connections.end()) {
+		
+		return;
+	}
+	m_reading_connections.erase( it );
 }
 
 void HttpServer::sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp) {
@@ -211,14 +248,16 @@ void HttpServer::handleResponse (HttpConnectionPtr _conn) {
 	}
 }
 
-CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req) {
+CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake) {
 	
 	std::map<std::string,  CustomProtocolInfo>::iterator it = m_customProtocols.find(_protocol);
 	
 	if (it == m_customProtocols.end())
 		return CustomParserPtr();
-
-	return it->second.requestBuilder(_req);
+	
+	_handshake = it->second.handshake_message;
+	
+	return it->second.parserBuilder(_req);
 
 }
 
@@ -243,31 +282,42 @@ void HttpServer::cleanUpDeadConnections() {
 	}
 }
 
-TaskLauncher::TaskRet HttpServer::eventLoop() {
+void HttpServer::handleEvents() {
 	
-	while (m_is_running) {
-		
+	try {
+	
 		m_events_watcher->handleEvents();
-		
+	
 		hLockTicketPtr ticket = resp_lock.lock();
-		
+	
 		while (!m_resp_queue.empty()) {
-			
+		
 			std::pair<HttpConnectionPtr, HttpResponse> resp_context = m_resp_queue.front();
 			resp_context.first->addResponse(resp_context.second);
 			handleResponse(resp_context.first);
 			m_resp_queue.pop();
 		}
-		
+	
 		while (!m_custom_resp_queue.empty()) {
-			
+		
 			std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
 			resp_context.first->addCustomResponse(resp_context.second);
 			handleResponse(resp_context.first);
 			m_custom_resp_queue.pop();
 		}
-		
+	
 		cleanUpDeadConnections();
+	}
+	catch (...) {
+		
+	}
+}
+
+TaskLauncher::TaskRet HttpServer::eventLoop() {
+	
+	while (m_is_running) {
+		
+		handleEvents();
 	}
 	
 	return TaskLauncher::NO_RELAUNCH;

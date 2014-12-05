@@ -7,6 +7,13 @@
 #include "hiaux/threads/locks.h"
 #include "hiaux/events/EventsWatcher.h"
 
+#include "hiaux/network/HttpServer/ServerUtils.h"
+
+#include "hiaux/network/HttpApi/BinClient/Request.h"
+#include "hiaux/network/HttpApi/BinClient/Connection.h"
+
+#include "hiaux/network/HttpApi/BinClient/Request.pb.h"
+
 #include <boost/shared_ptr.hpp>
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
@@ -15,10 +22,7 @@
 #include <map>
 #include <queue>
 
-#include "Request.h"
-#include "Connection.h"
 
-#include "Request.pb.h"
 
 namespace hiapi {
 
@@ -43,16 +47,20 @@ private:
 	std::queue<RequestPtr> m_new_requests;
 
 	BinClientA::Mode m_mode;
-	std::string m_endpoint;
+	std::string m_ip;
+	int m_port;
 
 	size_t m_max_connections;
 
 	void buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump);
 	void establishNewConnection();
+	void onLostConnection(int _sock);
+	void reinitConnections();
+	void putRequestsToConnections();
 	
 public:
 	
-	BinClientA(BinClientA::Mode _mode, const std::string &_endpoint, size_t _max_connections = 10);
+	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 1);
 	virtual ~BinClientA();
 	
 	void onRead(int _sock, void *_opaque_info);
@@ -62,10 +70,12 @@ public:
 	
 	void call(const std::string &_method,
 				const std::map<std::string, std::string> &_params,
-				boost::function<void(bool, const std::string &)> &_onFinished);
+				const boost::function<void(bool, const std::string &)> &_onFinished);
 	
 	void handleEvents();
 };
+
+typedef boost::shared_ptr<BinClientA> BinClientAPtr;
 
 }
 }

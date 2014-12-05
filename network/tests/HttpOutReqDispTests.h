@@ -1,3 +1,6 @@
+#ifndef _HTTPOUTREQDISPTESTS_H_
+#define _HTTPOUTREQDISPTESTS_H_
+
 #include <cxxtest/TestSuite.h>
 
 #include "HttpServer.h"
@@ -33,3 +36,5 @@ public:
 	void onFinished();
 	HttpOutReqDispTests();
 };
+
+#endif

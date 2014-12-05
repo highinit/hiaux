@@ -17,8 +17,23 @@
 
 #include <iostream>
 
+class CannotConnectEx {
+	
+	std::string mess;
+	
+public:
+	
+	CannotConnectEx();
+	CannotConnectEx(const char *_s);
+	
+	std::string what();
+};
+
 void setSocketBlock(int _fd, bool _isblock);
+
 int startListening(int port);
 int startListening(const std::string &_localsocket);
+
+int connectSocket(const std::string &_ip, int port);
 
 #endif

@@ -1,5 +1,19 @@
 #include "ServerUtils.h"
 
+CannotConnectEx::CannotConnectEx() {
+	
+}
+
+CannotConnectEx::CannotConnectEx(const char *_s):
+mess(_s) {
+	
+}
+
+std::string CannotConnectEx::what() {
+	
+	return mess;
+}
+
 int startListening(int port) {
 
 	char bf[255];
@@ -69,6 +83,38 @@ int startListening(const std::string &_localsocket) {
 	return fd;
 }
 
+int connectSocket(const std::string &_ip, int _port) {
+	
+	// Error checking omitted for expository purposes
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	
+	if (sockfd == -1) {
+		
+		throw CannotConnectEx();
+	}
+	
+	// Bind to a specific network interface (and optionally a specific local port)
+	struct sockaddr_in localaddr;
+	localaddr.sin_family = AF_INET;
+	localaddr.sin_addr.s_addr = INADDR_ANY;
+	localaddr.sin_port = 0;  // Any local port will do
+	
+	if (bind(sockfd, (struct sockaddr *)&localaddr, sizeof(localaddr)) == -1)
+		throw CannotConnectEx(strerror(errno));
+
+	// Connect to the remote server
+	struct sockaddr_in remoteaddr;
+	remoteaddr.sin_family = AF_INET;
+	remoteaddr.sin_addr.s_addr = inet_addr(_ip.c_str());
+	remoteaddr.sin_port = htons(_port);
+	
+	if (connect(sockfd, (struct sockaddr *)&remoteaddr, sizeof(remoteaddr)) == -1)
+		throw CannotConnectEx(strerror(errno));
+	
+	setSocketBlock(sockfd, false);
+	return sockfd;
+}
+
 void setSocketBlock(int _fd, bool _isblock) {
 	
 	int flags = fcntl(_fd, F_GETFL);
@@ -83,5 +129,6 @@ void setSocketBlock(int _fd, bool _isblock) {
 	
 	fcntl(_fd, F_SETFL, flags);
 }
+
 
 

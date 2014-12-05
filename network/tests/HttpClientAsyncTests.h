@@ -1,4 +1,7 @@
 
+#ifndef _HTTPCLIENTASYNC_TESTS_H_
+#define _HTTPCLIENTASYNC_TESTS_H_
+
 #include <cxxtest/TestSuite.h>
 #include "HttpClientAsync.h"
 #include "HttpServer.h"
@@ -13,3 +16,5 @@ public:
 	void onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req);
 	HttpClientAsyncTests();
 };
+
+#endif

@@ -7,12 +7,19 @@
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include "hiaux/network/HttpServer/Request.h"
+
+class RequestParsingEx {
+};
+
 class CustomParser {
 	
 public:
 
-	virtual void execute(const std::string &_d, bool &_request_finished) = 0;
+	virtual void execute(const std::string &_d) = 0;
+	virtual bool hasRequest() = 0;
 	virtual CustomRequestPtr getRequest() = 0;
+	
 	virtual ~CustomParser();
 };
 
