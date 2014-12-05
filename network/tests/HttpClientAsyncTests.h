@@ -7,8 +7,8 @@
 #include "HttpServer.h"
 
 class HttpClientAsyncTests : public CxxTest::TestSuite {
-	HttpServerPtr m_srv;
-	HttpClientAsyncPtr m_cli;
+	//HttpServerPtr m_srv;
+	//HttpClientAsyncPtr m_cli;
 	int ncalled;
 public:
 	void onFinished();

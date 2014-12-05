@@ -83,6 +83,8 @@ public:
 	// called from threadpool
 	void sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp);
 	
+	void stop();
+	
 	HttpServer(TaskLauncherPtr launcher,
 				const ResponseInfo &_resp_info,
 				boost::function<void(HttpConnectionPtr,

@@ -20,6 +20,7 @@
 #include "HttpClientAsyncTests.h"
 #include "HttpOutReqDispTests.h"
 
+#include "BinClientParserTests.h"
 #include "BinClientATests.h"
 
 #include "HttpServer.h"
@@ -277,7 +278,7 @@ public:
 										port));
 		
 		
-		sleep(2);
+		sleep(1);
 
 		// make client and call
 		char endpoint[255];
@@ -300,7 +301,11 @@ public:
 		HttpOutReqDispTests();
 	}
 	
-	void testBinClientA() {
+	void testBinClientParser() {
+		BinClientParserTests();
+	}
+	
+	void XtestBinClientA() {
 		BinClientATests();
 	}
 };

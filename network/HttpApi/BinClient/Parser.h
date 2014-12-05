@@ -53,9 +53,7 @@ public:
 	
 	ResponseParser(boost::function<void()> _onHandshaked);
 	virtual ~ResponseParser();
-
-	bool justHandshaked();
-	
+		
 	void execute(const std::string &_d);
 	bool hasResponse();
 	void getResponse(std::string &_s);

@@ -76,10 +76,10 @@ BinClientATests::BinClientATests() {
 	
 	m_handle_binary = 0;
 	
-	pool.reset (new hThreadPool(3));
+	hThreadPoolPtr pool (new hThreadPool(3));
 	pool->run();
 	
-	launcher.reset(new TaskLauncher(pool, 3, boost::bind(&BinClientATests::onFinished, this)));
+	TaskLauncherPtr launcher(new TaskLauncher(pool, 3, boost::bind(&BinClientATests::onFinished, this)));
 	
 	int port = 1589;
 	
@@ -124,11 +124,17 @@ BinClientATests::BinClientATests() {
 	
 	sleep(1);
 	
-	while (1) {
+	for (int i = 0; i<1000; i++) {
 		client->handleEvents();
-		//srv->handleEvents();
+		if (i % 100 == 0)
+			sleep(1);
+		
+		if (m_sent_requests == m_got_requests)
+			break;
 	}
+	
+	srv->stop();
 										
 	std::cout << "BinClientATests::BinClientATests\n";
-	pool->join();
+	
 }

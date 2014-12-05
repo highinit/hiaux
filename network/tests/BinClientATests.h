@@ -9,12 +9,6 @@
 
 class BinClientATests : public CxxTest::TestSuite {
 
-	hThreadPoolPtr pool;
-	TaskLauncherPtr launcher;
-	HttpServerPtr srv;
-	hiapi::client::BinClientAPtr client;
-	
-
 	uint64_t m_got_requests;
 	uint64_t m_sent_requests;
 

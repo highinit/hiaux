@@ -30,13 +30,14 @@ void HttpClientAsyncTests::onCalled(HttpClientAsync::JobInfo _ji) {
 }
 
 HttpClientAsyncTests::HttpClientAsyncTests() {
+	
 	ncalled = 0;
-	int ncalls = 2;
+	int ncalls = 300;
 	const int port = 1235;
-	hThreadPoolPtr pool (new hThreadPool(10));
+	hThreadPoolPtr pool (new hThreadPool(4));
 	TaskLauncherPtr launcher (new TaskLauncher(
-					pool, 10, boost::bind(&HttpClientAsyncTests::onFinished, this)));
-	m_srv.reset(new HttpServer(launcher,
+					pool, 4, boost::bind(&HttpClientAsyncTests::onFinished, this)));
+	HttpServerPtr m_srv(new HttpServer(launcher,
 							ResponseInfo("text/html; charset=utf-8",
 											"highinit suggest server"),
 							boost::bind(&HttpClientAsyncTests::onHttpRequest, this, _1, _2),
@@ -46,16 +47,15 @@ HttpClientAsyncTests::HttpClientAsyncTests() {
 	//pool->join();
 	sleep(1);
 	
-	m_cli.reset(new HttpClientAsync(boost::bind(&HttpClientAsyncTests::onCalled, this, _1)));
+	HttpClientAsyncPtr m_cli(new HttpClientAsync(boost::bind(&HttpClientAsyncTests::onCalled, this, _1)));
 	
 	for (uint64_t i = 0; i<ncalls; i++)
 		m_cli->call((void*)i, "http://127.0.0.1:1235/?a=b&c=d");
 	
-	
 	sleep(1);
 	for (int i = 0; i<100; i++) {
-		//if (i%50==0)
-			//sleep(1);
+		if (i%25==0)
+			sleep(1);
 		m_cli->kick();
 	}
 		
@@ -64,7 +64,9 @@ HttpClientAsyncTests::HttpClientAsyncTests() {
 	std::string resp;
 	TS_ASSERT(ncalled == ncalls);
 	
-	if (ncalled == ncalls)
-		exit(0);
+	//if (ncalled == ncalls)
+	//	exit(0);
+	m_srv->stop();
+	//std::cout << "HttpClientAsyncTests finished\n";
 
 }

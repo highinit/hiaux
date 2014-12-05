@@ -33,12 +33,12 @@ HttpConnection::HttpConnection(int _sock,
 	m_parser_settings.on_body = &HttpConnection_onBody;
 	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete;
 	
-	std::cout << "HttpConnection::HttpConnection\n";
+	//std::cout << "HttpConnection::HttpConnection\n";
 }
 
 HttpConnection::~HttpConnection() {
 
-	std::cout << "HttpConnection::~HttpConnection\n";
+	//std::cout << "HttpConnection::~HttpConnection\n";
 
 	::close(sock);
 	::shutdown(sock, SHUT_RDWR);

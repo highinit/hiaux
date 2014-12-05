@@ -336,6 +336,11 @@ TaskLauncher::TaskRet HttpServer::eventLoop() {
 	return TaskLauncher::NO_RELAUNCH;
 }
 
+void HttpServer::stop() {
+	
+	m_is_running = false;
+}
+
 TaskLauncher::TaskRet HttpServer::customWorkerTask(HttpConnectionPtr _conn, CustomRequestPtr _req) {
 	
 	std::map<std::string, CustomProtocolInfo>::iterator it = m_customProtocols.find(_conn->custom_protocol_id);
