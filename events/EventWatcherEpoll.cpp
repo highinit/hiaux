@@ -62,7 +62,7 @@ void EventWatcherEpoll::enableEvents(int _sock_fd, uint32_t _mask) {
 	ev.events = epoll_mask;
 	ev.data.fd = _sock;
 
-	if (epoll_ctl(m_epoll_fd, EPOLL_CTL_MOD, _sock_fd, &ev) == -1) {
+	if (epoll_ctl(m_epoll, EPOLL_CTL_MOD, _sock_fd, &ev) == -1) {
 		std::cout << "EventWatcherEpoll::addSocket epoll_ctl(..) == -1";
 		exit (0);
 	}
