@@ -19,7 +19,7 @@ void EventWatcherEpoll::addSocket(int _sock_fd, uint32_t _mask, void *_opaque_in
 	
 	epoll_event ev;
 	
-	ev.events = EPOLLET
+	ev.events = EPOLLET;
 	
 	if (_mask & HI_READ)
 		ev.events |= EPOLLIN;
@@ -51,10 +51,10 @@ void EventWatcherEpoll::enableEvents(int _sock_fd, uint32_t _mask) {
 	uint32_t epoll_mask = 0;
 	
 	if (need_enable & HI_READ)
-		epoll_mask |= EVFILT_READ;
+		epoll_mask |= EPOLLIN;
 	
 	if (need_enable & HI_WRITE)
-		epoll_mask |= EVFILT_WRITE;
+		epoll_mask |= EPOLLOUT;
 	
 	m_sockets_masks[_sock_fd] = mask | need_enable;
 	
