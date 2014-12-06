@@ -68,7 +68,7 @@ void EventWatcherEpoll::enableEvents(int _sock_fd, uint32_t _mask) {
 	}
 }
 
-void EventWatcherEpoll::delSocket(int _sock_fd, void *_opaque_info) {
+void EventWatcherEpoll::delSocket(int _sock_fd) {
 	
 	hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(_sock_fd);
 	
@@ -102,7 +102,7 @@ void EventWatcherEpoll::handleEvents() {
 		int fd = events[i].data.fd;
 		uint32_t fevent = events[i].events;
 		
-		hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(event.ident);
+		hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(fd);
 	
 		if (fevent & EPOLLIN)
 			if (it == m_sockets_masks.end())
