@@ -17,6 +17,8 @@
 
 #include <iostream>
 
+#include <errno.h>
+
 class CannotConnectEx {
 	
 	std::string mess;

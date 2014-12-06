@@ -1,5 +1,7 @@
 #include "ServerUtils.h"
 
+extern int errno;
+
 CannotConnectEx::CannotConnectEx() {
 	
 }
