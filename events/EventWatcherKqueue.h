@@ -34,7 +34,6 @@ class EventWatcherKqueue :public boost::noncopyable {
 	int m_kqueue;
 	size_t m_nsockets;
 	
-	hiaux::hashtable<int, bool> m_sockets_accept;
 	hiaux::hashtable<int, uint32_t> m_sockets_masks;
 	
 	boost::function<void(int,void*)> m_onRead;

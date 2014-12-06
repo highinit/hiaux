@@ -48,7 +48,6 @@ public:
 	bool notDead();
 	
 	void sendResponse(const HttpResponse &_resp);
-	
 	void sendCustomResponse(const std::string &_resp);
 	
 	void addResponse(const HttpResponse &_resp);
