@@ -60,7 +60,7 @@ void EventWatcherEpoll::enableEvents(int _sock_fd, uint32_t _mask) {
 	
 	epoll_event ev;
 	ev.events = epoll_mask;
-	ev.data.fd = _sock;
+	ev.data.fd = _sock_fd;
 
 	if (epoll_ctl(m_epoll, EPOLL_CTL_MOD, _sock_fd, &ev) == -1) {
 		std::cout << "EventWatcherEpoll::addSocket epoll_ctl(..) == -1";
@@ -104,14 +104,17 @@ void EventWatcherEpoll::handleEvents() {
 		
 		hiaux::hashtable<int, uint32_t>::iterator it = m_sockets_masks.find(fd);
 	
-		if (fevent & EPOLLIN)
+		if (fevent & EPOLLIN) {
+			
 			if (it == m_sockets_masks.end())
 				m_onRead(fd, NULL);
 			else {
 				if (it->second & HI_ACCEPT)
 					m_onAccept(fd, NULL);
+				else
+					m_onRead(fd, NULL);
 			}
-		
+		}
 		if (fevent & EPOLLOUT)
 			m_onWrite(fd, NULL);
 		
