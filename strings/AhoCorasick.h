@@ -35,7 +35,7 @@ public:
 class AhoCorasick {
 
 	std::vector<std::string> m_dict;
-	BorNode *m_root;
+	boost::shared_ptr<BorNode> m_root;
 public:
 	
 	AhoCorasick(const std::vector<std::string> &_dict);

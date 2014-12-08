@@ -9,6 +9,8 @@
 
 #include "hiaux/network/HttpServer/ServerUtils.h"
 
+#include "hiaux/network/HttpApi/HiApiClientA.h"
+
 #include "hiaux/network/HttpApi/BinClient/Request.h"
 #include "hiaux/network/HttpApi/BinClient/Connection.h"
 
@@ -22,13 +24,11 @@
 #include <map>
 #include <queue>
 
-
-
 namespace hiapi {
 
 namespace client {
 
-class BinClientA : public boost::noncopyable {
+class BinClientA : public HiApiClientA, public boost::noncopyable {
 public:
 	
 	enum Mode {
@@ -52,7 +52,6 @@ private:
 
 	size_t m_max_connections;
 
-	void buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump);
 	void establishNewConnection();
 	void onLostConnection(int _sock);
 	void reinitConnections();
@@ -63,17 +62,21 @@ private:
 	
 public:
 	
-	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 1);
+	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 50);
 	virtual ~BinClientA();
+	
+	static void buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump);
 	
 	void onRead(int _sock, void *_opaque_info);
 	void onWrite(int _sock, void *_opaque_info);
 	void onError(int _sock, void *_opaque_info);
 	void onAccept(int _sock, void *_opaque_info);
 	
-	void call(const std::string &_method,
+	virtual void call(const std::string &_method,
 				const std::map<std::string, std::string> &_params,
 				const boost::function<void(bool, const std::string &)> &_onFinished);
+	
+	virtual void callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished);
 	
 	void handleEvents();
 };

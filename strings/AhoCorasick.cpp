@@ -100,8 +100,8 @@ void BorNode::print(size_t _ntabs) {
 AhoCorasick::AhoCorasick(const std::vector<std::string> &_dict) {
 
 	m_dict = _dict;
-	m_root = new BorNode();
-	m_root->setFailNode(m_root);
+	m_root.reset(new BorNode());
+	m_root->setFailNode(m_root.get());
 
 	for (int i = 0; i<m_dict.size(); i++)
 		m_root->addWord(m_dict[i], m_dict[i]);
@@ -114,19 +114,20 @@ AhoCorasick::AhoCorasick(const std::vector<std::string> &_dict) {
 		std::map<char, BorNode*>::iterator end = m_root->m_children.end();
 	
 		while (it != end) {
-			it->second->setFailNode(m_root);
+			it->second->setFailNode(m_root.get());
 			it++;
 		}
 	}
 	
 	while (!fall_q.empty()) {
+	
 		BorNode *cur_node = fall_q.front();
-		
 		
 		std::map<char, BorNode*>::iterator it = cur_node->m_children.begin();
 		std::map<char, BorNode*>::iterator end = cur_node->m_children.end();
 	
 		while (it != end) {
+		
 			BorNode *fall_node = cur_node->getFallNode( it->first );
 			
 			it->second->setFailNode( fall_node );
@@ -144,12 +145,11 @@ AhoCorasick::AhoCorasick(const std::vector<std::string> &_dict) {
 
 AhoCorasick::~AhoCorasick() {
 	
-	delete m_root;
 }
 
 void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<std::string, size_t> > &_matches) const {
 	
-	BorNode *cur_node = m_root;
+	BorNode *cur_node = m_root.get();
 	
 	size_t i = 0;
 	
@@ -175,6 +175,7 @@ void AhoCorasick::findMatches(const std::string &_text, std::vector< std::pair<s
 }
 
 void AhoCorasick::print() {
+
 	m_root->print(0);
 }
 

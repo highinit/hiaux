@@ -22,12 +22,12 @@ m_parser(boost::bind(&Connection::onHandshaked, this)) {
 	m_send_buffer = o.str();
 	performSend();
 	
-	std::cout << "___CLIENT Connection::Connection\n";
+	//std::cout << "___CLIENT Connection::Connection\n";
 }
 
 Connection::~Connection() {
 	
-	std::cout << "___CLIENT Connection::~Connection\n";
+	//std::cout << "___CLIENT Connection::~Connection\n";
 	
 	::close(m_sock);
 	::shutdown(m_sock, SHUT_RDWR);
@@ -87,6 +87,7 @@ void Connection::performSend() {
 	
 	//if (nsent < m_send_buffer.size()) {
 	
+	//std::cout << "m_send_buffer: " << m_send_buffer << std::endl;
 	m_send_buffer = m_send_buffer.substr(nsent, m_send_buffer.size() - nsent);
 }
 

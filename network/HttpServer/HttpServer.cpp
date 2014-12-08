@@ -90,6 +90,34 @@ void HttpServer::onError(int _sock, void *_opaque_info) {
 	killConnection(_sock);
 }
 
+void HttpServer::handleWaitingRequests(HttpConnectionPtr _conn) {
+	
+	if (!_conn->waiting_last_handling) {
+	
+		//m_events_watcher->delSocket(_sock);
+		//m_reading_connections.erase(it);
+	
+		// http
+		if (!_conn->custom_protocol && _conn->http_requests.size() != 0) {
+	
+			_conn->waiting_last_handling = true;
+			HttpRequestPtr request = _conn->http_requests.front();
+			_conn->http_requests.pop();
+			if (!_conn->checkUpgrade(request))
+				m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::httpWorkerTask, this, _conn, request));
+		}
+		// custom protocol
+		else if (_conn->custom_requests.size() != 0) {
+		
+		//	std::cout << "HttpServer::performRecv handling custom requests. queue size: " << _conn->custom_requests.size() << std::endl;
+			_conn->waiting_last_handling = true;
+			CustomRequestPtr request = _conn->custom_requests.front();
+			_conn->custom_requests.pop();
+			m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::customWorkerTask, this, _conn, request));
+		}
+	}
+}
+
 void HttpServer::performRecv(int _sock) {
 		
 	try {
@@ -113,34 +141,14 @@ void HttpServer::performRecv(int _sock) {
 		
 			return;
 		}
-	
-		if (!connection->waiting_last_handling) {
 		
-			//m_events_watcher->delSocket(_sock);
-			//m_reading_connections.erase(it);
+		handleWaitingRequests(connection);
 		
-			// http
-			if (!connection->custom_protocol && connection->http_requests.size() != 0) {
-		
-				connection->waiting_last_handling = true;
-				HttpRequestPtr request = connection->http_requests.front();
-				connection->http_requests.pop();
-				if (!connection->checkUpgrade(request))
-					m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::httpWorkerTask, this, connection, request));
-			}
-			// custom protocol
-			else if (connection->custom_requests.size() != 0) {
-			
-				connection->waiting_last_handling = true;
-				CustomRequestPtr request = connection->custom_requests.front();
-				connection->custom_requests.pop();
-				m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::customWorkerTask, this, connection, request));
-			}
-		}
 	}
 	catch (std::bad_alloc e) {
 		
 		std::cout << "HttpServer::onRead bad_aloc\n";
+		killConnection(_sock);
 	}
 	catch (RequestParsingEx e) {
 		
@@ -149,6 +157,7 @@ void HttpServer::performRecv(int _sock) {
 	}
 	catch (...) {
 		
+		std::cout << "HttpServer::onRead exception\n";
 		killConnection(_sock);
 	}
 }
@@ -256,6 +265,8 @@ void HttpServer::handleResponse (HttpConnectionPtr _conn) {
 		
 		m_events_watcher->enableEvents(_conn->sock, HI_READ | HI_WRITE);
 	}
+	
+	handleWaitingRequests(_conn);
 }
 
 CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake) {
@@ -311,6 +322,8 @@ void HttpServer::handleEvents() {
 	
 			while (!m_custom_resp_queue.empty()) {
 		
+				//std::cout << "HttpServer::handleEvents handling custom response\n";
+		
 				std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
 				resp_context.first->addCustomResponse(resp_context.second);
 				handleResponse(resp_context.first);
@@ -345,8 +358,10 @@ TaskLauncher::TaskRet HttpServer::customWorkerTask(HttpConnectionPtr _conn, Cust
 	
 	std::map<std::string, CustomProtocolInfo>::iterator it = m_customProtocols.find(_conn->custom_protocol_id);
 	
-	if (it == m_customProtocols.end())
+	if (it == m_customProtocols.end()) {
+
 		return TaskLauncher::NO_RELAUNCH;
+	}
 	
 	it->second.handler(_conn, _req);
 	

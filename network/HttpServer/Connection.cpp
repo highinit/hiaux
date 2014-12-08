@@ -139,6 +139,7 @@ void HttpConnection::sendResponse(const HttpResponse &_resp) {
 
 void HttpConnection::sendCustomResponse(const std::string &_resp) {
 	
+	//std::cout << "HttpConnection::sendCustomResponse: " << _resp << std::endl; 
 	m_on_send_custom_response(sock, _resp);
 }
 
@@ -151,6 +152,8 @@ void HttpConnection::addResponse(const HttpResponse &_resp) {
 }
 
 void HttpConnection::addCustomResponse(const std::string &_resp) {
+	
+	//std::cout << "HttpConnection::addCustomResponse: " << _resp << std::endl;
 	
 	m_resps.push(_resp);
 }
@@ -184,7 +187,7 @@ bool HttpConnection::performSend() {
 		
 		if (errno != EAGAIN && errno != EWOULDBLOCK) {
 			alive = false;
-			std::cout << "nsent<=0 \n";
+			//std::cout << "nsent<=0 \n";
 		}
 		else {
 			//std::cout << "HttpConnection::performSend EAGAIN\n";
@@ -245,8 +248,10 @@ void HttpConnection::performRecv() {
 		
 		if (!custom_protocol)
 			http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
-		else
+		else {
+			//std::cout << "execute custom protocol " << readbf << std::endl;
 			m_custom_parser->execute(readbf);
+		}
 	}
 	
 	if (!custom_protocol) {
@@ -261,7 +266,8 @@ void HttpConnection::performRecv() {
 	} else {
 		
 		while (m_custom_parser->hasRequest()) {
-		
+			
+			//std::cout << "custom_requests.push\n";
 			custom_requests.push(m_custom_parser->getRequest());
 		}
 		//request_finished = false;

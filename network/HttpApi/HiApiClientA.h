@@ -17,31 +17,14 @@ Application Client --> Api Client --> TCP --> Http Server (Upgrade to custom bin
 
 */
 
-class HiApiClientA : public boost::noncopyable {
+class HiApiClientA  {
 
 public:
-	enum Mode {
-		HTTP,
-		BINARY,
-		LOCALSOCKET
-	};
 
-private:
-	Mode m_mode;
-	std::string m_user;
-	std::string m_key;
-	bool m_keyset;
-
-	std::string m_endpoint;
-
-public:
-	
-	HiApiClientA(Mode _mode, const std::string &_endpoint);
-	HiApiClientA(Mode _mode, const std::string &_endpoint, const std::string &_user, const std::string &_key);
 	virtual ~HiApiClientA();
 	
-	void call (const std::string &_method, std::map<std::string, std::string> &_params, boost::function<void(bool, const std::string &)> &_onFinished);
-	void callSigned (const std::string &_method, std::map<std::string, std::string> &_params, boost::function<void(bool, const std::string &)> &_onFinished);
+	virtual void call (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) = 0;
+	virtual void callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) = 0;
 };
 
 #endif

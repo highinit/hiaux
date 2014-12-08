@@ -23,10 +23,11 @@ void BinClientATests::handleBinary(HttpConnectionPtr _conn, CustomRequestPtr _re
 
 	hiapi::server::Request *req = dynamic_cast<hiapi::server::Request*>( _req.get() );
 
-	std::cout << "m_handle_binary: " << m_handle_binary++ << std::endl;
+	m_handle_binary.fetch_add(1);
+	//std::cout << "m_handle_binary: " << m_handle_binary << std::endl;
 
-//	std::cout << "BinClientATests::handleBinary " << std::endl
-//		<< "method: " << req->method << std::endl;
+	//std::cout << "BinClientATests::handleBinary " << std::endl
+	//	<< "method: " << req->method << std::endl;
 	
 	std::map<std::string, std::string>::iterator p0_it = req->params.find("p0");
 	std::map<std::string, std::string>::iterator p1_it = req->params.find("p1");
@@ -57,18 +58,21 @@ void BinClientATests::onCallFinished(bool _succ, const std::string &_res, uint64
 	
 	TS_ASSERT(got_value == _expected_value);
 	
-	std::cout << m_got_requests++ << std::endl;
+//	std::cout << "expected: " << _expected_value << std::endl; 
+//	std::cout << "got: " << got_value << std::endl;
+	
+	//std::cout << m_got_requests++ << std::endl;
 	
 	
-	if (m_got_requests == m_sent_requests) {
+//	if (m_got_requests == m_sent_requests) {
 		
-		std::cout << "FINISHED\n";
-	}
+//		std::cout << "FINISHED\n";
+//	}
 }
 
 CustomParserPtr BinClientATests::parserBuilder(HttpRequestPtr _req) {
 	
-	std::cout << "BinClientATests::parserBuilder\n";
+	//std::cout << "BinClientATests::parserBuilder\n";
 	return CustomParserPtr(new hiapi::server::Parser(_req));
 }
 
@@ -96,10 +100,10 @@ BinClientATests::BinClientATests() {
 	
 	sleep(1);
 	
-	hiapi::client::BinClientAPtr client(new hiapi::client::BinClientA(hiapi::client::BinClientA::INTERNET, "127.0.0.1", port, 1));
+	hiapi::client::BinClientAPtr client(new hiapi::client::BinClientA(hiapi::client::BinClientA::INTERNET, "127.0.0.1", port, 1000));
 	
 	uint64_t min_v0 = 0;
-	uint64_t max_v0 = 1;
+	uint64_t max_v0 = 10;
 	uint64_t min_v1 = 0;
 	uint64_t max_v1 = 100;
 	
@@ -119,22 +123,21 @@ BinClientATests::BinClientATests() {
 		m_sent_requests++;
 	}
 	
-	std::cout << "requests: " << m_sent_requests << std::endl; 
-	
+	std::cout << "requests: " << m_sent_requests << std::endl;
 	
 	sleep(1);
 	
-	for (int i = 0; i<1000; i++) {
-		client->handleEvents();
-		if (i % 100 == 0)
-			sleep(1);
+	for (int i = 0; i<5*max_v0*max_v1; i++) {
 		
-		if (m_sent_requests == m_got_requests)
-			break;
+		client->handleEvents();
+		if (i % 700 == 0)
+			sleep(1);
+		//if (m_sent_requests == m_got_requests)
+		//	break;
 	}
 	
-	srv->stop();
-										
-	std::cout << "BinClientATests::BinClientATests\n";
-	
+	//std::cout << "m_handle_binary: " << m_handle_binary.load() << std::endl;
+	//exit(0);
+	srv->stop();									
+	//std::cout << "BinClientATests::BinClientATests\n";
 }

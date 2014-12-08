@@ -64,6 +64,8 @@ class HttpServer : public boost::noncopyable {
 	void performSend(int _sock);
 	void performAccept(int _sock);
 	
+	void handleWaitingRequests(HttpConnectionPtr _conn);
+	
 public:
 	
 	void onSendResponse(int _sock, const HttpResponse &_resp);

@@ -7,6 +7,8 @@ namespace server {
 Request::Request(const std::string &_dump):
 dump(_dump) {
 	
+	//std::cout << "hiapi::server::Request::Request\n";
+	
 	hiapi_client::RequestPb pb;
 	pb.ParseFromString(_dump);
 	

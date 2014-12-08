@@ -33,7 +33,7 @@ void Parser::parse() {
 			if (m_size > HIAPI_BINREQUEST_MAX_SIZE)
 				throw RequestParsingEx();
 			
-			state = READING_MESSAGE;	
+			state = READING_MESSAGE;
 		}
 		
 		if (state == READING_MESSAGE) {
@@ -43,7 +43,6 @@ void Parser::parse() {
 			if (m_cur_token.size() >= m_size) {
 				
 				std::string cur_req_str = m_cur_token.substr(0, m_size);
-				
 				m_cur_request = RequestPtr(new Request(cur_req_str));
 				
 				m_got_request = true;

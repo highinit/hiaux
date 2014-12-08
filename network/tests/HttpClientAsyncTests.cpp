@@ -16,7 +16,7 @@ void HttpClientAsyncTests::onHttpRequest(HttpConnectionPtr http_conn, HttpReques
 	}
 	
 	// 0.5mb
-	for (int i = 0; i<500000; i++)
+	for (int i = 0; i<500; i++)
 		resp += "a";
 	
 	http_conn->sendResponse(HttpResponse(200, resp));
@@ -54,8 +54,8 @@ HttpClientAsyncTests::HttpClientAsyncTests() {
 	
 	sleep(1);
 	for (int i = 0; i<100; i++) {
-		if (i%25==0)
-			sleep(1);
+		//if (i%25==0)
+		//	sleep(1);
 		m_cli->kick();
 	}
 		
@@ -67,6 +67,6 @@ HttpClientAsyncTests::HttpClientAsyncTests() {
 	//if (ncalled == ncalls)
 	//	exit(0);
 	m_srv->stop();
-	//std::cout << "HttpClientAsyncTests finished\n";
+	std::cout << "HttpClientAsyncTests finished\n";
 
 }

@@ -12,7 +12,7 @@ class BinClientATests : public CxxTest::TestSuite {
 	uint64_t m_got_requests;
 	uint64_t m_sent_requests;
 
-	uint64_t m_handle_binary;
+	boost::atomic<uint64_t> m_handle_binary;
 
 public:
 	

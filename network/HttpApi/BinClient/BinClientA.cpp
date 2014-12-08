@@ -55,6 +55,7 @@ void BinClientA::performRecv(int _sock) {
 	}
 	catch (...) {
 		
+		std::cout << "BinClientA::onRead exception\n";
 	}
 }
 
@@ -78,6 +79,7 @@ void BinClientA::performSend(int _sock) {
 	}
 	catch (...) {
 		
+		std::cout << "BinClientA::performSend exception\n";
 	}
 }
 
@@ -140,6 +142,7 @@ void BinClientA::onLostConnection(int _sock) {
 	}
 	catch (...) {
 		
+		std::cout << "BinClientA::onLostConnection unknown exection\n";
 	}
 }
 
@@ -160,6 +163,9 @@ void BinClientA::buildRequest(const std::string &_method, const std::map<std::st
 	}
 	
 	_dump = pb.SerializeAsString();
+	
+	if (_dump.find('\0') != std::string::npos)
+		std::cout << "BinClientA::buildRequest contains NULL-terminator\n\n";
 }
 
 void BinClientA::call(const std::string &_method,
@@ -171,6 +177,10 @@ void BinClientA::call(const std::string &_method,
 	
 	hLockTicketPtr ticket = lock.lock();
 	m_new_requests.push(RequestPtr(new Request(req, _onFinished)));
+}
+
+void BinClientA::callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) {
+	
 }
 
 void BinClientA::putRequestsToConnections() {

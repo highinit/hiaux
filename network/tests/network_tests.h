@@ -21,6 +21,7 @@
 #include "HttpOutReqDispTests.h"
 
 #include "BinClientParserTests.h"
+#include "BinServerParserTests.h"
 #include "BinClientATests.h"
 
 #include "HttpServer.h"
@@ -305,7 +306,11 @@ public:
 		BinClientParserTests();
 	}
 	
-	void XtestBinClientA() {
+	void testBinServerParser() {
+		BinServerParserTests();
+	}
+	
+	void testBinClientA() {
 		BinClientATests();
 	}
 };

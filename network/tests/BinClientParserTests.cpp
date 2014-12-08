@@ -10,22 +10,44 @@ BinClientParserTests::BinClientParserTests() {
 	
 	hiapi::client::ResponseParser parser(boost::bind(&BinClientParserTests::onHandshaked, this));
 	
-	std::ostringstream o;
+	{
+		std::ostringstream o;
+		o << HIAPI_HANDSHAKE;
+		parser.execute(o.str());
+	}
 	
-	std::string mess = "x828324fslnljcnlasjdiwjef";
+	for (int i = 0; i<1000; i++) {
 	
-	o << HIAPI_HANDSHAKE << mess.size() << "\n" << mess << "14";
+		std::ostringstream o;
 	
-	std::string data (o.str());
+		std::string mess;
+		
+		{
+			std::ostringstream mess_o;
+			for (int j = 0; j<=i; j++)
+				mess_o << "a";
+			mess = mess_o.str();
+	 	}
+		
+		o << mess.size() << "\n" << mess;
 	
-	for (int i = 0; i<data.size(); i++)
-		parser.execute( data.substr(i, 1) );
+		std::string data (o.str());
 	
-	TS_ASSERT(parser.hasResponse());
+		for (int i = 0; i<data.size(); i++)
+			parser.execute( data.substr(i, 1) );
 	
-	std::string got;
+		//parser.execute(data);
 	
-	parser.getResponse(got);
+		TS_ASSERT(parser.hasResponse());
 	
-	TS_ASSERT(got == mess);
+		std::string got;
+	
+		parser.getResponse(got);
+		
+		//std::cout << "mess: " << mess << std::endl; 
+		//std::cout << "got: " << got << std::endl;
+		
+		
+		TS_ASSERT(got == mess);
+	}
 }
