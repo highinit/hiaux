@@ -7,7 +7,7 @@ HttpApi::HttpApi(boost::function<std::string(const std::string&)> _buildApiError
 }
 
 bool HttpApi::isSigned(const std::string &_method) const {
-	hiaux::hashtable<std::string, int>::const_iterator it = m_signed.find(_method);
+	std::map<std::string, int>::const_iterator it = m_signed.find(_method);
 	if (it != m_signed.end())
 		return true;
 	else
@@ -15,20 +15,22 @@ bool HttpApi::isSigned(const std::string &_method) const {
 }
 
 bool HttpApi::isAsync(const std::string &_method) const {
-	hiaux::hashtable<std::string, int>::const_iterator it = m_async.find(_method);
+	std::map<std::string, int>::const_iterator it = m_async.find(_method);
 	if (it != m_async.end())
 		return true;
 	else
 		return false;
 }
 
-bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, std::string &_err_mess) const {
+bool HttpApi::checkFields(const std::map<std::string, std::string> &_fields, std::string &_err_mess) const {
 	if (_fields.find("method") == _fields.end()) {
 		_err_mess = "method not set";
 		return false;
 	}
 	
-	hiaux::hashtable<std::string, std::vector<std::string> >::const_iterator it = m_methods_args.find(_fields["method"]);
+	std::string method = _fields.find("method")->second;
+	
+	std::map<std::string, std::vector<std::string> >::const_iterator it = m_methods_args.find( method );
 	if (it == m_methods_args.end()) {
 		_err_mess = "method not found";
 		return false;
@@ -44,7 +46,7 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, s
 		fields_it++;
 	}
 	
-	if (m_signed.find(_fields["method"]) != m_signed.end()) {
+	if (m_signed.find( method ) != m_signed.end()) {
 		if (_fields.find("api_userid") == _fields.end() ||
 			_fields.find("ts") == _fields.end() ||
 			_fields.find("sign") == _fields.end()) {
@@ -52,12 +54,16 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, s
 				return false;
 			}
 		
-		if (m_keys.find( _fields["api_userid"] ) == m_keys.end()) {
+		std::string api_userid = _fields.find("api_userid")->second;
+		std::string ts = _fields.find("ts")->second;
+		std::string sign_got = _fields.find("sign")->second;
+		
+		if (m_keys.find( api_userid ) == m_keys.end()) {
 			_err_mess = "auth fail";
 			return false;
 		}
 		
-		std::string sign_raw = _fields["method"] + _fields["ts"] + m_keys.find( _fields["api_userid"] )->second;
+		std::string sign_raw = method + ts + m_keys.find( api_userid )->second;
 		unsigned char sign[21];
 		sha1::calc(sign_raw.c_str(), sign_raw.size(), sign);
 		char sign_hex[41];
@@ -66,7 +72,7 @@ bool HttpApi::checkFields(hiaux::hashtable<std::string, std::string> &_fields, s
 		//std::cout << "actual sign: " << sign_hex << std::endl;
 		//std::cout << "got sign: " <<  _fields["sign"] << std::endl;
 		
-		if (_fields["sign"] != std::string(sign_hex)) {
+		if ( sign_got != std::string(sign_hex)) {
 			_err_mess = "auth fail";
 			return false;
 		}
@@ -80,7 +86,7 @@ void HttpApi::addUser(const std::string &_userid, const std::string &_key) {
 
 void HttpApi::addMethod(const std::string &_name,
 				const std::vector<std::string> &_args_names,
-				boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq) {
+				boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq) {
 	m_methods_args[_name] = _args_names;
 	m_methods_callbacks[_name] = _onreq;
 }
@@ -88,7 +94,7 @@ void HttpApi::addMethod(const std::string &_name,
 // checks sign = concat name . [{_arg_name}] . ts; fields: method_sign, ts 
 void HttpApi::addMethodSigned(const std::string &_name,
 					const std::vector<std::string> &_args_names,
-					boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> _onreq,
+					boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq,
 					uint64_t _max_ts_range) {
 	m_methods_args[_name] = _args_names;
 	m_methods_callbacks[_name] = _onreq;
@@ -97,7 +103,7 @@ void HttpApi::addMethodSigned(const std::string &_name,
 
 void HttpApi::addMethodSignedAsync(const std::string &_name,
 					const std::vector<std::string> &_args_names,
-					boost::function<void(hiaux::hashtable<std::string, std::string> &,
+					boost::function<void(std::map<std::string, std::string> &,
 											boost::function <void(const std::string&)>  )> _onreq,
 					uint64_t _max_ts_range) {
 	
@@ -107,7 +113,7 @@ void HttpApi::addMethodSignedAsync(const std::string &_name,
 	m_async[_name] = true;				
 }
 
-void HttpApi::mergePostParams(hiaux::hashtable<std::string, std::string> &_params, const std::string &_body) {
+void HttpApi::mergePostParams(std::map<std::string, std::string> &_params, const std::string &_body) {
 	
 //	std::cout << "mergePostParams: " << _body << std::endl;
 	try {
@@ -132,45 +138,73 @@ void HttpApi::onAsyncCallDone(const std::string &_resp, HttpConnectionPtr _conn)
 	//_conn->close();
 }
 
-void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
-
-	hiaux::hashtable<std::string, std::string> params = _req->values_GET;
-	mergePostParams(params, _req->body);
+void HttpApi::handleRequest(HttpConnectionPtr _conn, std::map<std::string, std::string> &_params, bool _bin) {
 	
 	std::string err_mess;
 
-	if (!checkFields (params, err_mess)) {
+	if (!checkFields (_params, err_mess)) {
 		_conn->sendResponse( HttpResponse(200, m_buildApiError( err_mess ) ) );
+		
+		std::cout << "HttpApi::handleRequest: !checkFields\n";
 		
 	} else {
 		std::string resp;
 		
-		if (isAsync(params["method"])) {
+		if (isAsync(_params["method"])) {
 			
-			hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, 
+			std::map<std::string, boost::function<void(std::map<std::string, std::string> &, 
 																boost::function <void(const std::string&)> )> >::iterator it =
-																	 m_methods_callbacks_async.find(params["method"]);
+																	 m_methods_callbacks_async.find(_params["method"]);
 			
 			if (it == m_methods_callbacks_async.end()) {
 				_conn->sendResponse(HttpResponse(200, "No such method"));
 				
 			}
 			else {
-				it->second(params, boost::bind(&HttpApi::onAsyncCallDone, this, _1, _conn));
+				it->second(_params, boost::bind(&HttpApi::onAsyncCallDone, this, _1, _conn));
 			}
 			
 		} else {
 		
-			hiaux::hashtable<std::string, boost::function<void(hiaux::hashtable<std::string, std::string> &, std::string&)> >::iterator it = 
-				m_methods_callbacks.find(params["method"]);
+			std::map<std::string, boost::function<void(std::map<std::string, std::string> &, std::string&)> >::iterator it = 
+				m_methods_callbacks.find(_params["method"]);
 			if (it == m_methods_callbacks.end()) {
 				
 				_conn->sendResponse(HttpResponse(200, "No such method"));
 			}
 			else {
-				it->second(params, resp);
-				_conn->sendResponse(HttpResponse(200, resp));
+				it->second(_params, resp);
+				
+				if (!_bin) {
+					_conn->sendResponse(HttpResponse(200, resp));
+				}
+				else {
+					std::ostringstream o;
+					o << resp.size() << "\n" << resp;
+					_conn->sendCustomResponse(o.str());
+				}
 			}
 		}
 	}
+}
+
+void HttpApi::handleBinary(HttpConnectionPtr _conn, CustomRequestPtr _req) {
+	
+	//std::cout << "HttpApi::handleBinary\n";
+	
+	hiapi::server::Request* req = dynamic_cast<hiapi::server::Request*>(_req.get());
+	
+	if (req == NULL) {
+		std::cout << "HttpApi::handleBinary error: dynamic_cast<hiapi::server::Request*>(_req.get())\n";
+		return;
+	}
+	
+	req->params["method"] = req->method;
+	handleRequest(_conn, req->params, true);
+}
+
+void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
+
+	mergePostParams(_req->values_GET, _req->body);	
+	handleRequest(_conn, _req->values_GET, false);
 }

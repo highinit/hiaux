@@ -46,6 +46,7 @@ class HttpServer : public boost::noncopyable {
 	
 	hiaux::hashtable<int, HttpConnectionPtr> m_reading_connections;
 	//hiaux::hashtable<int, HttpConnectionPtr> m_writing_connections;
+	//hiaux::hashtable<int, HttpConnectionPtr> m_ready_to_write_connections;
 	
 	hAutoLock resp_lock;
 	std::queue< std::pair<HttpConnectionPtr, HttpResponse> > m_resp_queue;

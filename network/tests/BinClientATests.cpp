@@ -100,12 +100,12 @@ BinClientATests::BinClientATests() {
 	
 	sleep(1);
 	
-	hiapi::client::BinClientAPtr client(new hiapi::client::BinClientA(hiapi::client::BinClientA::INTERNET, "127.0.0.1", port, 1000));
+	hiapi::client::BinClientAPtr client(new hiapi::client::BinClientA(hiapi::client::BinClientA::INTERNET, "127.0.0.1", port, 10));
 	
 	uint64_t min_v0 = 0;
-	uint64_t max_v0 = 10;
+	uint64_t max_v0 = 5;
 	uint64_t min_v1 = 0;
-	uint64_t max_v1 = 100;
+	uint64_t max_v1 = 1;
 	
 	m_got_requests = 0;
 	m_sent_requests = 0;
@@ -130,8 +130,8 @@ BinClientATests::BinClientATests() {
 	for (int i = 0; i<5*max_v0*max_v1; i++) {
 		
 		client->handleEvents();
-		if (i % 700 == 0)
-			sleep(1);
+		//if (i % 700 == 0)
+		//	sleep(1);
 		//if (m_sent_requests == m_got_requests)
 		//	break;
 	}
@@ -139,5 +139,5 @@ BinClientATests::BinClientATests() {
 	//std::cout << "m_handle_binary: " << m_handle_binary.load() << std::endl;
 	//exit(0);
 	srv->stop();									
-	//std::cout << "BinClientATests::BinClientATests\n";
+	std::cout << "BinClientATests::BinClientATests\n";
 }

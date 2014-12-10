@@ -49,7 +49,7 @@ void removeLeadingAndEndingSpaces(std::string &s);
 
 bool getPairGET(const std::string &s, std::pair<std::string, std::string> &kv);
 void parseGET(const std::string &data,
-			hiaux::hashtable<std::string, std::string> &values_GET);
+			std::map<std::string, std::string> &values_GET);
 
 inline bool isDelimeter(char c);
 void removeRedundantDelimeters(std::string &s);
@@ -72,7 +72,7 @@ void getFileContents(const std::string &_filename, std::string &_contents);
 
 bool isStringInVec(const std::string &_str, std::vector<std::string> &_v);
 
-void parseCookies(const std::string &_header, hiaux::hashtable<std::string, std::string> &_cookies);
+void parseCookies(const std::string &_header, std::map<std::string, std::string> &_cookies);
 
 void replaceSubstring(std::string &_str, const std::string &_from, const std::string &_to);
 

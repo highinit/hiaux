@@ -14,7 +14,6 @@ HttpConnection::HttpConnection(int _sock,
 	keepalive(false),
 	custom_protocol(false),
 	m_resp_info(_resp_info),
-	m_http_status_code(200),
 	waiting_last_handling(false),
 	m_on_send_response(_on_send_response),
 	m_on_send_custom_response(_on_send_custom_response),
@@ -53,23 +52,26 @@ bool HttpConnection::notDead() {
 	
 	//std::cout << "HttpConnection::notDead " << ((time(0) - create_ts < 5) && alive)
 	//	<< " alive: " << alive << std::endl; 
-	
-	return ((time(0) - create_ts < 5) && alive ) || custom_protocol;
+	uint64_t now = time(0);
+	return alive && ((now - create_ts <= 2) 
+						|| (custom_protocol && ((now - last_activity_ts) < 60)));
 }
 
+/*
 void HttpConnection::setHttpStatus(int code) {
 	
 	m_http_status_code = code;
 }
+*/
 
 void HttpConnection::addHeader(const std::string &_header) {
 	
-	m_headers.push_back(_header);
+	m_res_headers.push_back(_header);
 }
 
 void HttpConnection::setCookie(const std::string &_name, const std::string &_value) {
 	
-	m_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
+	m_res_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
 bool HttpConnection::checkUpgrade(HttpRequestPtr request) {
@@ -117,19 +119,27 @@ void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_res
 	if (!keepalive)
 		keepalive_header = "Connection: close\r\n";
 	
-	_response = "HTTP/1.1 " + inttostr(_resp.code) + "\r\n"
-						"Content-Type: "+m_resp_info.content_type+"\r\n"
-						"Date: "+time_c+"\r\n"
-						"Server: "+m_resp_info.server_name+"\r\n"
-						+keepalive_header+
-						"Transfer-Encoding: none\r\n"
-						"Access-Control-Allow-Origin: *\r\n";
+	std::ostringstream o;
 	
-//	for (int i = 0; i<m_headers.size(); i++) {
-//		_response += m_headers[i] + "\r\n";
-//	}
+	o << "HTTP/1.1 " << _resp.code << "\r\n"
+					<<	"Content-Type: " << m_resp_info.content_type << "\r\n"
+					<<	"Date: " << time_c << "\r\n"
+					<<	"Server: " << m_resp_info.server_name << "\r\n"
+					<<	keepalive_header
+					<<	"Transfer-Encoding: none\r\n"
+					<<	"Access-Control-Allow-Origin: *\r\n";
 	
-	_response += "Content-Length: "+content_len+"\r\n\r\n"+_resp.body;
+	for (int i = 0; i<_resp.headers.size(); i++) {
+		o << _resp.headers[i] << "\r\n";
+	}
+	
+	for (int i = 0; i < m_res_headers.size(); i++) {
+		o << m_res_headers[i] << "\r\n";
+	}
+	
+	o << "Content-Length: " << content_len << "\r\n\r\n" << _resp.body;
+	
+	_response = o.str();
 }
 
 void HttpConnection::sendResponse(const HttpResponse &_resp) {
@@ -197,6 +207,7 @@ bool HttpConnection::performSend() {
 	}
 	
 	//std::cout << "HttpConnection::performSend: " << m_send_buffer.substr(0, nsent) << std::endl;
+	last_activity_ts = time(0);
 	
 	if (nsent < m_send_buffer.size()) {
 	
@@ -245,6 +256,7 @@ void HttpConnection::performRecv() {
 	if (readbf.size() > 0) {
 		
 		//std::cout << "HttpConnection::performRecv: " <<  readbf << std::endl;
+		last_activity_ts = time(0);
 		
 		if (!custom_protocol)
 			http_parser_execute(&m_parser, &m_parser_settings, readbf.c_str(), readbf.size());
@@ -271,6 +283,5 @@ void HttpConnection::performRecv() {
 			custom_requests.push(m_custom_parser->getRequest());
 		}
 		//request_finished = false;
-	}
-	
+	}	
 }

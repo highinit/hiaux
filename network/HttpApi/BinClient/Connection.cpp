@@ -10,8 +10,10 @@ namespace client {
 Connection::Connection(int _sock):
 m_sock(_sock),
 state(HANDSHAKING),
-m_parser(boost::bind(&Connection::onHandshaked, this)) {
-	
+m_parser(boost::bind(&Connection::onHandshaked, this)),
+m_last_activity_ts(time(0)),
+m_keepalive_period(5) {
+
 	std::ostringstream o;
 	
 	o << "GET / HTTP/1.0" HTTP_DELIM
@@ -22,12 +24,12 @@ m_parser(boost::bind(&Connection::onHandshaked, this)) {
 	m_send_buffer = o.str();
 	performSend();
 	
-	//std::cout << "___CLIENT Connection::Connection\n";
+//	std::cout << "___CLIENT Connection::Connection\n";
 }
 
 Connection::~Connection() {
 	
-	//std::cout << "___CLIENT Connection::~Connection\n";
+//	std::cout << "___CLIENT Connection::~Connection\n";
 	
 	::close(m_sock);
 	::shutdown(m_sock, SHUT_RDWR);
@@ -43,12 +45,10 @@ Connection::~Connection() {
 void Connection::onHandshaked() {
 	
 	//std::cout << "Connection::onHandshaked\n";
-	state = JUST_HANDSHAKED;
+	state = ACTIVE;
 }
 
 void Connection::addRequest(RequestPtr _req) {
-	
-	state = ACTIVE;
 	
 	std::ostringstream o;
 	o << _req->data.size() << "\n"
@@ -66,9 +66,21 @@ void Connection::onResponse(const std::string &_str) {
 	cur_req->onFinished(true, _str);
 }
 
+void Connection::checkKeepAlive(uint64_t _now) {
+	
+	if ( (m_send_buffer.size() == 0) && (_now - m_last_activity_ts > m_keepalive_period)) {
+		
+		m_last_activity_ts = _now;
+		m_send_buffer.append(KEEPALIVE_MESSAGE);
+		performSend();
+	}
+}
+
 void Connection::performSend() {
 	
 	//std::cout << "Connection::performSend\n";
+	
+	//m_last_activity_ts = time(0);
 	
 	if (m_send_buffer.size() == 0)
 		return;
@@ -87,11 +99,18 @@ void Connection::performSend() {
 	
 	//if (nsent < m_send_buffer.size()) {
 	
+	if (m_send_buffer.size() == nsent) {
+		
+		m_send_buffer.clear();
+		return;
+	}
 	//std::cout << "m_send_buffer: " << m_send_buffer << std::endl;
 	m_send_buffer = m_send_buffer.substr(nsent, m_send_buffer.size() - nsent);
 }
 
 void Connection::performRecv() {
+	
+	//m_last_activity_ts = time(0);
 	
 	std::string readbf;
 	char bf[1025];

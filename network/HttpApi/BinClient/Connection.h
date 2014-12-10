@@ -32,18 +32,22 @@ class Connection {
 
 	ResponseParser m_parser;
 
-	int m_sock;
+	uint64_t m_last_activity_ts;
+	uint64_t m_keepalive_period;
+	
 	std::queue<RequestPtr> m_sent_requests;
-	std::string m_send_buffer;
-
 	void onResponse(const std::string &_str);
 
 public:
 	
+	int m_sock;
+	
+	std::string m_send_buffer;
+	
 	enum State {
 		HANDSHAKING,
-		JUST_HANDSHAKED,
-		ACTIVE
+		ACTIVE,
+		TERMINATING
 	};
 
 	State state;
@@ -56,6 +60,8 @@ public:
 	void addRequest(RequestPtr _req);
 	void performSend();
 	void performRecv();
+	
+	void checkKeepAlive(uint64_t _now);
 };
 
 typedef boost::shared_ptr<Connection> ConnectionPtr;

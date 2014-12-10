@@ -29,29 +29,29 @@ void BinClientA::reinitConnections() {
 		establishNewConnection();
 }
 
-void BinClientA::performRecv(int _sock) {
+void BinClientA::performRecv(ConnectionPtr _conn) {
 	
 	try {
 	
-		hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
+	/*	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
 		if (it == m_connections.end())
 			return;
-	
-		it->second->performRecv();
+	*/
+		_conn->performRecv();
 	} 
 	catch (LostConnectionEx e) {
 		
-		onLostConnection(_sock);
+		onLostConnection(_conn);
 	}
 	catch (CannotHandShakeEx e) {
 		
 		std::cout << "BinClientA::onRead CannotHandShakeEx\n";
-		onLostConnection(_sock);
+		onLostConnection(_conn);
 	}
 	catch (ResponseParsingEx e) {
 		
 		std::cout << "BinClientA::onRead ResponseParsingEx\n";
-		onLostConnection(_sock);
+		onLostConnection(_conn);
 	}
 	catch (...) {
 		
@@ -59,23 +59,23 @@ void BinClientA::performRecv(int _sock) {
 	}
 }
 
-void BinClientA::performSend(int _sock) {
+void BinClientA::performSend(ConnectionPtr _conn) {
 	
 	try {
 		
-		hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
-		if (it == m_connections.end())
-			return;
+//		hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
+//		if (it == m_connections.end())
+//			return;
 		
-		it->second->performSend();
+		_conn->performSend();
 	}
 	catch (LostConnectionEx e) {
 		
-		onLostConnection(_sock);
+		onLostConnection(_conn);
 	}
 	catch (CannotHandShakeEx e) {
 		
-		onLostConnection(_sock);
+		onLostConnection(_conn);
 	}
 	catch (...) {
 		
@@ -86,13 +86,49 @@ void BinClientA::performSend(int _sock) {
 void BinClientA::onRead(int _sock, void *_opaque_info) {
 
 	//std::cout << "__BinClientA::onRead\n";
-	performRecv(_sock);
+	std::map<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
+	if (it == m_connections.end())
+		return;
+		
+	performRecv(it->second);
 }
 
 void BinClientA::onWrite(int _sock, void *_opaque_info) {
 	
-	//std::cout << "__BinClientA::onWrite\n";
-	performSend(_sock);
+	hLockTicketPtr ticket = lock.lock();
+	
+	std::map<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
+	if (it == m_connections.end())
+		return;
+	
+	ConnectionPtr conn = it->second;
+	
+	if (conn->state == Connection::ACTIVE) {
+		
+		if (conn->m_send_buffer.size()==0) {
+		
+			if (!m_new_requests.empty()) {
+		
+				RequestPtr req = m_new_requests.front();
+				conn->addRequest(req);
+				m_new_requests.pop();
+			}
+			else {
+				m_free_connections[_sock] = conn;
+				return;
+			}		
+		}
+	}
+	else { // connection waiting server handshake
+		
+		if (conn->m_send_buffer.size()==0) {
+			
+			m_free_connections[_sock] = conn;
+			//return;
+		}
+	}
+	
+	performSend(conn);
 }
 
 void BinClientA::onAccept(int _sock, void *_opaque_info) {
@@ -103,47 +139,12 @@ void BinClientA::onAccept(int _sock, void *_opaque_info) {
 void BinClientA::onError(int _sock, void *_opaque_info) {
 	
 	//std::cout << "__BinClientA::onError\n";
-	onLostConnection(_sock);
-}
-
-void BinClientA::establishNewConnection() {
 	
-	try {
-		int sock = connectSocket(m_ip, m_port);
-
-		m_connections.insert(std::make_pair(sock, ConnectionPtr(new Connection( sock ))));
-		m_events_watcher->addSocket(sock, HI_READ | HI_WRITE, NULL);
+	std::map<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
+	if (it == m_connections.end())
+		return;
 	
-	} catch (CannotConnectEx e) {
-		
-		std::cout << "BinClientA::establishNewConnection CannotConnectEx\n";
-	}
-}
-
-void BinClientA::onLostConnection(int _sock) {
-	
-	std::cout << "BinClientA::onLostConnection\n";
-	
-	try {
-		
-		hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.find(_sock);
-		if (it == m_connections.end())
-			return;	
-		
-		m_events_watcher->delSocket(_sock);
-		m_connections.erase(it);
-		
-		establishNewConnection();
-		
-	}
-	catch (CannotConnectEx e) {
-		
-		std::cout << "BinClientA::onLostConnection CannotConnectEx\n";
-	}
-	catch (...) {
-		
-		std::cout << "BinClientA::onLostConnection unknown exection\n";
-	}
+	onLostConnection(it->second);
 }
 
 void BinClientA::buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump) {
@@ -183,47 +184,95 @@ void BinClientA::callSigned (const std::string &_method, const std::map<std::str
 	
 }
 
-void BinClientA::putRequestsToConnections() {
+void BinClientA::putRequestsToFreeConnections() {
 	
-	//std::cout << "BinClientA::putRequestsToConnections\n";
+	hLockTicketPtr ticket = lock.lock();
 	
-	// put requests to connecitons
-	hiaux::hashtable<int, ConnectionPtr>::iterator it = m_connections.begin();
-	hiaux::hashtable<int, ConnectionPtr>::iterator end = m_connections.end();
+	if (m_new_requests.empty())
+		return;
 	
+	if (m_free_connections.size() == 0)
+		return;
 	
-	while (!m_new_requests.empty()) {
+	RequestPtr req = m_new_requests.front();
+	
+	std::map<int, ConnectionPtr>::iterator it = m_free_connections.begin();
+	std::map<int, ConnectionPtr>::iterator end = m_free_connections.end();
+	
+	while (it != end) {
 		
-		RequestPtr req;
+		ConnectionPtr conn = it->second;
 		
+		if (conn->state == Connection::ACTIVE) {
 		
-		hLockTicketPtr ticket = lock.lock();
-		req = m_new_requests.front();
-		
-		
-		if (it->second->state == Connection::JUST_HANDSHAKED) {
-			
-			//std::cout << "it->second->state == Connection::JUST_HANDSHAKED\n";
-			it->second->addRequest(req);
 			m_new_requests.pop();
-			
-			//ticket->unlock();
-			
-			performSend(it->first);
-		}
-		else if (it->second->state == Connection::ACTIVE) {
-			
-			//std::cout << "it->second->state == Connection::ACTIVE\n";
-			
-			it->second->addRequest(req);
-			m_new_requests.pop();
-		}
-
-		it++;
-		
-		if (it == end)
+			conn->addRequest(req);
+			performSend(conn);
+			m_free_connections.erase(it);
 			return;
-			//it = m_connections.begin();
+		}
+		
+		it++;
+	}
+}
+
+void BinClientA::establishNewConnection() {
+	
+	try {
+		int sock = connectSocket(m_ip, m_port);
+
+		m_connections.insert(std::make_pair(sock, ConnectionPtr(new Connection( sock ))));
+		m_events_watcher->addSocket(sock, HI_READ | HI_WRITE, NULL);
+	
+	} catch (CannotConnectEx e) {
+		
+		std::cout << "BinClientA::establishNewConnection CannotConnectEx\n";
+	}
+}
+
+void BinClientA::removeConnection(ConnectionPtr _conn) {
+	
+	m_events_watcher->delSocket(_conn->m_sock);
+	
+	std::map<int, ConnectionPtr>::iterator it = m_connections.find(_conn->m_sock);
+	if (it != m_connections.end())	
+		m_connections.erase(it);
+	
+	it = m_free_connections.find(_conn->m_sock);
+	if (it != m_free_connections.end())
+		m_free_connections.erase(it);
+}
+
+void BinClientA::onLostConnection(ConnectionPtr _conn) {
+	
+	std::cout << "BinClientA::onLostConnection\n";
+	
+	try {
+		
+		removeConnection(_conn);
+		
+		establishNewConnection();
+	}
+	catch (CannotConnectEx e) {
+		
+		std::cout << "BinClientA::onLostConnection CannotConnectEx\n";
+	}
+	catch (...) {
+		
+		std::cout << "BinClientA::onLostConnection unknown exection\n";
+	}
+}
+
+void BinClientA::checkKeepAlive() {
+	
+	uint64_t now = time(0);
+	
+	std::map<int, ConnectionPtr>::iterator it = m_connections.begin();
+	std::map<int, ConnectionPtr>::iterator end = m_connections.end();
+	
+	while (it != end) {
+		it->second->checkKeepAlive(now);
+		it++;
 	}
 }
 
@@ -233,12 +282,14 @@ void BinClientA::handleEvents() {
 		
 		//std::cout << "m_events_watcher->handleEvents\n";
 		
-		if (m_connections.size() == 0) {
+		if (m_connections.size() < m_max_connections) {
 			//std::cout << "reinitConnections\n";
-			reinitConnections();
+			establishNewConnection();
+			//reinitConnections();
 		}
 		
-		putRequestsToConnections();
+		putRequestsToFreeConnections();
+		//checkKeepAlive();
 		
 		//std::cout << "putRequestsToConnections done\n";
 		

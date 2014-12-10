@@ -321,7 +321,7 @@ void HttpServer::handleEvents() {
 			}
 	
 			while (!m_custom_resp_queue.empty()) {
-		
+				
 				//std::cout << "HttpServer::handleEvents handling custom response\n";
 		
 				std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
@@ -329,7 +329,6 @@ void HttpServer::handleEvents() {
 				handleResponse(resp_context.first);
 				m_custom_resp_queue.pop();
 			}
-	
 		}
 	
 		cleanUpDeadConnections();

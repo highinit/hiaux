@@ -40,10 +40,12 @@ private:
 	
 	EventWatcherPtr m_events_watcher;
 	
-	hiaux::hashtable<int, ConnectionPtr> m_connections;
+	std::map<int, ConnectionPtr> m_connections;
+	std::map<int, ConnectionPtr> m_free_connections;
 	
 	hAutoLock lock;
 	
+	// pop from onSend
 	std::queue<RequestPtr> m_new_requests;
 
 	BinClientA::Mode m_mode;
@@ -53,12 +55,16 @@ private:
 	size_t m_max_connections;
 
 	void establishNewConnection();
-	void onLostConnection(int _sock);
+	void onLostConnection(ConnectionPtr _conn);
 	void reinitConnections();
-	void putRequestsToConnections();
 	
-	void performRecv(int _sock);
-	void performSend(int _sock);
+	void putRequestsToFreeConnections();
+	void checkKeepAlive();
+	
+	void performRecv(ConnectionPtr _conn);
+	void performSend(ConnectionPtr _conn);
+	
+	void removeConnection(ConnectionPtr _conn);
 	
 public:
 	

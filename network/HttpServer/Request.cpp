@@ -7,7 +7,7 @@ url(_url) {
 
 bool HttpRequest::getField(const std::string &_key, std::string &_value) {
 	
-	hiaux::hashtable<std::string, std::string>::iterator it = values_GET.find(_key);
+	std::map<std::string, std::string>::iterator it = values_GET.find(_key);
 	
 	if (it != values_GET.end()) {
 		_value = it->second;
@@ -18,7 +18,7 @@ bool HttpRequest::getField(const std::string &_key, std::string &_value) {
 
 bool HttpRequest::getCookie(const std::string &_name, std::string &_value) {
 	
-	hiaux::hashtable<std::string, std::string>::iterator it = cookies.find(_name);
+	std::map<std::string, std::string>::iterator it = cookies.find(_name);
 	if (it == cookies.end())
 		return false;
 	_value = it->second;

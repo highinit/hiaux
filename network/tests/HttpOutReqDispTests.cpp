@@ -39,7 +39,7 @@ void HttpOutReqDispTests::onFinished() {
 
 void HttpOutReqDispTests::onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req) {
 	//std::cout << "HttpOutReqDispTests::onHttpRequest\n";
-	hiaux::hashtable<std::string, std::string>::iterator it =
+	std::map<std::string, std::string>::iterator it =
 				req->values_GET.begin();
 	
 	std::string resp;

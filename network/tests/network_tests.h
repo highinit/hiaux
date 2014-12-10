@@ -46,7 +46,7 @@ public:
 	void onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req)
 	{
 		std::cout << "onHttpRequest\n";
-		hiaux::hashtable<std::string, std::string>::iterator it =
+		std::map<std::string, std::string>::iterator it =
 					req->values_GET.begin();
 		while (it != req->values_GET.end()) {
 			std::cout << it->first << "/" << it->second << std::endl;
@@ -123,16 +123,16 @@ public:
 			std::cout << "Exception: " << s << std::endl;
 		}
 	}
-	
+	/*
 	std::string onGenError(const std::string &_mess) {
 		return _mess;
 	}
 	
-	void onGetStatsCalled(hiaux::hashtable<std::string, std::string> &_args, std::string& _resp) {
+	void onGetStatsCalled(std::map<std::string, std::string> &_args, std::string& _resp) {
 		_resp = "onGetStatsCalled\r\n";
 	}
 	
-	void onGetStatsCalledAsync(hiaux::hashtable<std::string, std::string> &_args,  boost::function< void(const std::string&)> _onDone) {
+	void onGetStatsCalledAsync(std::map<std::string, std::string> &_args,  boost::function< void(const std::string&)> _onDone) {
 
 		_onDone ("onGetStatsCalled\r\n");
 	}
@@ -167,7 +167,7 @@ public:
 		sprintf(endpoint, "http://127.0.0.1:%d/", port);
 		HttpApiClient c(endpoint, "_user_", "_key_");
 		std::string req;
-		hiaux::hashtable<std::string, std::string> params;
+		std::map<std::string, std::string> params;
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.call("get-stats", params, req);
@@ -206,7 +206,7 @@ public:
 		sprintf(endpoint, "http://127.0.0.1:%d/", port);
 		HttpApiClient c(endpoint, userid, key);
 		std::string req;
-		hiaux::hashtable<std::string, std::string> params;
+		std::map<std::string, std::string> params;
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.callSigned("get-stats", params, req);
@@ -246,7 +246,7 @@ public:
 		sprintf(endpoint, "http://127.0.0.1:%d/", port);
 		HttpApiClient c(endpoint, userid, key);
 		std::string req;
-		hiaux::hashtable<std::string, std::string> params;
+		std::map<std::string, std::string> params;
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.callSigned("get-stats", params, req);
@@ -286,14 +286,14 @@ public:
 		sprintf(endpoint, "http://127.0.0.1:%d/", port);
 		HttpApiClient c(endpoint, userid, key);
 		std::string req;
-		hiaux::hashtable<std::string, std::string> params;
+		std::map<std::string, std::string> params;
 		params["ts1"] = "_ts1_";
 		params["ts2"] = "_ts2_";
 		c.callSignedPost("get-stats", params, req);
 		std::cout << "req: " << req << std::endl;
 		TS_ASSERT ( req == "onGetStatsCalled\r\n" );
 	}
-	
+	*/
 	void XtestHttpClientAsync() {
 		HttpClientAsyncTests();
 	}

@@ -29,6 +29,9 @@ hThread::hThread(CallBackQueuePtr task_queue, ThreadQueuePtr waiting_threads, pt
 }
 
 hThread::~hThread() {
+	
+	//std::cout << "hThread::~hThread\n";
+	
 	pthread_detach(*m_th);
 	delete m_th;
 }
@@ -201,7 +204,7 @@ hThreadPool::~hThreadPool() {
 	while (m_nrunning_threads.load() > 0) {
 		kill();
 	}
-//	std::cout << "all threads shut down\n";
+///	std::cout << "all threads shut down\n";
 	for (int i = 0; i<threads.size(); i++)
 		delete threads[i];
 }

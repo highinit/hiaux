@@ -7,6 +7,8 @@
 #include <boost/function.hpp>
 #include <queue>
 
+#include <sstream>
+
 #include "ServerUtils.h"
 #include "ResponseInfo.h"
 #include "Request.h"
@@ -35,7 +37,6 @@ public:
 	std::queue<HttpRequestPtr> http_requests;
 	std::queue<CustomRequestPtr> custom_requests;
 	
-	
 	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response,
 					const boost::function<void(int, const std::string &)> &_on_send_custom_response,
 					const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake)> &_getCustomParser);
@@ -57,10 +58,9 @@ public:
 	//void sendResponse(const std::string &_content);
 	//void sendResponse();
 	
-	void setHttpStatus(int code);
+	//void setHttpStatus(int code);
 	void addHeader(const std::string &_header);
 	void setCookie(const std::string &_name, const std::string &_value);
-	
 	
 	int onMessageBegin();
 	int onUrl(const char *at, size_t length);
@@ -80,6 +80,8 @@ private:
 	boost::function<void(int, const std::string &)> m_on_send_custom_response;
 	boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &)> m_getCustomParser;
 	
+	std::vector<std::string> m_res_headers;
+	
 	HttpRequestPtr m_cur_http_request;
 	CustomRequestPtr m_cur_custom_request;
 	
@@ -89,8 +91,6 @@ private:
 	std::string m_send_buffer;
 	
 	std::string m_cur_header_field;
-	std::vector<std::string> m_headers;
-	int m_http_status_code;
 	
 	http_parser m_parser;
 	http_parser_settings m_parser_settings;

@@ -21,10 +21,13 @@ class HiApiClientA  {
 
 public:
 
+	HiApiClientA();
 	virtual ~HiApiClientA();
 	
 	virtual void call (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) = 0;
 	virtual void callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) = 0;
 };
+
+typedef boost::shared_ptr<HiApiClientA> HiApiClientAPtr;
 
 #endif

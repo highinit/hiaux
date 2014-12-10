@@ -19,6 +19,18 @@ void Parser::parse() {
 		
 		if (state == READING_SIZE) {
 			
+			if (m_cur_token[0] == 'k') {
+				
+				if (m_cur_token.size() == 1) {
+					
+					m_cur_token.clear();
+					return;
+				} else {
+					m_cur_token = m_cur_token.substr(1, m_cur_token.size() - 1);
+					continue;
+				}
+			}
+			
 			size_t endlpos = m_cur_token.find("\n");
 			if (endlpos == std::string::npos)
 				return;

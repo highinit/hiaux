@@ -37,10 +37,10 @@ void EventWatcherKqueue::addSocket(int _sock_fd, uint32_t _mask, void *_opaque_i
 	timeout.tv_sec = 10;
 	
 	if (_mask & HI_READ)
-		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD, 0, 0, _opaque_info);
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, _opaque_info);
 	
 	if (_mask & HI_WRITE)
-		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD, 0, 0, _opaque_info);
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, _opaque_info);
 	
 	m_sockets_masks[_sock_fd] = _mask;
 	
@@ -69,10 +69,10 @@ void EventWatcherKqueue::enableEvents(int _sock_fd, uint32_t _mask) {
 	uint32_t need_enable = (~mask) & _mask;
 	
 	if (need_enable & HI_READ)
-		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD, 0, 0, NULL);
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_READ, EV_ADD | EV_CLEAR, 0, 0, NULL);
 	
 	if (need_enable & HI_WRITE)
-		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD, 0, 0, NULL);
+		EV_SET(&ev[ev_count++], _sock_fd, EVFILT_WRITE, EV_ADD | EV_CLEAR, 0, 0, NULL);
 	
 	m_sockets_masks[_sock_fd] = mask | need_enable;
 	

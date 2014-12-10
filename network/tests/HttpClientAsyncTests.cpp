@@ -5,7 +5,7 @@ void HttpClientAsyncTests::onFinished() {
 }
 
 void HttpClientAsyncTests::onHttpRequest(HttpConnectionPtr http_conn, HttpRequestPtr req) {
-	hiaux::hashtable<std::string, std::string>::iterator it =
+	std::map<std::string, std::string>::iterator it =
 				req->values_GET.begin();
 	
 	std::string resp;
