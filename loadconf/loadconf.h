@@ -7,6 +7,9 @@
 #include <vector>
 #include <string>
 
+#include <iostream> 
+#include <sstream>
+
 class LoadConf {
 
 	static void doLoadRequired(json_t *root, const std::vector<std::string> &_required, hiaux::hashtable<std::string,std::string> &_params,

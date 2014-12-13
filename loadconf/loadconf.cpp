@@ -30,9 +30,19 @@ hiaux::hashtable<std::string,std::string> LoadConf::load (const std::string &_co
 	
 	hiaux::hashtable<std::string,std::string> ret;
 	FILE *f = fopen(_config_file.c_str(), "r");
+	
+	json_t *root = NULL;
 	json_error_t error;
-	json_t *root = json_loadf(f, 0, &error);
-	fclose(f);
+	
+	if (f == NULL) {
+		
+		throw std::string("LoadConf::load could not open file ") + _config_file;
+		
+	} else {
+	
+		root = json_loadf(f, 0, &error);
+		fclose(f);
+	}
 
 	if (root == NULL)
 		throw std::string("LoadConf::load could not parse file ") + _config_file;
@@ -49,9 +59,19 @@ hiaux::hashtable<std::string,std::string> LoadConf::load (const std::string &_co
 
 	hiaux::hashtable<std::string,std::string> ret;
 	FILE *f = fopen(_config_file.c_str(), "r");
+	
+	json_t *root = NULL;
 	json_error_t error;
-	json_t *root = json_loadf(f, 0, &error);
-	fclose(f);
+	
+	if (f == NULL) {
+		
+		throw std::string("LoadConf::load could not open file ") + _config_file;
+		
+	} else {
+	
+		root = json_loadf(f, 0, &error);
+		fclose(f);
+	}
 
 	if (root == NULL)
 		throw std::string("LoadConf::load could not parse file ") + _config_file;
