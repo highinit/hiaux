@@ -21,22 +21,18 @@
 #include <sys/socket.h>
 
 class HttpConnection : public boost::noncopyable {
+
 public:
+	
 	int sock;
-	uint64_t create_ts;
-	uint64_t last_activity_ts;
-	bool request_finished;
-	bool alive;
-	bool ever_sent;
-	bool keepalive;
+	
 	bool custom_protocol;
 	bool waiting_last_handling;
-	
 	std::string custom_protocol_id;
 	
 	std::queue<HttpRequestPtr> http_requests;
 	std::queue<CustomRequestPtr> custom_requests;
-	
+
 	HttpConnection(int _sock, ResponseInfo _resp_info, const boost::function<void(int, const HttpResponse &)> &_on_send_response,
 					const boost::function<void(int, const std::string &)> &_on_send_custom_response,
 					const boost::function<CustomParserPtr(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake)> &_getCustomParser);
@@ -54,7 +50,8 @@ public:
 	void addResponse(const HttpResponse &_resp);
 	void addCustomResponse(const std::string &_resp);
 	bool performSend();
-	
+
+
 	//void sendResponse(const std::string &_content);
 	//void sendResponse();
 	
@@ -70,11 +67,19 @@ public:
 	int onHeadersComplete();
 	int onBody(const char *at, size_t length);
 	int onMessageComplete();
-	
+
 private:
 	
 	void resetHttpParser();
 	void renderResponse(const HttpResponse &_resp, std::string &_response);
+	
+	uint64_t create_ts;
+	uint64_t last_activity_ts;
+
+	bool alive;
+	bool ever_sent;
+	bool keepalive;
+	bool request_finished;	
 	
 	boost::function<void(int, const HttpResponse &)> m_on_send_response;
 	boost::function<void(int, const std::string &)> m_on_send_custom_response;

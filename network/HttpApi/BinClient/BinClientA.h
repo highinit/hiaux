@@ -10,10 +10,8 @@
 #include "hiaux/network/HttpServer/ServerUtils.h"
 
 #include "hiaux/network/HttpApi/HiApiClientA.h"
-
 #include "hiaux/network/HttpApi/BinClient/Request.h"
 #include "hiaux/network/HttpApi/BinClient/Connection.h"
-
 #include "hiaux/network/HttpApi/BinClient/Request.pb.h"
 
 #include <boost/shared_ptr.hpp>
@@ -66,17 +64,17 @@ private:
 	
 	void removeConnection(ConnectionPtr _conn);
 	
+	void onRead(int _sock, void *_opaque_info);
+	void onWrite(int _sock, void *_opaque_info);
+	void onError(int _sock, void *_opaque_info);
+	void onAccept(int _sock, void *_opaque_info);
+	
 public:
 	
 	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 50);
 	virtual ~BinClientA();
 	
 	static void buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump);
-	
-	void onRead(int _sock, void *_opaque_info);
-	void onWrite(int _sock, void *_opaque_info);
-	void onError(int _sock, void *_opaque_info);
-	void onAccept(int _sock, void *_opaque_info);
 	
 	virtual void call(const std::string &_method,
 				const std::map<std::string, std::string> &_params,

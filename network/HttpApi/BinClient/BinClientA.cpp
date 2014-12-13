@@ -5,10 +5,10 @@ namespace hiapi {
 namespace client {
 
 BinClientA::BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections):
-	 m_mode(_mode),
-	 m_ip(_ip),
-	 m_port(_port),
-	 m_max_connections(_max_connections) {
+	m_mode(_mode),
+	m_ip(_ip),
+	m_port(_port),
+	m_max_connections(_max_connections) {
 
 	m_events_watcher.reset(new EventWatcher(
 		boost::bind(&BinClientA::onRead, this, _1, _2),
