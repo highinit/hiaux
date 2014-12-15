@@ -47,26 +47,36 @@ void Daemon::startListening (size_t _nthreads, int _port) {
 	m_pool->run();
 }
 
-void sigchild_handler(int signum) {
+static void sigchild_handler(int signum) {
 	
+	pid_t pid;
 	int status;
-	wait(&status);
+	while ( (pid = waitpid(-1, &status, WNOHANG)) > 0);
 }
 
 static void empty_handler(int signal) {
 	
-	//std::cout << "empty handler\n";
 }
 
 void Daemon::setDefaultSignalHandlers() {
 	
-	signal(SIGCHLD, sigchild_handler);
-	signal(SIGPIPE, empty_handler);
+	struct sigaction	sa;
+	sa.sa_handler = sigchild_handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	
+	sigaction(SIGCHLD, &sa, NULL);
+		
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	
+	sigaction(SIGPIPE, &sa, NULL);
 }
 
 #define LOCKMODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH)
 
-int Daemon::chechLockFile(const std::string &_filename) {
+int Daemon::checkLockFile(const std::string &_filename) {
 	
 	char	buf[16];
 
@@ -115,18 +125,18 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	 * Get maximum number of file descriptors.
 	 */
 	if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
-		fallDown("can't get file limit");
+		fallDown("Daemon::daemonize: can't get file limit");
 
 	/*
 	 * Become a session leader to lose controlling TTY.
 	 */
 	if ((pid = fork()) < 0)
-		fallDown("can't fork");
+		fallDown("Daemon::daemonize: can't fork");
 	else if (pid != 0) /* parent */
 		exit(0);
 	setsid();
 
-	std::cout << "lose TTY ok\n";
+	std::cout << "Daemon::daemonize: lose TTY ok\n";
 
 	/*
 	 * Ensure future opens won't allocate controlling TTYs.
@@ -135,13 +145,13 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
 	if (sigaction(SIGHUP, &sa, NULL) < 0)
-		fallDown("can't ignore SIGHUP");
+		fallDown("Daemon::daemonize: can't ignore SIGHUP");
 	if ((pid = fork()) < 0)
-		fallDown("can't fork");
+		fallDown("Daemon::daemonize: can't fork");
 	else if (pid != 0) /* parent */
 		exit(0);
 
-	std::cout << "Ensure future opens won't allocate controlling TTYs ok\n";
+	std::cout << "Daemon::daemonize: Ensure future opens won't allocate controlling TTYs ok\n";
 
 	/*
 	 * Change the current working directory to the root so
@@ -150,7 +160,7 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 //	if (chdir("/") < 0)
 //		fallDown("can't change directory to /");
 
-	int lockfile_fd = chechLockFile(_pidfile);
+	int lockfile_fd = checkLockFile(_pidfile);
 
 	/*
 	 * Close all open file descriptors.
@@ -179,7 +189,7 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	freopen(_logfile.c_str(), "w", stdout);
 	//std::cout.rdbuf(out.rdbuf());
 	
-	std::cout << "daemonize ok\n";
+	std::cout << "Daemon::daemonize ok\n";
 }
 
 void Daemon::start(bool _daemonize) {
@@ -192,7 +202,7 @@ void Daemon::start(bool _daemonize) {
 	try {
 	
 		doStart();
-		join();
+		//join();
 	
 	} catch (std::string *_s) {
 		fallDown (std::string("Daemon::start exception: ") + *_s );
@@ -202,12 +212,14 @@ void Daemon::start(bool _daemonize) {
 		fallDown (std::string("Daemon::start exception: ") + _s );
 	} catch (std::string &_s) {
 		fallDown (std::string("Daemon::start exception: ") + _s );
+	} catch (...) {
+		fallDown (std::string("Daemon::start unknown exception: ") );
 	}
 }
 
-void Daemon::join() {
+void Daemon::start(bool _daemonize, int argc, char** argv) {
 	
-	m_pool->join();
+	throw "Daemon::start not implemented\n";
 }
 
 Daemon::~Daemon() {

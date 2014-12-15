@@ -83,6 +83,9 @@ void HttpServer::performAccept(int _sock_fd) {
 		m_events_watcher->addSocket(connection->sock, HI_READ, NULL);
 		accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
 	}
+	
+	if (errno == EINTR)
+		performAccept(_sock_fd);
 }
 
 void HttpServer::onError(int _sock, void *_opaque_info) {
@@ -339,7 +342,7 @@ void HttpServer::handleEvents() {
 }
 
 TaskLauncher::TaskRet HttpServer::eventLoop() {
-	
+
 	while (m_is_running) {
 		
 		handleEvents();

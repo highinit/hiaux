@@ -36,12 +36,12 @@ protected:
 	hThreadPoolPtr m_pool;
 	TaskLauncherPtr m_srv_tasklauncher;
 	HttpServerPtr m_srv;
-
+	
 	void fallDown(std::string _s);
 	void onFinished();
 
 	void setDefaultSignalHandlers();
-	int chechLockFile(const std::string &_filename);
+	int checkLockFile(const std::string &_filename);
 	void daemonize(const std::string &_pidfile, const std::string &_logfile);
 
 	void loadConfig(const std::string &_config_file);
@@ -57,7 +57,7 @@ public:
 	virtual ~Daemon();
 	
 	void start(bool _daemonize);
-	void join();
+	void start(bool _daemonize, int argc, char** argv);
 };
 
 typedef boost::shared_ptr<Daemon> DaemonPtr;

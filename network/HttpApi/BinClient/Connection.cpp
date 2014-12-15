@@ -128,6 +128,9 @@ void Connection::performRecv() {
 				
 				break;
 			}
+			else if (errno == EINTR) {
+				continue;
+			}
 			else {
 				
 				//std::cout << "___CLIENT Connection::performRecv error: " << strerror(errno) << std::endl;

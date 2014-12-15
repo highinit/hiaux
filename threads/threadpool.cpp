@@ -38,8 +38,9 @@ hThread::~hThread() {
 
 void _thread_signal_callback_handler(int signum) {
 	
+	pid_t pid;
 	int status;
-	wait(&status);
+	while ( (pid = waitpid(-1, &status, WNOHANG)) > 0);
 }
 
 void hThread::run() {
