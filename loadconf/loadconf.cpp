@@ -1,6 +1,6 @@
 #include "loadconf.h"
 
-void LoadConf::doLoadRequired(json_t *root, const std::vector<std::string> &_required, hiaux::hashtable<std::string,std::string> &_params, 
+void LoadConf::doLoadRequired(json_t *root, const std::vector<std::string> &_required, ConfigParams &_params, 
 								const std::string &_config_file) {
 	
 	for (int i = 0; i<_required.size(); i++) {
@@ -15,7 +15,7 @@ void LoadConf::doLoadRequired(json_t *root, const std::vector<std::string> &_req
 	}
 }
 
-void LoadConf::doLoadOptional(json_t *root, const std::vector<std::string> &_optional, hiaux::hashtable<std::string,std::string> &_params) {
+void LoadConf::doLoadOptional(json_t *root, const std::vector<std::string> &_optional, ConfigParams &_params) {
 	
 	for (int i = 0; i<_optional.size(); i++) {
 
@@ -26,9 +26,9 @@ void LoadConf::doLoadOptional(json_t *root, const std::vector<std::string> &_opt
 	}
 }
 
-hiaux::hashtable<std::string,std::string> LoadConf::load (const std::string &_config_file, const std::vector<std::string> &_required) {
+ConfigParams LoadConf::load (const std::string &_config_file, const std::vector<std::string> &_required) {
 	
-	hiaux::hashtable<std::string,std::string> ret;
+	ConfigParams ret;
 	FILE *f = fopen(_config_file.c_str(), "r");
 	
 	json_t *root = NULL;
@@ -53,11 +53,11 @@ hiaux::hashtable<std::string,std::string> LoadConf::load (const std::string &_co
 	return ret;
 }
 
-hiaux::hashtable<std::string,std::string> LoadConf::load (const std::string &_config_file,
+ConfigParams LoadConf::load (const std::string &_config_file,
 														const std::vector<std::string> &_required,
 														const std::vector<std::string> &_optional) {
 
-	hiaux::hashtable<std::string,std::string> ret;
+	ConfigParams ret;
 	FILE *f = fopen(_config_file.c_str(), "r");
 	
 	json_t *root = NULL;

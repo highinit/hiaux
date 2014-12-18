@@ -5,11 +5,7 @@
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
 	 			{ "type": "Glob", "mask": "*.cc" }],
 
-"_LINKFLAGS": [],
+"_LINKFLAGS": [ "-lboost_program_options" ],
 
-"_DEPS" : ["../loadconf/",
-			"../threads/",
-			"../strings/",
-			"../network/",
-			"../crypt/"]
+"_DEPS" : ["../loadconf/"]
 }

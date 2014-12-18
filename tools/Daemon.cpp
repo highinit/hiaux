@@ -36,17 +36,6 @@ void Daemon::loadConfig(const std::string &_config_file) {
 	parseConfig(_config_file);
 }
 
-void Daemon::startListening (size_t _nthreads, int _port) {
-	
-	m_pool.reset(new hThreadPool(_nthreads));
-	m_srv_tasklauncher.reset(new TaskLauncher(m_pool, _nthreads, boost::bind(&Daemon::onFinished, this)));
-	m_srv.reset(new HttpServer(m_srv_tasklauncher,
-							ResponseInfo("text/html; charset=utf-8", "hiaux"),
-							boost::bind(&Daemon::connHandler, this, _1, _2),
-							_port));
-	m_pool->run();
-}
-
 static void sigchild_handler(int signum) {
 	
 	pid_t pid;
@@ -107,6 +96,82 @@ int Daemon::checkLockFile(const std::string &_filename) {
 	return lockfile_fd;
 }
 
+void Daemon::startWatcher() {
+	
+	sigset_t sigset;
+	siginfo_t siginfo;
+	sigemptyset(&sigset);
+	
+	sigaddset(&sigset, SIGQUIT);
+	sigaddset(&sigset, SIGINT);
+	sigaddset(&sigset, SIGTERM);
+    sigaddset(&sigset, SIGCHLD);
+	
+	sigprocmask(SIG_BLOCK, &sigset, NULL);
+	
+	pid_t child_pid;
+	bool need_start = true;
+	
+	for (;;) {
+		
+		if (need_start)
+			child_pid = fork();
+		
+		need_start = false;
+		
+		if (child_pid == -1) {
+			
+		} else if (child_pid == 0) { // child
+			
+			startWorker();
+			exit(0);
+			
+		} else { // parent
+			
+			int got_sig;
+			if (sigwait(&sigset, &got_sig) == -1) {
+				
+				std::cout << "Daemon::startWatcher sigwait error\n";
+			}
+			
+			if (got_sig == SIGCHLD) {
+				
+				std::cout << "Daemon::startWatcher SIGCHLD\n";
+				int status;
+				pid_t pid;
+				while ( (pid = waitpid(-1, &status, WNOHANG)) > 0);
+				need_start = true;
+				
+			} else {
+				
+				kill(child_pid, SIGKILL);
+				exit(0);
+			}
+		}
+	}
+}
+
+void Daemon::startWorker() {
+	
+	try {
+		
+		setDefaultSignalHandlers();
+		doStart();
+		//join();
+	
+	} catch (std::string *_s) {
+		fallDown (std::string("Daemon::startWorker exception: ") + *_s );
+	} catch (const char *_s) {
+		fallDown (std::string("Daemon::startWorker exception: ") + std::string(_s) );
+	} catch (std::string _s) {
+		fallDown (std::string("Daemon::startWorker exception: ") + _s );
+	} catch (std::string &_s) {
+		fallDown (std::string("Daemon::startWorker exception: ") + _s );
+	} catch (...) {
+		fallDown (std::string("Daemon::startWorker unknown exception: ") );
+	}
+}
+
 void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile) {
 	
 	std::cout << "Daemon::daemonize\n";
@@ -116,31 +181,22 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	struct rlimit		rl;
 	struct sigaction	sa;
 
-	/*
-	 * Clear file creation mask.
-	 */
 	umask(0);
 
-	/*
-	 * Get maximum number of file descriptors.
-	 */
+	// Get maximum number of file descriptors.
 	if (getrlimit(RLIMIT_NOFILE, &rl) < 0)
 		fallDown("Daemon::daemonize: can't get file limit");
 
-	/*
-	 * Become a session leader to lose controlling TTY.
-	 */
+	// Become a session leader to lose controlling TTY.
 	if ((pid = fork()) < 0)
 		fallDown("Daemon::daemonize: can't fork");
 	else if (pid != 0) /* parent */
 		exit(0);
 	setsid();
 
-	std::cout << "Daemon::daemonize: lose TTY ok\n";
-
-	/*
-	 * Ensure future opens won't allocate controlling TTYs.
-	 */
+	//std::cout << "Daemon::daemonize: lose TTY ok\n";
+	
+	// Ensure future opens won't allocate controlling TTYs.
 	sa.sa_handler = SIG_IGN;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = 0;
@@ -151,35 +207,28 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	else if (pid != 0) /* parent */
 		exit(0);
 
-	std::cout << "Daemon::daemonize: Ensure future opens won't allocate controlling TTYs ok\n";
+	//std::cout << "Daemon::daemonize: Ensure future opens won't allocate controlling TTYs ok\n";
 
-	/*
-	 * Change the current working directory to the root so
-	 * we won't prevent file systems from being unmounted.
-	 */
+	// Change the current working directory to the root so we won't prevent file systems from being unmounted.
 //	if (chdir("/") < 0)
 //		fallDown("can't change directory to /");
 
 	int lockfile_fd = checkLockFile(_pidfile);
 
-	/*
-	 * Close all open file descriptors.
-	 */
+	// Close all open file descriptors.
 	if (rl.rlim_max == RLIM_INFINITY)
 		rl.rlim_max = 1024;
 	for (i = 0; i < rl.rlim_max; i++)
 		if (i != lockfile_fd)
 			close(i);
 
-	/*
-	 * Attach file descriptors 0, 1, and 2 to /dev/null.
-	 */
+	
+	// Attach file descriptors 0, 1, and 2 to /dev/null.
 	fd0 = open("/dev/null", O_RDWR);
 	fd1 = dup(0);
 	fd2 = dup(0);
-	/*
-	 * Initialize the log file.
-	 */
+	
+	// Initialize the log file.
 	//openlog(cmd, LOG_CONS, LOG_DAEMON);
 //	if (fd0 != 0 || fd1 != 1 || fd2 != 2) {
 //		fallDown("unexpected file descriptors");
@@ -188,38 +237,101 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	//std::ofstream out(_logfile);
 	freopen(_logfile.c_str(), "w", stdout);
 	//std::cout.rdbuf(out.rdbuf());
-	
 	std::cout << "Daemon::daemonize ok\n";
 }
 
-void Daemon::start(bool _daemonize) {
-
-	if (_daemonize)
-		daemonize(m_config["pidfile"], m_config["log"]);
+int Daemon::doStop() {
 	
-	std::cout << "daemonize finished\n";
+	std::ifstream d (m_config["pidfile"]);
+	std::string pidstr;
+	d >> pidstr;
+	std::cout << "Daemon::doStop process: " << pidstr << std::endl;
+	
+	return system( (std::string("kill ") + pidstr).c_str() );
+}
+
+void Daemon::start(const std::string &_config_name, int argc, char** argv) {
+	
+	namespace po = boost::program_options;
+	po::options_description desc("Allowed options");
+	
+	std::string config_path;
+	bool interactive = false;
+	
+	Command command = START;
+	
+	desc.add_options()
+	("help,h", "Show help")
+	("interactive,i", "Interactive mode. Not daemon")
+	("stop", "Stop service")
+	("restart", "Restart service")
+	("config,c", po::value<std::string>(&config_path), "Specify config file");
 	
 	try {
 	
-		doStart();
-		//join();
+		po::variables_map vm;
+		po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
+	    po::store(parsed, vm);
+	    po::notify(vm);
+		
+		if (vm.count("help")) {
+			
+			std::cout << desc << std::endl;
+			exit(0);
+		}
+		
+		if (vm.count("config")) {
+			
+		}
+		
+		if (vm.count("stop")) {
+			
+			command = STOP;
+		}
+		
+		if (vm.count("restart")) {
+			
+			command = RESTART;
+		}
+		
+		if (vm.count("interactive")) {
+			
+			interactive = true;
+		}
 	
-	} catch (std::string *_s) {
-		fallDown (std::string("Daemon::start exception: ") + *_s );
-	} catch (const char *_s) {
-		fallDown (std::string("Daemon::start exception: ") + std::string(_s) );
-	} catch (std::string _s) {
-		fallDown (std::string("Daemon::start exception: ") + _s );
-	} catch (std::string &_s) {
-		fallDown (std::string("Daemon::start exception: ") + _s );
 	} catch (...) {
-		fallDown (std::string("Daemon::start unknown exception: ") );
+		
+		std::cout << desc << std::endl;
 	}
-}
-
-void Daemon::start(bool _daemonize, int argc, char** argv) {
 	
-	throw "Daemon::start not implemented\n";
+	if (config_path == "")
+		config_path = _config_name;
+	
+	loadConfig(config_path);
+	
+	if (command == START) {
+	
+		std::cout << "Daemon::start config: " << config_path << std::endl;
+	
+		if (!interactive)
+			daemonize(m_config["pidfile"], m_config["log"]);
+	
+		startWatcher();
+	}
+	else if (command == STOP) {
+		
+		exit(doStop());
+	}
+	else if (command == RESTART) {
+		
+		doStop();
+		sleep(2);
+		
+		if (!interactive)
+			daemonize(m_config["pidfile"], m_config["log"]);
+	
+		startWatcher();
+	}
 }
 
 Daemon::~Daemon() {

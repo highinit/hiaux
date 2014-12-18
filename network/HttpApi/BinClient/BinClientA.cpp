@@ -289,7 +289,7 @@ void BinClientA::handleEvents() {
 		}
 		
 		putRequestsToFreeConnections();
-		//checkKeepAlive();
+		checkKeepAlive();
 		
 		//std::cout << "putRequestsToConnections done\n";
 		
