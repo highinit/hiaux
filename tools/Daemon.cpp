@@ -242,7 +242,7 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 
 int Daemon::doStop() {
 	
-	std::ifstream d (m_config["pidfile"]);
+	std::ifstream d (m_config["pidfile"].c_str());
 	std::string pidstr;
 	d >> pidstr;
 	std::cout << "Daemon::doStop process: " << pidstr << std::endl;
