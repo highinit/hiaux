@@ -167,6 +167,8 @@ void Daemon::startWorker() {
 		fallDown (std::string("Daemon::startWorker exception: ") + _s );
 	} catch (std::string &_s) {
 		fallDown (std::string("Daemon::startWorker exception: ") + _s );
+	} catch (std::exception &_e) {
+		fallDown (std::string("Daemon::startWorker exception: ")  + _e.what());
 	} catch (...) {
 		fallDown (std::string("Daemon::startWorker unknown exception: ") );
 	}
