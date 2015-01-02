@@ -29,6 +29,26 @@ PGresult* PG::query(const std::string &_q) {
 	return PQexec(m_conn, _q.c_str());
 }
 
-PG::~PG()
-{
+bool PG::doCheckDbConn(size_t _attempt) {
+	
+	if (_attempt > 10)
+		return false;
+	
+	if (PQstatus(m_conn) != CONNECTION_OK) {
+		
+		std::cout << "Reseting connection to PostgreSQL\n";
+		PQreset(m_conn);
+		return doCheckDbConn(_attempt + 1);
+	}
+	return true;
+}
+
+bool PG::checkDbConn() {
+	
+	return doCheckDbConn(0);
+}
+
+PG::~PG() {
+	
+	PQfinish(m_conn);
 }

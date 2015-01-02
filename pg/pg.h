@@ -16,6 +16,10 @@ class PG : public boost::noncopyable {
 	const std::string m_user;
 	const std::string m_pass;
 	PGconn *m_conn;
+	
+	bool doCheckDbConn(size_t _attempt);
+	bool checkDbConn();
+	
 public:
 	
 	PG(const std::string &_host,
@@ -25,7 +29,7 @@ public:
 	
 	PGresult* query(const std::string &_q);
 	
-	~PG();
+	virtual ~PG();
 };
 
 typedef boost::shared_ptr<PG> PGPtr;

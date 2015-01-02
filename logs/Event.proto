@@ -1,0 +1,10 @@
+
+package HiLogPb;
+
+message Event {
+	
+	required uint64 evtype = 1;
+	required int64 ts = 2;
+	optional string reqid = 3;
+	required bytes mess = 4;
+};

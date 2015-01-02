@@ -1,5 +1,6 @@
 #include "hiconfig.h"
 #include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 
 namespace hiaux {
 
@@ -16,5 +17,7 @@ public:
 	
 	void checkRun();
 };
+
+typedef boost::shared_ptr<RegularTask> RegularTaskPtr;
 
 }

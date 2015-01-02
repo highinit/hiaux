@@ -1,0 +1,11 @@
+{
+
+"_NAME" : "hiaux_logs",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ ],
+
+"_DEPS": []
+
+}
