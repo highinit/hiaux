@@ -6,6 +6,7 @@
 
 "_LINKFLAGS": [ "-lpq"],
 
-"_DEPS": ["../threads/"]
+"_DEPS": ["../threads/",
+			"../strings/"]
 
 }

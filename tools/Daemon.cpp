@@ -139,8 +139,14 @@ void Daemon::startWatcher() {
 				std::cout << "Daemon::startWatcher SIGCHLD\n";
 				int status;
 				pid_t pid;
-				while ( (pid = waitpid(-1, &status, WNOHANG)) > 0);
-				need_start = true;
+				while ( (pid = waitpid(-1, &status, WNOHANG)) > 0) {
+					
+					if (status != 0)
+						need_start = true;
+				}
+				
+				if (!need_start)
+					exit(0);
 				
 			} else {
 				

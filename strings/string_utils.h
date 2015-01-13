@@ -17,7 +17,7 @@
 #include "hiaux/structs/hashtable.h"
 #include <set>
 #include <map>
-#include "../../thirdparty/utf8_v2_3_4/source/utf8.h"
+#include "../thirdparty/utf8_v2_3_4/source/utf8.h"
 
 // gurantees order
 std::vector<std::string> &split(const std::string &s,
@@ -87,5 +87,9 @@ std::string add_newline_backslash(const std::string &_str);
 void getPrefixesUtf8(const std::string &_word, std::vector<std::string> &_prefixes);
 
 uint64_t getBeginningOfDayTs(uint64_t _ts);
+
+void removeFilenameExt(std::string &_s);
+void changeFilenameExt(std::string &_s, const std::string &_ext);
+
 
 #endif	/* STRING_UTILS_H */
