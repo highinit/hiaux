@@ -248,6 +248,11 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 	std::cout << "Daemon::daemonize ok\n";
 }
 
+void Daemon::setChDir(const std::string &_dir) {
+	
+	m_chdir = _dir;
+}
+
 int Daemon::doStop() {
 	
 	std::ifstream d (m_config["pidfile"].c_str());

@@ -41,6 +41,8 @@ class Daemon {
 	void startWorker();
 	void loadConfig(const std::string &_config_file);
 	
+	std::string m_chdir;
+	
 protected:
 	
 	enum Command {
@@ -66,6 +68,7 @@ protected:
 	virtual void doStart() = 0;
 	
 	int doStop();
+	void setChDir(const std::string &_dir);
 	
 public:
 	

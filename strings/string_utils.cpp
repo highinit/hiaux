@@ -592,17 +592,23 @@ uint64_t getBeginningOfDayTs(uint64_t _ts) {
 
 void removeFilenameExt(std::string &_s) {
 	
-	int dot_pos = _s.find(".");
+	int dot_pos = _s.find_last_of(".");
+	int slash_pos = _s.find_last_of("/");
 	
 	if (dot_pos == std::string::npos)
 		return;
+	
+	if (slash_pos != std::string::npos)
+		if (slash_pos > dot_pos)
+			return;
 	
 	_s = _s.substr(0, dot_pos);
 }
 
 void changeFilenameExt(std::string &_s, const std::string &_ext) {
 	
-	int dot_pos = _s.find(".");
+	int dot_pos = _s.find_last_of(".");
+	int slash_pos = _s.find_last_of("/");
 	
 	if (dot_pos == std::string::npos) {
 		_s += "." + _ext;
