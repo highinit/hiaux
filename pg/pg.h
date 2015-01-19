@@ -12,6 +12,8 @@
 
 #include <string>
 
+#include <iostream>
+
 class PGNoConnEx {
 };
 

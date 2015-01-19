@@ -23,6 +23,8 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 
+#include <iostream>
+
 #define	HI_ACCEPT (1<<0)
 #define	HI_READ (1<<2)
 #define	HI_WRITE (1<<3)

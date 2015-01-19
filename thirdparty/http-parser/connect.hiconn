@@ -1,0 +1,9 @@
+{
+
+"_NAME" : "http_parser",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.c" },
+		{ "type": "Glob", "mask": "contrib/*.c" } ],
+
+"_LINKFLAGS": [ ]
+}

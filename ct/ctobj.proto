@@ -1,0 +1,14 @@
+
+package CtTypesProto;
+
+message KV {
+	
+	required string k = 1;
+	required string v = 2;
+};
+
+message CtObj {
+	
+	repeated string types = 1;
+	repeated KV fields = 2;
+};

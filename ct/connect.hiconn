@@ -1,0 +1,11 @@
+{
+"_NAME" : "_HIAUX_CT_TYPES_",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
+	 			{ "type": "Glob", "mask": "*.cc" }],
+
+"_LINKFLAGS": [ "-lprotobuf"],
+
+"_DEPS" : []
+
+}

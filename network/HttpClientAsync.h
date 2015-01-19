@@ -14,6 +14,7 @@
 #include <sys/select.h>
 
 #include "hiaux/threads/tasklauncher.h"
+#include <iostream>
 
 class HttpClientAsync {
 public:

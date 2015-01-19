@@ -283,7 +283,7 @@ void BinClientA::handleEvents() {
 		//std::cout << "m_events_watcher->handleEvents\n";
 		
 		if (m_connections.size() < m_max_connections) {
-			//std::cout << "reinitConnections\n";
+			std::cout << "m_connections.size(): " << m_connections.size() << std::endl;
 			establishNewConnection();
 			//reinitConnections();
 		}
