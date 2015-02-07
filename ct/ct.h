@@ -7,20 +7,7 @@
 #include <jansson.h>
 #include <boost/shared_ptr.hpp>
 
-typedef uint64_t CtTypeId;
-typedef uint64_t CtObjId;
-
-class CtObj {
-public:
-	
-	CtObjId id;
-	std::set<CtTypeId> types;
-	std::map<std::string, std::string> fields;
-	
-	json_t *toJsonObj();
-};
-
-typedef boost::shared_ptr<CtObj> CtObjPtr;
+#include "CtObj.h"
 
 class CtObjCmp {
 public:

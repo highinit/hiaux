@@ -83,7 +83,6 @@ int HttpConnection::onHeadersValue(const char *at, size_t length) {
 	 
 	m_cur_http_request->headers.insert(make_pair(m_cur_header_field, bf));
 	
-	
 	return 0;
 }
 

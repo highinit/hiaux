@@ -4,7 +4,7 @@ bool CtObjCmp::operator() (CtObjPtr _a, CtObjPtr _b) {
 	
 	return _a->id < _b->id;
 }
-
+/*
 json_t* CtObj::toJsonObj() {
 	
 	json_t *root = json_object();
@@ -43,7 +43,7 @@ json_t* CtObj::toJsonObj() {
 	json_object_set(root, "fields", jfields);
 	
 	return root;
-}
+}*/
 
 
 CtTypes::CtTypes(const std::string &_ct_file) {

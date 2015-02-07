@@ -19,12 +19,12 @@ PG::PG(const std::string &_host,
 	m_conn = PQconnectdb(params.c_str());
 	
 	if (!m_conn) {
-		std::cerr << "PG::PG !m_conn" << std::endl;
+		std::cout << "PG::PG !m_conn" << std::endl;
 		throw PGNoConnEx();
 	}
 	
 	if (PQstatus(m_conn) != CONNECTION_OK) {
-		std::cerr << "PG::PG PQstatus(m_conn) != CONNECTION_OK" << std::endl;
+		std::cout << "PG::PG PQstatus(m_conn) != CONNECTION_OK" << std::endl;
 		throw PGNoConnEx();
 	}
 }
