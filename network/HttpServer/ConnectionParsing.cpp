@@ -81,7 +81,7 @@ int HttpConnection::onHeadersValue(const char *at, size_t length) {
 		parseCookies(bf, m_cur_http_request->cookies);
 	}
 	 
-	m_cur_http_request->headers.insert(make_pair(m_cur_header_field, bf));
+	m_cur_http_request->headers.insert(std::make_pair(m_cur_header_field, std::string(bf)));
 	
 	return 0;
 }

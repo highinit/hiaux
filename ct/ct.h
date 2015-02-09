@@ -33,7 +33,7 @@ public:
 	std::string nameen;
 
 	std::map<std::string, Field> fields;
-	std::vector<std::string> children;	
+	std::vector<std::string> children;
 };
 
 class CtTypes {
@@ -42,7 +42,6 @@ public:
 	std::map<CtTypeId, CtType> types;
 	
 	CtTypes(const std::string &_ct_file);
-	
 };
 
 #endif
