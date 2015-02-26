@@ -13,7 +13,7 @@
 #include "ResponseInfo.h"
 #include "Request.h"
 #include "Response.h"
-#include "thirdparty/http-parser/http_parser.h"
+#include "hiaux/thirdparty/http-parser/http_parser.h"
 
 #include "CustomParser.h"
 

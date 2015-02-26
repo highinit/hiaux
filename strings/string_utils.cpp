@@ -618,3 +618,19 @@ void changeFilenameExt(std::string &_s, const std::string &_ext) {
 	_s = _s.substr(0, dot_pos) + "." + _ext;
 }
 
+std::string invertDomain(const std::string &_domain) {
+	
+	std::string ret;
+	std::vector<std::string> tokens;
+	split(_domain, '.', tokens);
+	
+	for (int i = tokens.size()-1; i>=0; i--)
+		if (tokens[i].size() != 0) {
+		
+		ret.append(tokens[i]);
+		if (i != 0)
+			ret.append(".");
+	}
+	return ret;
+}
+

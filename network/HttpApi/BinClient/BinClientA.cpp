@@ -17,6 +17,9 @@ BinClientA::BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port
 		boost::bind(&BinClientA::onAccept, this, _1, _2)));
 
 	reinitConnections();
+	
+	if (connectionsCount() == 0)
+		throw CannotConnectEx();
 }
 
 BinClientA::~BinClientA() {
@@ -147,7 +150,10 @@ void BinClientA::onError(int _sock, void *_opaque_info) {
 	onLostConnection(it->second);
 }
 
-void BinClientA::buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump) {
+void BinClientA::buildRequest(
+	const std::string &_method,
+	const std::map<std::string, std::string> &_params,
+	std::string &_dump) {
 	
 	hiapi_client::RequestPb pb;
 	pb.set_method(_method);
@@ -169,9 +175,10 @@ void BinClientA::buildRequest(const std::string &_method, const std::map<std::st
 		std::cout << "BinClientA::buildRequest contains NULL-terminator\n\n";
 }
 
-void BinClientA::call(const std::string &_method,
-							const std::map<std::string, std::string> &_params,
-							const boost::function<void(bool, const std::string &)> &_onFinished) {
+void BinClientA::call(
+	const std::string &_method,
+	const std::map<std::string, std::string> &_params,
+	const boost::function<void(bool, const std::string &)> &_onFinished) {
 	
 	std::string req;
 	buildRequest(_method, _params, req);
@@ -180,7 +187,10 @@ void BinClientA::call(const std::string &_method,
 	m_new_requests.push(RequestPtr(new Request(req, _onFinished)));
 }
 
-void BinClientA::callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished) {
+void BinClientA::callSigned (
+	const std::string &_method,
+	const std::map<std::string, std::string> &_params,
+	const boost::function<void(bool, const std::string &)> &_onFinished) {
 	
 }
 
@@ -276,6 +286,11 @@ void BinClientA::checkKeepAlive() {
 	}
 }
 
+int BinClientA::connectionsCount() {
+	
+	return m_connections.size();
+}
+
 void BinClientA::handleEvents() {
 	
 	try {
@@ -283,7 +298,7 @@ void BinClientA::handleEvents() {
 		//std::cout << "m_events_watcher->handleEvents\n";
 		
 		if (m_connections.size() < m_max_connections) {
-			std::cout << "m_connections.size(): " << m_connections.size() << std::endl;
+			//std::cout << "m_connections.size(): " << m_connections.size() << std::endl;
 			establishNewConnection();
 			//reinitConnections();
 		}

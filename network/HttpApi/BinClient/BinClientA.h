@@ -71,16 +71,26 @@ private:
 	
 public:
 	
+	// throws only in constructor
 	BinClientA(BinClientA::Mode _mode, const std::string &_ip, int _port, size_t _max_connections = 50);
 	virtual ~BinClientA();
 	
-	static void buildRequest(const std::string &_method, const std::map<std::string, std::string> &_params, std::string &_dump);
+	static void buildRequest(
+		const std::string &_method,
+		const std::map<std::string, std::string> &_params,
+		std::string &_dump);
 	
-	virtual void call(const std::string &_method,
-				const std::map<std::string, std::string> &_params,
-				const boost::function<void(bool, const std::string &)> &_onFinished);
+	virtual void call(
+		const std::string &_method,
+		const std::map<std::string, std::string> &_params,
+		const boost::function<void(bool, const std::string &)> &_onFinished);
 	
-	virtual void callSigned (const std::string &_method, const std::map<std::string, std::string> &_params, const boost::function<void(bool, const std::string &)> &_onFinished);
+	virtual void callSigned (
+		const std::string &_method,
+		const std::map<std::string, std::string> &_params,
+		const boost::function<void(bool, const std::string &)> &_onFinished);
+	
+	int connectionsCount();
 	
 	void handleEvents();
 };

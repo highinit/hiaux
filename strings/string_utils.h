@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
-#include "hiaux/structs/hashtable.h"
+//#include "hiaux/structs/hashtable.h"
 #include <set>
 #include <map>
 #include "../thirdparty/utf8_v2_3_4/source/utf8.h"
@@ -91,5 +91,6 @@ uint64_t getBeginningOfDayTs(uint64_t _ts);
 void removeFilenameExt(std::string &_s);
 void changeFilenameExt(std::string &_s, const std::string &_ext);
 
+std::string invertDomain(const std::string &_domain);
 
 #endif	/* STRING_UTILS_H */

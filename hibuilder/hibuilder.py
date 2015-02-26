@@ -3,6 +3,7 @@ import json
 
 class HiBuilder:
 	_CCFLAGS_SET = set()
+	_CFLAGS_SET = set()
 	_LINKFLAGS_SET = set()
 	_CPPPATH_SET = set()
 	_CPPFILES_SET = set()
@@ -51,6 +52,11 @@ class HiBuilder:
 				if ccflag not in self._CCFLAGS_SET:
 					self._CCFLAGS_SET.add(ccflag)
 		
+		if '_CFLAGS' in config.keys():
+			for cflag in config['_CFLAGS']:
+				if cflag not in self._CFLAGS_SET:
+					self._CFLAGS_SET.add(cflag)
+
 		if '_DEPS' in config.keys():
 			for dep in config['_DEPS']:
 				self.connectLib(_hiconn_file_path+dep)
@@ -61,9 +67,14 @@ class HiBuilder:
 
 		_CXX = self._CXX
 		_CCFLAGS = ""
+		_CFLAGS = ""
 		_LINKFLAGS = ""
 		_CPPPATH = []
 		_CPPFILES = []
+
+		for cflag in self._CFLAGS_SET:
+			_CFLAGS += " " + cflag
+			print cflag
 
 		for ccflag in self._CCFLAGS_SET:
 			_CCFLAGS += " " + ccflag
@@ -81,7 +92,7 @@ class HiBuilder:
 			_CPPFILES.append(cppfile)
 
 		Program(self._target_name, 
-		_CPPFILES, CCFLAGS=_CCFLAGS, LINKFLAGS=_LINKFLAGS, CXX = _CXX,
+		_CPPFILES, CCFLAGS=_CCFLAGS, CFLAGS=_CFLAGS, LINKFLAGS=_LINKFLAGS, CXX = _CXX,
 		CPPPATH = _CPPPATH)
 	
 	
@@ -90,6 +101,11 @@ class HiBuilder:
 			if linkflag not in self._LINKFLAGS_SET:
 				self._LINKFLAGS_SET.add(linkflag)
 	
+	def addCFlags(self, ccflags):
+		for cflag in cflags:
+			if cflag not in self._CFLAGS_SET:
+				self._CFLAGS_SET.add(cflag)
+    
 	def addCCFlags(self, ccflags):
 		for ccflag in ccflags:
 			if ccflag not in self._CCFLAGS_SET:

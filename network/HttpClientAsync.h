@@ -28,6 +28,7 @@ public:
 	};
 	
 private:
+	
 	hiaux::hashtable<CURL*, JobInfo> m_e_curls;
 	
 	CURLM *m_curl;

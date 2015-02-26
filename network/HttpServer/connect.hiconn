@@ -12,6 +12,6 @@
 			"../../strings/",
 			"../../events/",
 			"../../crypt/",
-			"../../../thirdparty/http-parser/"]
+			"../../thirdparty/http-parser/"]
 
 }

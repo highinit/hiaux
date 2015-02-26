@@ -114,9 +114,11 @@ void Daemon::startWatcher() {
 	
 	for (;;) {
 		
-		if (need_start)
+		if (need_start) {
+			
 			child_pid = fork();
-		
+			sleep(3);
+		}
 		need_start = false;
 		
 		if (child_pid == -1) {
@@ -276,8 +278,8 @@ void Daemon::start(const std::string &_config_name, int argc, char** argv) {
 	desc.add_options()
 	("help,h", "Show help")
 	("interactive,i", "Interactive mode. Not daemon")
-	("stop", "Stop service")
-	("restart", "Restart service")
+	("stop,s", "Stop service")
+	("restart,r", "Restart service")
 	("config,c", po::value<std::string>(&config_path), "Specify config file");
 	
 	try {
