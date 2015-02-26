@@ -149,7 +149,7 @@ void EventWatcherKqueue::handleEvents() {
 //	hLockTicketPtr ticket = m_lock.lock();
 	
 	struct kevent events[4097];
-	timespec timeout = {0, 100000000};
+	timespec timeout = {0, 50000000};
 	int nevents = kevent(m_kqueue, NULL, 0, events, 4096, &timeout);
 	
 	if (nevents < 1) {

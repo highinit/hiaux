@@ -19,6 +19,8 @@
 
 #include <boost/noncopyable.hpp>
 
+// HIAUX_HTTP_SERVER_CONCURRENCY_OFF
+
 class CustomProtocolInfo {
 public:
 	
@@ -33,7 +35,7 @@ public:
 
 class HttpServer : public boost::noncopyable {
 	
-	TaskLauncherPtr m_launcher;
+//	TaskLauncherPtr m_launcher;
 	EventWatcherPtr m_events_watcher;
 	
 	ResponseInfo m_resp_info;
@@ -42,13 +44,13 @@ class HttpServer : public boost::noncopyable {
 	boost::function<void(HttpConnectionPtr,
 						HttpRequestPtr)> m_request_hdl;
 	
-	bool m_is_running;
+//	bool m_is_running;
 	
 	hiaux::hashtable<int, HttpConnectionPtr> m_reading_connections;
 	//hiaux::hashtable<int, HttpConnectionPtr> m_writing_connections;
 	//hiaux::hashtable<int, HttpConnectionPtr> m_ready_to_write_connections;
 	
-	hAutoLock resp_lock;
+//	hAutoLock resp_lock;
 	std::queue< std::pair<HttpConnectionPtr, HttpResponse> > m_resp_queue;
 	std::queue< std::pair<HttpConnectionPtr, std::string> > m_custom_resp_queue;
 	
@@ -79,27 +81,20 @@ public:
 	void onError(int _sock, void *_opaque_info);
 	
 	void handleEvents();
-	TaskLauncher::TaskRet eventLoop();
-	TaskLauncher::TaskRet customWorkerTask(HttpConnectionPtr _conn, CustomRequestPtr _req);
-	TaskLauncher::TaskRet httpWorkerTask(HttpConnectionPtr _conn, HttpRequestPtr _req);
 	
-	// called from threadpool
+	void runCustomHandler(HttpConnectionPtr _conn, CustomRequestPtr _req);
+	
 	void sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp);
 	
 	void stop();
-	
-	HttpServer(TaskLauncherPtr launcher,
-				const ResponseInfo &_resp_info,
+
+
+
+	HttpServer(ResponseInfo _resp_info,
 				boost::function<void(HttpConnectionPtr,
 									HttpRequestPtr)> _request_hdl,
 				int _port);
-	
-	HttpServer(TaskLauncherPtr launcher,
-				const ResponseInfo &_resp_info,
-				boost::function<void(HttpConnectionPtr,
-									HttpRequestPtr)> _request_hdl,
-				const std::string &_localsocket);
-
+				
 	void addCustomProtocol(const std::string &_protocol,
 							const CustomProtocolInfo &_info);
 

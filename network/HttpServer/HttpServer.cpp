@@ -9,19 +9,17 @@ CustomProtocolInfo::CustomProtocolInfo(const boost::function<CustomParserPtr(Htt
 					
 }
 
-HttpServer::HttpServer(TaskLauncherPtr launcher,
-					const ResponseInfo &_resp_info,
-					boost::function<void(HttpConnectionPtr,
-										HttpRequestPtr)> _request_hdl,
-					int _port):
-			m_resp_info(_resp_info),
-			last_cleanup(0) {
-
-	m_is_running = true;
+HttpServer::HttpServer(
+	ResponseInfo _resp_info,
+	boost::function<void(HttpConnectionPtr, HttpRequestPtr)> _request_hdl,
+	int _port):
+	
+	m_resp_info(_resp_info),
+	last_cleanup(0)
+{
 	
 	m_listen_socket = startListening(_port);
 	
-	m_launcher = launcher;
 	m_request_hdl = _request_hdl;
 	
 	m_events_watcher.reset(new EventWatcher(
@@ -31,31 +29,6 @@ HttpServer::HttpServer(TaskLauncherPtr launcher,
 			boost::bind(&HttpServer::onAccept, this, _1, _2)));
 	
 	m_events_watcher->addSocket(m_listen_socket, HI_READ | HI_ACCEPT, NULL);
-	m_launcher->addTask(NEW_LAUNCHER_TASK2(&HttpServer::eventLoop, this));
-}
-
-HttpServer::HttpServer(TaskLauncherPtr launcher,
-			const ResponseInfo &_resp_info,
-			boost::function<void(HttpConnectionPtr,
-								HttpRequestPtr)> _request_hdl,
-			const std::string &_localsocket):
-			m_resp_info(_resp_info) {
-	
-	m_is_running = true;
-
-	m_listen_socket = startListening(_localsocket);
-
-	m_launcher = launcher;
-	m_request_hdl = _request_hdl;
-
-	m_events_watcher.reset(new EventWatcher(
-		boost::bind(&HttpServer::onRead, this, _1, _2),
-		boost::bind(&HttpServer::onWrite, this, _1, _2),
-		boost::bind(&HttpServer::onError, this, _1, _2),
-		boost::bind(&HttpServer::onAccept, this, _1, _2)));
-
-	m_events_watcher->addSocket(m_listen_socket, HI_READ | HI_ACCEPT, NULL);
-	m_launcher->addTask(NEW_LAUNCHER_TASK2(&HttpServer::eventLoop, this));
 }
 
 void HttpServer::addCustomProtocol(const std::string &_protocol,
@@ -107,16 +80,15 @@ void HttpServer::handleWaitingRequests(HttpConnectionPtr _conn) {
 			HttpRequestPtr request = _conn->http_requests.front();
 			_conn->http_requests.pop();
 			if (!_conn->checkUpgrade(request))
-				m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::httpWorkerTask, this, _conn, request));
+				m_request_hdl(_conn, request);
 		}
 		// custom protocol
 		else if (_conn->custom_requests.size() != 0) {
 		
-		//	std::cout << "HttpServer::performRecv handling custom requests. queue size: " << _conn->custom_requests.size() << std::endl;
 			_conn->waiting_last_handling = true;
 			CustomRequestPtr request = _conn->custom_requests.front();
 			_conn->custom_requests.pop();
-			m_launcher->addTask(NEW_LAUNCHER_TASK4(&HttpServer::customWorkerTask, this, _conn, request));
+			runCustomHandler(_conn, request);
 		}
 	}
 }
@@ -136,12 +108,9 @@ void HttpServer::performRecv(int _sock) {
 		connection->performRecv();
 	
 		if (!connection->notDead()) {
-		
-			//std::cout << "HttpServer::onRead connection dead\n";
-		
+				
 			m_events_watcher->delSocket(_sock);
 			m_reading_connections.erase(it);
-		
 			return;
 		}
 		
@@ -170,15 +139,12 @@ void HttpServer::performSend(int _sock) {
 	try {
 		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
 		if (it == m_reading_connections.end()) {
-			//std::cout << "HttpServer::onWrite conneciton not found\n";
 			return;
 		}
 	
 		if (!it->second->performSend()) {
 
 			if (!it->second->notDead()) {
-		
-				//std::cout << "HttpServer::handleResponse connection dead\n";
 		
 				m_events_watcher->delSocket(_sock);
 				m_reading_connections.erase( it );
@@ -210,8 +176,6 @@ void HttpServer::onAccept(int _sock, void *_opaque_info) {
 
 void HttpServer::killConnection(int _sock) {
 	
-	//std::cout << "HttpServer::killConnection\n";
-	
 	m_events_watcher->delSocket(_sock);
 	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end()) {
@@ -223,15 +187,10 @@ void HttpServer::killConnection(int _sock) {
 
 void HttpServer::sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp) {
 	
-	hLockTicketPtr ticket = resp_lock.lock();
 	m_resp_queue.push(std::make_pair(_conn, _resp));
 }
 
 void HttpServer::onSendResponse(int _sock, const HttpResponse &_resp) {
-	
-	hLockTicketPtr ticket = resp_lock.lock();
-	
-	//std::cout << "HttpServer::onSendResponse\n";
 	
 	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end())
@@ -241,8 +200,6 @@ void HttpServer::onSendResponse(int _sock, const HttpResponse &_resp) {
 }
 
 void HttpServer::onSendCustomResponse(int _sock, const std::string &_resp) {
-	
-	hLockTicketPtr ticket = resp_lock.lock();
 	
 	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end())
@@ -258,8 +215,6 @@ void HttpServer::handleResponse (HttpConnectionPtr _conn) {
 	if (!_conn->performSend()) {
 
 		if (!_conn->notDead()) {
-		
-			//std::cout << "HttpServer::handleResponse connection dead\n";
 		
 			m_events_watcher->delSocket(_conn->sock);
 			m_reading_connections.erase( m_reading_connections.find(_conn->sock) );
@@ -282,7 +237,6 @@ CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const 
 	_handshake = it->second.handshake_message;
 	
 	return it->second.parserBuilder(_req);
-
 }
 
 void HttpServer::cleanUpDeadConnections() {
@@ -313,7 +267,6 @@ void HttpServer::handleEvents() {
 		m_events_watcher->handleEvents();
 		
 		{
-			hLockTicketPtr ticket = resp_lock.lock();
 	
 			while (!m_resp_queue.empty()) {
 		
@@ -325,8 +278,6 @@ void HttpServer::handleEvents() {
 	
 			while (!m_custom_resp_queue.empty()) {
 				
-				//std::cout << "HttpServer::handleEvents handling custom response\n";
-		
 				std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
 				resp_context.first->addCustomResponse(resp_context.second);
 				handleResponse(resp_context.first);
@@ -338,41 +289,19 @@ void HttpServer::handleEvents() {
 	}
 	catch (...) {
 		
+		std::cout << "HttpServer::handleEvents exception\n";
 	}
 }
 
-TaskLauncher::TaskRet HttpServer::eventLoop() {
-
-	while (m_is_running) {
-		
-		handleEvents();
-	}
-	
-	return TaskLauncher::NO_RELAUNCH;
-}
-
-void HttpServer::stop() {
-	
-	m_is_running = false;
-}
-
-TaskLauncher::TaskRet HttpServer::customWorkerTask(HttpConnectionPtr _conn, CustomRequestPtr _req) {
+void HttpServer::runCustomHandler(HttpConnectionPtr _conn, CustomRequestPtr _req) {
 	
 	std::map<std::string, CustomProtocolInfo>::iterator it = m_customProtocols.find(_conn->custom_protocol_id);
 	
 	if (it == m_customProtocols.end()) {
 
-		return TaskLauncher::NO_RELAUNCH;
+		return;
 	}
 	
 	it->second.handler(_conn, _req);
-	
-	return TaskLauncher::NO_RELAUNCH;
-}
-
-TaskLauncher::TaskRet HttpServer::httpWorkerTask(HttpConnectionPtr _conn, HttpRequestPtr _req) {
-
-	m_request_hdl(_conn, _req);
-	return TaskLauncher::NO_RELAUNCH;
 }
 
