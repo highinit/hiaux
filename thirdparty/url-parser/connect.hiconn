@@ -1,0 +1,9 @@
+{
+
+"_NAME" : "url_parser",
+
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
+
+"_LINKFLAGS": [ ]
+
+}
