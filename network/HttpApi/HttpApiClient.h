@@ -3,6 +3,7 @@
 
 #include "hiconfig.h"
 #include "hiaux/crypt/sha1.h"
+#include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"
 #include "hiaux/crypt/md5.h"
 #include "../HttpClient.h"
