@@ -26,30 +26,74 @@ void LoadConf::doLoadOptional(json_t *root, const std::vector<std::string> &_opt
 	}
 }
 
+void LoadConf::replaceEnvParams(std::string &_text) {
+	
+	std::string ret;
+	
+	size_t doll_pos = _text.find("$");
+	size_t prev_close = 0;
+	
+	while (doll_pos != std::string::npos) {
+		
+		size_t close_pos = _text.find("}", doll_pos);
+		
+		if (close_pos == std::string::npos)
+			throw std::string("LoadConf::replaceEnvParams '}' not found");
+		
+		std::string var = _text.substr(doll_pos+2, close_pos-doll_pos-2);
+		
+		ret.append( _text.substr(prev_close, doll_pos-prev_close) );
+		
+		char *value = getenv(var.c_str());
+		
+		if (value == NULL)
+			throw std::string("LoadConf::replaceEnvParams variable ") + var + " not set";
+		
+		ret.append( value );
+		
+		prev_close = close_pos + 1;
+		
+		doll_pos = _text.find("$", prev_close);
+	}
+	
+	ret.append( _text.substr(prev_close, _text.size() - prev_close -1 ) );
+	_text = ret;	
+}
+
+json_t* LoadConf::parseFile(const std::string &_filename) {
+	
+	std::string content;
+	
+	try {
+	
+		getFileContents(_filename, content);
+		replaceEnvParams(content);
+		
+	} catch (std::string e) {
+		
+		throw std::string("LoadConf::load could not parse file ") + _filename + " error: " + e;
+		
+	} catch (...) {
+		throw std::string("LoadConf::load could not open file ") + _filename;
+	}
+	
+	json_error_t error;
+	json_t *root = json_loads(content.c_str(), 0, &error);
+	
+	if (root == NULL)
+		throw std::string("LoadConf::load could not parse file ") + _filename;
+	
+	return root;
+}
+
 ConfigParams LoadConf::load (const std::string &_config_file, const std::vector<std::string> &_required) {
 	
 	ConfigParams ret;
-	FILE *f = fopen(_config_file.c_str(), "r");
 	
-	json_t *root = NULL;
-	json_error_t error;
-	
-	if (f == NULL) {
-		
-		throw std::string("LoadConf::load could not open file ") + _config_file;
-		
-	} else {
-	
-		root = json_loadf(f, 0, &error);
-		fclose(f);
-	}
-
-	if (root == NULL)
-		throw std::string("LoadConf::load could not parse file ") + _config_file;
-
+	json_t* root = parseFile(_config_file);
 	doLoadRequired(root, _required, ret, _config_file);
-	
 	json_decref(root);
+	
 	return ret;
 }
 
@@ -58,23 +102,7 @@ ConfigParams LoadConf::load (const std::string &_config_file,
 														const std::vector<std::string> &_optional) {
 
 	ConfigParams ret;
-	FILE *f = fopen(_config_file.c_str(), "r");
-	
-	json_t *root = NULL;
-	json_error_t error;
-	
-	if (f == NULL) {
-		
-		throw std::string("LoadConf::load could not open file ") + _config_file;
-		
-	} else {
-	
-		root = json_loadf(f, 0, &error);
-		fclose(f);
-	}
-
-	if (root == NULL)
-		throw std::string("LoadConf::load could not parse file ") + _config_file;
+	json_t* root = parseFile(_config_file);
 	
 	doLoadRequired(root, _required, ret, _config_file);
 	doLoadOptional(root, _optional, ret);

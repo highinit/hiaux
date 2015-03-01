@@ -1,4 +1,7 @@
 #include "hiconfig.h"
+
+#include "hiaux/threads/locks.h"
+
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -9,7 +12,9 @@ class RegularTask {
 	boost::function<void()> m_task;
 	uint64_t m_last_launch_ts;
 	uint64_t m_period;
-
+	
+	hAutoLock m_lock;
+	
 public:
 	
 	RegularTask(uint64_t _period, boost::function<void()> _task);
