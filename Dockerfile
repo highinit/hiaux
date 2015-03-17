@@ -1,4 +1,4 @@
-FROM centos:latest
+FROM centos:7
 MAINTAINER phrk
 
 RUN yum install -y epel-release.noarch
