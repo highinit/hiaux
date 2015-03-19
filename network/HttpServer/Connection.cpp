@@ -126,8 +126,8 @@ void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_res
 					<<	"Date: " << time_c << "\r\n"
 					<<	"Server: " << m_resp_info.server_name << "\r\n"
 					<<	keepalive_header
-					<<	"Transfer-Encoding: none\r\n"
-					<<	"Access-Control-Allow-Origin: *\r\n";
+					<<	"Transfer-Encoding: none\r\n";
+					//<<	"Access-Control-Allow-Origin: *\r\n";
 	
 	for (int i = 0; i<_resp.headers.size(); i++) {
 		o << _resp.headers[i] << "\r\n";

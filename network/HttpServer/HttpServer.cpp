@@ -47,10 +47,14 @@ void HttpServer::performAccept(int _sock_fd) {
 
 		setSocketBlock(accepted_socket, false);
 	
-		HttpConnectionPtr connection(new HttpConnection(accepted_socket, m_resp_info, boost::bind(&HttpServer::onSendResponse, this, _1, _2),
-														boost::bind(&HttpServer::onSendCustomResponse, this, _1, _2),
-														boost::bind(&HttpServer::getCustomParser, this, _1, _2, _3)));
-	
+		HttpConnectionPtr connection(
+			new HttpConnection(
+				accepted_socket,
+				m_resp_info,
+				boost::bind(&HttpServer::onSendResponse, this, _1, _2),
+				boost::bind(&HttpServer::onSendCustomResponse, this, _1, _2),
+				boost::bind(&HttpServer::getCustomParser, this, _1, _2, _3)));
+
 		m_reading_connections.insert(std::pair<int, HttpConnectionPtr>(connection->sock, connection));
 			
 		m_events_watcher->addSocket(connection->sock, HI_READ, NULL);
