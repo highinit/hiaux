@@ -77,11 +77,18 @@ int HttpConnection::onHeadersValue(const char *at, size_t length) {
 	memcpy(bf, at, length);
 	bf[length] = '\0';
 
+	std::string val(bf);
+
 	if (m_cur_header_field == "Cookie") {
-		parseCookies(bf, m_cur_http_request->cookies);
+		parseCookies(val, m_cur_http_request->cookies);
 	}
 	 
-	m_cur_http_request->headers.insert(std::make_pair(m_cur_header_field, std::string(bf)));
+	if (m_cur_header_field == "Connection")
+		if (val == "keep-alive")
+			keepalive = true;
+	
+	 
+	m_cur_http_request->headers.insert(std::make_pair(m_cur_header_field, val));
 	
 	return 0;
 }
