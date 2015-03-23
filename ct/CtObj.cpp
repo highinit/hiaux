@@ -12,6 +12,19 @@ CtObj::CtObj(CtTypeId _id, const std::string &_dump):
 id(_id),
 dump(_dump) {
 	
+	parseDump(_dump);
+}
+
+CtObj::CtObj(CtTypeId _id, const std::string &_dump, int _grp):
+id(_id),
+grp(_grp),
+dump(_dump) {
+	
+	parseDump(_dump);
+}
+
+void CtObj::parseDump(const std::string &_dump) {
+	
 	json_error_t error;
 	json_t *root = json_loads(_dump.c_str(), 0, &error);
 	

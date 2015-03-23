@@ -18,15 +18,20 @@ CtTypeId CtTypeIdFromString(const std::string &_s);
 CtObjId CtObjIdFromString(const std::string &_s);
 
 class CtObj {
+	
+	void parseDump(const std::string &_dump);
+	
 public:
 	
 	CtObjId id;
+	int grp;
 	std::set<CtTypeId> types;
 	std::map<std::string, std::string> fields;
 	
 	std::string dump;
 	
 	CtObj(CtTypeId _id, const std::string &_dump);
+	CtObj(CtTypeId _id, const std::string &_dump, int _grp);
 	bool inType(CtTypeId _typeid);
 };
 
