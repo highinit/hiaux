@@ -11,6 +11,8 @@
 #include <boost/function.hpp>
 #include <boost/noncopyable.hpp>
 
+#include <iostream>
+
 #include <sys/epoll.h>
 
 #include "errno.h"
