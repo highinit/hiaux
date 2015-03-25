@@ -4,6 +4,7 @@ import json
 class HiBuilder:
 	_CCFLAGS_SET = set()
 	_CFLAGS_SET = set()
+	_LINKPATHS_SET = set()
 	_LINKFLAGS_SET = set()
 	_CPPPATH_SET = set()
 	_CPPFILES_SET = set()
@@ -80,6 +81,10 @@ class HiBuilder:
 			_CCFLAGS += " " + ccflag
 			print ccflag
 
+		for linkpath in self._LINKPATHS_SET:
+			_LINKFLAGS += " " + linkpath
+			print linkpath
+
 		for linkflag in self._LINKFLAGS_SET:
 			_LINKFLAGS += " " + linkflag
 			print linkflag
@@ -101,6 +106,11 @@ class HiBuilder:
 			if linkflag not in self._LINKFLAGS_SET:
 				self._LINKFLAGS_SET.add(linkflag)
 	
+	def addLinkPaths(self, linkpaths):
+		for linkpath in linkpaths:
+			if linkpath not in self._LINKPATHS_SET:
+				self._LINKPATHS_SET.add(linkpath)
+    
 	def addCFlags(self, ccflags):
 		for cflag in cflags:
 			if cflag not in self._CFLAGS_SET:
