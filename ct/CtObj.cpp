@@ -1,11 +1,11 @@
 #include "CtObj.h"
 
 CtTypeId CtTypeIdFromString(const std::string &_s) {
-	return string_to_uint64(_s);
+	return std::stoi(_s);
 }
 
 CtObjId CtObjIdFromString(const std::string &_s) {
-	return string_to_uint64(_s);
+	return std::stoi(_s);
 }
 
 CtObj::CtObj(CtTypeId _id, const std::string &_dump):
