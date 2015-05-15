@@ -10,15 +10,25 @@
 
 class HttpRouter {
 
+	class RouteInfo {
+	public:
+		boost::function<void(HttpConnectionPtr, HttpRequestPtr)> handler;
+		std::vector<std::string> headers;
+	};
+
 	// path -> handler
-	std::map<std::string, boost::function<void(HttpConnectionPtr, HttpRequestPtr)> > m_routes;
+	std::map<std::string, RouteInfo> m_routes;
 
 public:
 
 	HttpRouter();
 	virtual ~HttpRouter();
 
-	void addRoute(const std::string &_path, const boost::function<void(HttpConnectionPtr, HttpRequestPtr)> &_handler);
+	void addRoute(
+		const std::string &_path,
+		const boost::function<void(HttpConnectionPtr, HttpRequestPtr)> &_handler,
+		std::vector<std::string> _headers = std::vector<std::string>());
+		
 	void handle(HttpConnectionPtr _conn, HttpRequestPtr _req);
 };
 

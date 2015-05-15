@@ -2,7 +2,7 @@
 
 "_NAME" : "http_parser",
 
-"_CPPFILES" : [ { "type": "Glob", "mask": "*.c" },
+"_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
 		{ "type": "Glob", "mask": "contrib/*.c" } ],
 
 "_LINKFLAGS": [ ]
