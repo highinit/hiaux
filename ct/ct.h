@@ -4,7 +4,6 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <jansson.h>
 #include <boost/shared_ptr.hpp>
 
 #include "CtObj.h"
