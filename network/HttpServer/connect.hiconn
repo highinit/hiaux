@@ -6,7 +6,7 @@
 				{ "type": "Glob", "mask": "HttpApi/*.cpp" },
 	 			{ "type": "Glob", "mask": "*.cc" }],
 
-"_LINKFLAGS": ["-lcurl", "-ljansson", "-lprotobuf"],
+"_LINKFLAGS": ["-lcurl", "-lprotobuf"],
 
 "_DEPS" : ["../../threads/",
 			"../../strings/",

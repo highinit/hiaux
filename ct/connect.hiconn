@@ -4,7 +4,7 @@
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
 	 			{ "type": "Glob", "mask": "*.cc" }],
 
-"_LINKFLAGS": [ "-lprotobuf"],
+"_LINKFLAGS": [ "-lprotobuf", "-ljsoncpp"],
 
 "_DEPS" : []
 
