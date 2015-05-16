@@ -4,7 +4,7 @@
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" } ],
 
-"_LINKFLAGS": [ "-ljansson" ],
+"_LINKFLAGS": [ "-ljsoncpp" ],
 
 "_DEPS" : []
 }

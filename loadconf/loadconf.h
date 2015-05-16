@@ -2,7 +2,7 @@
 #define _LOADCONF_H_
 
 #include "hiconfig.h"
-#include <jansson.h>
+#include <json/json.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -18,11 +18,11 @@ typedef std::map<std::string,std::string> ConfigParams;
 
 class LoadConf {
 
-	static void doLoadRequired(json_t *root, const std::vector<std::string> &_required, ConfigParams &_params,
+	static void doLoadRequired(const Json::Value &_root, const std::vector<std::string> &_required, ConfigParams &_params,
 								const std::string &_config_file);
-	static void doLoadOptional(json_t *root, const std::vector<std::string> &_optional, ConfigParams &_params);
+	static void doLoadOptional(const Json::Value &_root, const std::vector<std::string> &_optional, ConfigParams &_params);
 	
-	static json_t* parseFile(const std::string &_filename);
+	static void parseFile(const std::string &_filename, Json::Value &_root);
 	static void replaceEnvParams(std::string &_text);
 	
 public:

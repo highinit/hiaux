@@ -1,29 +1,21 @@
 #include "loadconf.h"
 
-void LoadConf::doLoadRequired(json_t *root, const std::vector<std::string> &_required, ConfigParams &_params, 
+void LoadConf::doLoadRequired(const Json::Value &_root, const std::vector<std::string> &_required, ConfigParams &_params, 
 								const std::string &_config_file) {
 	
 	for (int i = 0; i<_required.size(); i++) {
 
-		json_t *j_param = json_object_get(root, _required[i].c_str());
-		if (!json_is_string(j_param)) {
-			json_decref(root);
+		if (_root[ _required[i] ].type() != Json::stringValue)
 			throw std::string("LoadConf::load ") + _config_file + " : " + _required[i] + " not set";
-		}
-		
-		_params[ _required[i] ] = json_string_value(j_param);
+
+		_params[ _required[i] ] = _root[ _required[i] ].asString();
 	}
 }
 
-void LoadConf::doLoadOptional(json_t *root, const std::vector<std::string> &_optional, ConfigParams &_params) {
+void LoadConf::doLoadOptional(const Json::Value &_root, const std::vector<std::string> &_optional, ConfigParams &_params) {
 	
-	for (int i = 0; i<_optional.size(); i++) {
-
-		json_t *j_param = json_object_get(root, _optional[i].c_str());
-		if (json_is_string(j_param)) {
-			_params[ _optional[i] ] = json_string_value(j_param);
-		}
-	}
+	for (int i = 0; i<_optional.size(); i++)
+		_params[ _optional[i] ] = _root[ _optional[i] ].asString();
 }
 
 void LoadConf::replaceEnvParams(std::string &_text) {
@@ -60,7 +52,7 @@ void LoadConf::replaceEnvParams(std::string &_text) {
 	_text = ret;	
 }
 
-json_t* LoadConf::parseFile(const std::string &_filename) {
+void LoadConf::parseFile(const std::string &_filename, Json::Value &_root) {
 	
 	std::string content;
 	
@@ -77,22 +69,18 @@ json_t* LoadConf::parseFile(const std::string &_filename) {
 		throw std::string("LoadConf::load could not open file ") + _filename;
 	}
 	
-	json_error_t error;
-	json_t *root = json_loads(content.c_str(), 0, &error);
-	
-	if (root == NULL)
+	Json::Reader reader;
+	if (!reader.parse(content, _root, false))
 		throw std::string("LoadConf::load could not parse file ") + _filename;
-	
-	return root;
 }
 
 ConfigParams LoadConf::load (const std::string &_config_file, const std::vector<std::string> &_required) {
 	
 	ConfigParams ret;
+	Json::Value root;
 	
-	json_t* root = parseFile(_config_file);
+	parseFile(_config_file, root);	
 	doLoadRequired(root, _required, ret, _config_file);
-	json_decref(root);
 	
 	return ret;
 }
@@ -102,11 +90,11 @@ ConfigParams LoadConf::load (const std::string &_config_file,
 														const std::vector<std::string> &_optional) {
 
 	ConfigParams ret;
-	json_t* root = parseFile(_config_file);
+	Json::Value root;
 	
+	parseFile(_config_file, root);	
 	doLoadRequired(root, _required, ret, _config_file);
 	doLoadOptional(root, _optional, ret);
 	
-	json_decref(root);
 	return ret;
 }
