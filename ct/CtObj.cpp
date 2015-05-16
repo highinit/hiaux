@@ -25,58 +25,42 @@ dump(_dump) {
 
 void CtObj::parseDump(const std::string &_dump) {
 	
-	json_error_t error;
-	json_t *root = json_loads(_dump.c_str(), 0, &error);
+	Json::Reader reader;
+	Json::Value root;
+	if (!reader.parse(_dump, root, false))		
+		throw CtEx("CtObj::parseDump cant parse");
 	
-	if (!json_is_object(root)) {
+	Json::Value jtypes = root["types"];
 		
-		throw 1;
-	}
+	if (jtypes.type() != Json::arrayValue)
+		throw CtEx("CtObj::parseDump root[\"types\"] not array");
 	
-	json_t *types_list = json_object_get(root, "types");
-	
-	if (!json_is_array(types_list)) {
+	for (int i = 0; i<jtypes.size(); i++)
+		types.insert( jtypes[i].asInt() );
 		
-		json_decref(root);
-		throw 1;
-	}
+	Json::Value jfields = root["fields"];
 	
-	for (int i = 0; i<json_array_size(types_list); i++) {		
-
-		json_t *type = json_array_get(types_list, i);
-		types.insert( json_integer_value(type) );
-	}
+	auto it = jfields.begin(); 
+	auto end = jfields.end();
 	
-	//////////
-	
-	json_t *fields_values = json_object_get(root, "fields");
-	
-	if (!json_is_object(fields_values)) {
+	while (it != end) {
 		
-		json_decref(root);
-		throw 1;
-	}
-	
-	const char *key;
-	json_t *value;
-	
-	json_object_foreach (fields_values, key, value ) {
-		
-		if (json_is_integer(value)) {
+		auto v = jfields [ it.key().asString() ];
+		if (v.type() == Json::intValue || v.type() == Json::uintValue || v.type() == Json::realValue) {
 			
-			fields [key] = inttostr(json_integer_value(value));
+			fields [ it.key().asString() ] = inttostr(v.asInt());
 			
-		} else if (json_is_string(value)) {
+		} else if (v.type() == Json::stringValue) {
 			
-			fields [key] = json_string_value(value);
+			fields [ it.key().asString() ] = v.asString();
 			
 		} else {
 			
-			std::cout << "CtObj::CtObj wrong field\n";
+			throw CtEx("CtObj::parseDump wrong field");
 		}
+		
+		it++;
 	}
-	
-	json_decref(root);
 }
 
 bool CtObj::inType(CtTypeId _typeid) {

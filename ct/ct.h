@@ -7,6 +7,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "CtObj.h"
+#include "CtEx.h"
 
 class CtObjCmp {
 public:

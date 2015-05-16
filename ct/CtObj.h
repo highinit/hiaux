@@ -4,12 +4,14 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <jansson.h>
+#include <json/json.h>
 #include <boost/shared_ptr.hpp>
 
 #include <iostream>
 
 #include "hiaux/strings/string_utils.h"
+
+#include "CtEx.h"
 
 typedef uint64_t CtTypeId;
 typedef uint64_t CtObjId;
