@@ -4,6 +4,8 @@
 #include "hiconfig.h"
 #include <string>
 
+namespace hiaux {
+
 class ResponseInfo
 {
 public:
@@ -12,5 +14,7 @@ public:
 	ResponseInfo(const std::string &_content_type,
 				const std::string &_server_name);
 };
+
+}
 
 #endif

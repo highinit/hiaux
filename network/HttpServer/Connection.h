@@ -20,11 +20,16 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+namespace hiaux {
+
+template <class ConnectionDataT = int>
 class HttpConnection : public boost::noncopyable {
 
 public:
 	
 	int sock;
+	
+	ConnectionDataT user_data;
 	
 	bool custom_protocol;
 	bool waiting_last_handling;
@@ -103,15 +108,30 @@ private:
 	CustomParserPtr m_custom_parser;
 };
 
-typedef boost::shared_ptr<HttpConnection> HttpConnectionPtr;
+template <class ConnectionDataT = int>
+using HttpConnectionPtr = boost::shared_ptr< HttpConnection <ConnectionDataT> >;
 
+template <class ConnectionDataT>
 int HttpConnection_onMessageBegin(http_parser* parser);
+
+template <class ConnectionDataT>
 int HttpConnection_onUrl(http_parser* parser, const char *at, size_t length);
+template <class ConnectionDataT>
 int HttpConnection_onStatus(http_parser* parser, const char *at, size_t length);
+template <class ConnectionDataT>
 int HttpConnection_onHeadersField(http_parser* parser, const char *at, size_t length);
+template <class ConnectionDataT>
 int HttpConnection_onHeadersValue(http_parser* parser, const char *at, size_t length);
+template <class ConnectionDataT>
 int HttpConnection_onHeadersComplete(http_parser* parser);
+template <class ConnectionDataT>
 int HttpConnection_onBody(http_parser* parser, const char *at, size_t length);
+template <class ConnectionDataT>
 int HttpConnection_onMessageComplete(http_parser* parser);
+
+#include "Connection.impl"
+#include "ConnectionParsing.impl"
+
+}
 
 #endif

@@ -11,7 +11,7 @@ namespace hiapi {
 
 namespace server {
 
-class Request : public CustomRequest {
+class Request : public hiaux::CustomRequest {
 public:
 	
 	std::string method;

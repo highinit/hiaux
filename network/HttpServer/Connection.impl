@@ -1,6 +1,5 @@
-#include "Connection.h"
-
-HttpConnection::HttpConnection(int _sock,
+template <class ConnectionDataT>
+HttpConnection<ConnectionDataT>::HttpConnection(int _sock,
 								ResponseInfo _resp_info,
 								const boost::function<void(int, const HttpResponse &)> &_on_send_response,
 								const boost::function<void(int, const std::string &)> &_on_send_custom_response,
@@ -11,7 +10,7 @@ HttpConnection::HttpConnection(int _sock,
 	request_finished(false),
 	alive(true),
 	ever_sent(false),
-	keepalive(false),
+	keepalive(true),
 	custom_protocol(false),
 	m_resp_info(_resp_info),
 	waiting_last_handling(false),
@@ -23,19 +22,20 @@ HttpConnection::HttpConnection(int _sock,
 	
 	http_parser_init(&m_parser, HTTP_REQUEST);
 	m_parser.data = (void*)this;
-	m_parser_settings.on_message_begin = HttpConnection_onMessageBegin;
-	m_parser_settings.on_url = &HttpConnection_onUrl;
-	m_parser_settings.on_status = &HttpConnection_onStatus;
-	m_parser_settings.on_header_field = &HttpConnection_onHeadersField;
-	m_parser_settings.on_header_value = &HttpConnection_onHeadersValue;
-	m_parser_settings.on_headers_complete = &HttpConnection_onHeadersComplete;
-	m_parser_settings.on_body = &HttpConnection_onBody;
-	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete;
+	m_parser_settings.on_message_begin = HttpConnection_onMessageBegin<ConnectionDataT>;
+	m_parser_settings.on_url = &HttpConnection_onUrl<ConnectionDataT>;
+	m_parser_settings.on_status = &HttpConnection_onStatus<ConnectionDataT>;
+	m_parser_settings.on_header_field = &HttpConnection_onHeadersField<ConnectionDataT>;
+	m_parser_settings.on_header_value = &HttpConnection_onHeadersValue<ConnectionDataT>;
+	m_parser_settings.on_headers_complete = &HttpConnection_onHeadersComplete<ConnectionDataT>;
+	m_parser_settings.on_body = &HttpConnection_onBody<ConnectionDataT>;
+	m_parser_settings.on_message_complete = &HttpConnection_onMessageComplete<ConnectionDataT>;
 	
 	//std::cout << "HttpConnection::HttpConnection\n";
 }
 
-HttpConnection::~HttpConnection() {
+template <class ConnectionDataT>
+HttpConnection<ConnectionDataT>::~HttpConnection() {
 
 	//std::cout << "HttpConnection::~HttpConnection\n";
 
@@ -43,12 +43,14 @@ HttpConnection::~HttpConnection() {
 	::shutdown(sock, SHUT_RDWR);
 }
 
-void HttpConnection::resetHttpParser() {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::resetHttpParser() {
 	
 	http_parser_init(&m_parser, HTTP_REQUEST);
 }
 
-bool HttpConnection::notDead() {
+template <class ConnectionDataT>
+bool HttpConnection<ConnectionDataT>::notDead() {
 	
 	//std::cout << "HttpConnection::notDead " << ((time(0) - create_ts < 5) && alive)
 	//	<< " alive: " << alive << std::endl; 
@@ -64,17 +66,20 @@ void HttpConnection::setHttpStatus(int code) {
 }
 */
 
-void HttpConnection::addHeader(const std::string &_header) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::addHeader(const std::string &_header) {
 	
 	m_res_headers.push_back(_header);
 }
 
-void HttpConnection::setCookie(const std::string &_name, const std::string &_value) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::setCookie(const std::string &_name, const std::string &_value) {
 	
 	m_res_headers.push_back(std::string("Set-Cookie: ") + _name + "=" + _value + "; expires=Sat, 31 Dec 2039 23:59:59 GMT");
 }
 
-bool HttpConnection::checkUpgrade(HttpRequestPtr request) {
+template <class ConnectionDataT>
+bool HttpConnection<ConnectionDataT>::checkUpgrade(HttpRequestPtr request) {
 	
 	std::map<std::string, std::string>::iterator it = request->headers.find("Upgrade");
 	
@@ -105,7 +110,8 @@ bool HttpConnection::checkUpgrade(HttpRequestPtr request) {
 	return false;
 }
 
-void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_response) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::renderResponse(const HttpResponse &_resp, std::string &_response) {
 	
 	char content_len_c[50];
 	sprintf(content_len_c, "%d", (int)_resp.body.size());
@@ -142,18 +148,21 @@ void HttpConnection::renderResponse(const HttpResponse &_resp, std::string &_res
 	_response = o.str();
 }
 
-void HttpConnection::sendResponse(const HttpResponse &_resp) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::sendResponse(const HttpResponse &_resp) {
 	
 	m_on_send_response(sock, _resp);
 }
 
-void HttpConnection::sendCustomResponse(const std::string &_resp) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::sendCustomResponse(const std::string &_resp) {
 	
 	//std::cout << "HttpConnection::sendCustomResponse: " << _resp << std::endl; 
 	m_on_send_custom_response(sock, _resp);
 }
 
-void HttpConnection::addResponse(const HttpResponse &_resp) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::addResponse(const HttpResponse &_resp) {
 	
 	std::string dump;
 	
@@ -161,14 +170,16 @@ void HttpConnection::addResponse(const HttpResponse &_resp) {
 	m_resps.push(dump);
 }
 
-void HttpConnection::addCustomResponse(const std::string &_resp) {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::addCustomResponse(const std::string &_resp) {
 	
 	//std::cout << "HttpConnection::addCustomResponse: " << _resp << std::endl;
 	
 	m_resps.push(_resp);
 }
 
-bool HttpConnection::performSend() {
+template <class ConnectionDataT>
+bool HttpConnection<ConnectionDataT>::performSend() {
 	
 	if (m_send_buffer.size() == 0) {
 		
@@ -219,7 +230,8 @@ bool HttpConnection::performSend() {
 	return true;
 }
 
-void HttpConnection::performRecv() {
+template <class ConnectionDataT>
+void HttpConnection<ConnectionDataT>::performRecv() {
 	
 	std::string readbf;
 	char bf[1025];

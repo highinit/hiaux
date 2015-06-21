@@ -1,16 +1,18 @@
-#include "HttpRouter.h"
 
-HttpRouter::HttpRouter() {
+template <class ConnectionDataT>
+HttpRouter<ConnectionDataT>::HttpRouter() {
 	
 }
 
-HttpRouter::~HttpRouter() {
+template <class ConnectionDataT>
+HttpRouter<ConnectionDataT>::~HttpRouter() {
 	
 }
 
-void HttpRouter::addRoute(
+template <class ConnectionDataT>
+void HttpRouter<ConnectionDataT>::addRoute(
 	const std::string &_path,
-	const boost::function<void(HttpConnectionPtr, HttpRequestPtr)> &_handler,
+	const boost::function<void(HttpConnectionPtr<ConnectionDataT>, HttpRequestPtr)> &_handler,
 	std::vector<std::string> _headers) {
 	
 	RouteInfo info;
@@ -20,7 +22,8 @@ void HttpRouter::addRoute(
 	m_routes[ _path ] = info;
 }
 
-void HttpRouter::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
+template <class ConnectionDataT>
+void HttpRouter<ConnectionDataT>::handle(HttpConnectionPtr<ConnectionDataT> _conn, HttpRequestPtr _req) {
 	
 	for (size_t i = _req->path.size(); i >= 1; i--) {
 		

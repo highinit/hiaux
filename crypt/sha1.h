@@ -29,6 +29,8 @@
 #ifndef SHA1_DEFINED
 #define SHA1_DEFINED
 
+#include <string>
+
 namespace sha1
 {
 
@@ -38,6 +40,9 @@ namespace sha1
      @param hash should point to a buffer of at least 20 bytes of size for storing the sha1 result in.
      */
     void calc(const void* src, const int bytelength, unsigned char* hash);
+	void calc(const std::string &_src, std::string &_hash);
+	std::string calc(const std::string &_src);
+	std::string toHex(const std::string &_s);
 
     /**
      @param hash is 20 bytes of sha1 hash. This is the same data that is the result from the calc function.

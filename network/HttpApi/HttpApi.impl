@@ -1,12 +1,15 @@
 #include "HttpApi.h"
 #include "hiaux/crypt/sha1.h"
 
-HttpApi::HttpApi(boost::function<std::string(const std::string&)> _buildApiError):
+
+template <class ConnectionDataT>
+HttpApi<ConnectionDataT>::HttpApi(boost::function<std::string(const std::string&)> _buildApiError):
  m_buildApiError(_buildApiError) {
 	
 }
 
-bool HttpApi::isSigned(const std::string &_method) const {
+template <class ConnectionDataT>
+bool HttpApi<ConnectionDataT>::isSigned(const std::string &_method) const {
 	std::map<std::string, int>::const_iterator it = m_signed.find(_method);
 	if (it != m_signed.end())
 		return true;
@@ -14,7 +17,8 @@ bool HttpApi::isSigned(const std::string &_method) const {
 		return false;
 }
 
-bool HttpApi::isAsync(const std::string &_method) const {
+template <class ConnectionDataT>
+bool HttpApi<ConnectionDataT>::isAsync(const std::string &_method) const {
 	std::map<std::string, int>::const_iterator it = m_async.find(_method);
 	if (it != m_async.end())
 		return true;
@@ -22,7 +26,8 @@ bool HttpApi::isAsync(const std::string &_method) const {
 		return false;
 }
 
-bool HttpApi::checkFields(const std::map<std::string, std::string> &_fields, std::string &_err_mess) const {
+template <class ConnectionDataT>
+bool HttpApi<ConnectionDataT>::checkFields(const std::map<std::string, std::string> &_fields, std::string &_err_mess) const {
 	if (_fields.find("method") == _fields.end()) {
 		_err_mess = "method not set";
 		return false;
@@ -80,19 +85,22 @@ bool HttpApi::checkFields(const std::map<std::string, std::string> &_fields, std
 	return true;
 }
 
-void HttpApi::addUser(const std::string &_userid, const std::string &_key) {
-	m_keys[_userid] = _key;
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::setUserToken(const std::string &_userid, const std::string &_token) {
+	m_keys[_userid] = _token;
 }
 
-void HttpApi::addMethod(const std::string &_name,
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::addMethod(const std::string &_name,
 				const std::vector<std::string> &_args_names,
-				boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq) {
+				boost::function<void(hiaux::HttpConnectionPtr<ConnectionDataT>, std::map<std::string, std::string> &, std::string&)> _onreq) {
 	m_methods_args[_name] = _args_names;
 	m_methods_callbacks[_name] = _onreq;
 }
 
 // checks sign = concat name . [{_arg_name}] . ts; fields: method_sign, ts 
-void HttpApi::addMethodSigned(const std::string &_name,
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::addMethodSigned(const std::string &_name,
 					const std::vector<std::string> &_args_names,
 					boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq,
 					uint64_t _max_ts_range) {
@@ -101,7 +109,8 @@ void HttpApi::addMethodSigned(const std::string &_name,
 	m_signed[_name] = true;
 }
 
-void HttpApi::addMethodSignedAsync(const std::string &_name,
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::addMethodSignedAsync(const std::string &_name,
 					const std::vector<std::string> &_args_names,
 					boost::function<void(std::map<std::string, std::string> &,
 											boost::function <void(const std::string&)>  )> _onreq,
@@ -113,7 +122,8 @@ void HttpApi::addMethodSignedAsync(const std::string &_name,
 	m_async[_name] = true;				
 }
 
-void HttpApi::mergePostParams(std::map<std::string, std::string> &_params, const std::string &_body) {
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::mergePostParams(std::map<std::string, std::string> &_params, const std::string &_body) {
 	
 //	std::cout << "mergePostParams: " << _body << std::endl;
 	try {
@@ -132,13 +142,15 @@ void HttpApi::mergePostParams(std::map<std::string, std::string> &_params, const
 	}
 }
 
-void HttpApi::onAsyncCallDone(const std::string &_resp, HttpConnectionPtr _conn) {
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::onAsyncCallDone(const std::string &_resp, HttpConnectionPtr<ConnectionDataT> _conn) {
 	
 	_conn->sendResponse( HttpResponse ( 200, _resp) );
 	//_conn->close();
 }
 
-void HttpApi::handleRequest(HttpConnectionPtr _conn, std::map<std::string, std::string> &_params, bool _bin) {
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::handleRequest(HttpConnectionPtr<ConnectionDataT> _conn, std::map<std::string, std::string> &_params, bool _bin) {
 	
 	std::string err_mess;
 
@@ -166,14 +178,13 @@ void HttpApi::handleRequest(HttpConnectionPtr _conn, std::map<std::string, std::
 			
 		} else {
 		
-			std::map<std::string, boost::function<void(std::map<std::string, std::string> &, std::string&)> >::iterator it = 
-				m_methods_callbacks.find(_params["method"]);
+			auto it = m_methods_callbacks.find(_params["method"]);
 			if (it == m_methods_callbacks.end()) {
 				
 				_conn->sendResponse(HttpResponse(200, "No such method"));
 			}
 			else {
-				it->second(_params, resp);
+				it->second(_conn, _params, resp);
 				
 				if (!_bin) {
 					_conn->sendResponse(HttpResponse(200, resp));
@@ -188,7 +199,8 @@ void HttpApi::handleRequest(HttpConnectionPtr _conn, std::map<std::string, std::
 	}
 }
 
-void HttpApi::handleBinary(HttpConnectionPtr _conn, CustomRequestPtr _req) {
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::handleBinary(HttpConnectionPtr<ConnectionDataT> _conn, CustomRequestPtr _req) {
 	
 	//std::cout << "HttpApi::handleBinary\n";
 	
@@ -203,7 +215,8 @@ void HttpApi::handleBinary(HttpConnectionPtr _conn, CustomRequestPtr _req) {
 	handleRequest(_conn, req->params, true);
 }
 
-void HttpApi::handle(HttpConnectionPtr _conn, HttpRequestPtr _req) {
+template <class ConnectionDataT>
+void HttpApi<ConnectionDataT>::handle(HttpConnectionPtr<ConnectionDataT> _conn, HttpRequestPtr _req) {
 
 	mergePostParams(_req->values_GET, _req->body);	
 	handleRequest(_conn, _req->values_GET, false);

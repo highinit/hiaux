@@ -19,6 +19,8 @@
 
 #include <errno.h>
 
+namespace hiaux {
+
 class CannotConnectEx {
 	
 	std::string mess;
@@ -37,5 +39,7 @@ int startListening(int port);
 int startListening(const std::string &_localsocket);
 
 int connectSocket(const std::string &_ip, int port);
+
+}
 
 #endif

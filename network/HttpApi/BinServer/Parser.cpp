@@ -4,7 +4,7 @@ namespace hiapi {
 
 namespace server {
 
-Parser::Parser(HttpRequestPtr _req):
+Parser::Parser(hiaux::HttpRequestPtr _req):
 state(READING_SIZE),
 m_got_request(false) {
 	
@@ -43,7 +43,7 @@ void Parser::parse() {
 			m_size = string_to_uint64(size_str);
 			
 			if (m_size > HIAPI_BINREQUEST_MAX_SIZE)
-				throw RequestParsingEx();
+				throw hiaux::RequestParsingEx();
 			
 			state = READING_MESSAGE;
 		}
@@ -80,7 +80,7 @@ bool Parser::hasRequest() {
 	return m_got_request;
 }
 
-CustomRequestPtr Parser::getRequest() {
+hiaux::CustomRequestPtr Parser::getRequest() {
 	
 	m_got_request = false;
 	RequestPtr req = m_cur_request;

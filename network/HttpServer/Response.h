@@ -8,6 +8,8 @@
 
 #include <map>
 
+namespace hiaux {
+
 class HttpResponse {
 public:
 	int code;
@@ -21,5 +23,7 @@ public:
 };
 
 typedef boost::shared_ptr<HttpResponse> HttpResponsePtr;
+
+}
 
 #endif //_RESPONSE_H_

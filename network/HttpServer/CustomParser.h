@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "hiaux/network/HttpServer/Request.h"
+namespace hiaux {
 
 class RequestParsingEx {
 };
@@ -24,5 +25,7 @@ public:
 };
 
 typedef boost::shared_ptr<CustomParser> CustomParserPtr;
+
+}
 
 #endif

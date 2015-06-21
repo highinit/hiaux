@@ -8,6 +8,9 @@
 #include <string>
 #include <vector>
 
+namespace hiaux {
+
+template <class ConnectionDataT>
 class HttpRouter {
 
 	class RouteInfo {
@@ -31,5 +34,9 @@ public:
 		
 	void handle(HttpConnectionPtr _conn, HttpRequestPtr _req);
 };
+
+#include "HttpRouter.impl"
+
+}
 
 #endif

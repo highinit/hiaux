@@ -1,5 +1,7 @@
 #include "Response.h"
 
+namespace hiaux {
+
 HttpResponse::HttpResponse(int _code, const std::string &_body):
 code(_code),
 body(_body) {
@@ -14,4 +16,6 @@ void HttpResponse::setCookie(const std::string &_name, const std::string &_value
 void HttpResponse::addHeader(const std::string &_header) {
 	
 	headers.push_back(_header);
+}
+
 }

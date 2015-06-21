@@ -11,7 +11,7 @@ namespace hiapi {
 
 namespace server {
 
-class Parser : public CustomParser {
+class Parser : public hiaux::CustomParser {
 
 	enum State {
 		READING_SIZE,
@@ -30,11 +30,11 @@ class Parser : public CustomParser {
 
 public:
 	
-	Parser(HttpRequestPtr _req);
+	Parser(hiaux::HttpRequestPtr _req);
 	
 	virtual void execute(const std::string &_d);
 	virtual bool hasRequest();
-	virtual CustomRequestPtr getRequest();
+	virtual hiaux::CustomRequestPtr getRequest();
 	virtual ~Parser();
 };
 

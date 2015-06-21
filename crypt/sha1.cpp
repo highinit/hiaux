@@ -171,6 +171,26 @@ namespace sha1
         }
     }
 
+	void calc(const std::string &_src, std::string &_hash) {
+		
+		char hash[40];
+		calc(_src.data(), _src.size(), (unsigned char*)hash);
+		_hash = std::string(hash);
+	}
+	
+	std::string calc(const std::string &_src) {
+		std::string ret;
+		calc(_src, ret);
+		return ret;
+	}
+
+	std::string toHex(const std::string &_s) {
+		
+		char hex[41];
+		toHexString((unsigned char*)_s.data(), hex);
+		return hex;
+	}
+
     void toHexString(const unsigned char* hash, char* hexstring)
     {
         const char hexDigits[] = { "0123456789abcdef" };

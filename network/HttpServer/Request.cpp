@@ -1,5 +1,7 @@
 #include "Request.h"
 
+namespace hiaux {
+
 HttpRequest::HttpRequest(const std::string &_url):
 url(_url) {
 
@@ -23,4 +25,6 @@ bool HttpRequest::getCookie(const std::string &_name, std::string &_value) {
 		return false;
 	_value = it->second;
 	return true;
+}
+
 }

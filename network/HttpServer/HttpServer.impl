@@ -1,7 +1,7 @@
-#include "HttpServer.h"
 
-CustomProtocolInfo::CustomProtocolInfo(const boost::function<CustomParserPtr(HttpRequestPtr) > &_parserBuilder,
-				const boost::function<void(HttpConnectionPtr, CustomRequestPtr)> &_handler,
+template <class ConnectionDataT>
+CustomProtocolInfo<ConnectionDataT>::CustomProtocolInfo(const boost::function<CustomParserPtr(HttpRequestPtr) > &_parserBuilder,
+				const boost::function<void(HttpConnectionPtr<ConnectionDataT>, CustomRequestPtr)> &_handler,
 				const std::string &_handshake_message):
 			parserBuilder(_parserBuilder),
 			handler(_handler),
@@ -9,9 +9,10 @@ CustomProtocolInfo::CustomProtocolInfo(const boost::function<CustomParserPtr(Htt
 					
 }
 
-HttpServer::HttpServer(
+template <class ConnectionDataT>
+HttpServer<ConnectionDataT>::HttpServer(
 	ResponseInfo _resp_info,
-	boost::function<void(HttpConnectionPtr, HttpRequestPtr)> _request_hdl,
+	boost::function<void(HttpConnectionPtr<ConnectionDataT>, HttpRequestPtr)> _request_hdl,
 	int _port):
 	
 	m_resp_info(_resp_info),
@@ -31,13 +32,15 @@ HttpServer::HttpServer(
 	m_events_watcher->addSocket(m_listen_socket, HI_READ | HI_ACCEPT, NULL);
 }
 
-void HttpServer::addCustomProtocol(const std::string &_protocol,
-						const CustomProtocolInfo &_info) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::addCustomProtocol(const std::string &_protocol,
+						const CustomProtocolInfo<ConnectionDataT> &_info) {
 	
 	m_customProtocols.insert(make_pair(_protocol, _info));
 }
 
-void HttpServer::performAccept(int _sock_fd) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::performAccept(int _sock_fd) {
 		
 	struct sockaddr_in cli_addr;
 	size_t clilen = sizeof(cli_addr);
@@ -47,15 +50,15 @@ void HttpServer::performAccept(int _sock_fd) {
 
 		setSocketBlock(accepted_socket, false);
 	
-		HttpConnectionPtr connection(
-			new HttpConnection(
+		HttpConnectionPtr<ConnectionDataT> connection(
+			new HttpConnection<ConnectionDataT>(
 				accepted_socket,
 				m_resp_info,
 				boost::bind(&HttpServer::onSendResponse, this, _1, _2),
 				boost::bind(&HttpServer::onSendCustomResponse, this, _1, _2),
 				boost::bind(&HttpServer::getCustomParser, this, _1, _2, _3)));
 
-		m_reading_connections.insert(std::pair<int, HttpConnectionPtr>(connection->sock, connection));
+		m_reading_connections.insert(std::pair<int, HttpConnectionPtr<ConnectionDataT>>(connection->sock, connection));
 			
 		m_events_watcher->addSocket(connection->sock, HI_READ, NULL);
 		accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
@@ -65,12 +68,14 @@ void HttpServer::performAccept(int _sock_fd) {
 		performAccept(_sock_fd);
 }
 
-void HttpServer::onError(int _sock, void *_opaque_info) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onError(int _sock, void *_opaque_info) {
 	
 	killConnection(_sock);
 }
 
-void HttpServer::handleWaitingRequests(HttpConnectionPtr _conn) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::handleWaitingRequests(HttpConnectionPtr<ConnectionDataT> _conn) {
 	
 	if (!_conn->waiting_last_handling) {
 	
@@ -97,17 +102,18 @@ void HttpServer::handleWaitingRequests(HttpConnectionPtr _conn) {
 	}
 }
 
-void HttpServer::performRecv(int _sock) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::performRecv(int _sock) {
 		
 	try {
 	
-		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+		auto it = m_reading_connections.find(_sock);
 		if (it == m_reading_connections.end()) {
 			m_events_watcher->delSocket(_sock);
 			return;
 		}
 	
-		HttpConnectionPtr connection = it->second;
+		HttpConnectionPtr<ConnectionDataT> connection = it->second;
 	
 		connection->performRecv();
 	
@@ -138,10 +144,11 @@ void HttpServer::performRecv(int _sock) {
 	}
 }
 
-void HttpServer::performSend(int _sock) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::performSend(int _sock) {
 	
 	try {
-		hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+		auto it = m_reading_connections.find(_sock);
 		if (it == m_reading_connections.end()) {
 			return;
 		}
@@ -163,25 +170,29 @@ void HttpServer::performSend(int _sock) {
 	}
 }
 
-void HttpServer::onRead(int _sock, void *_opaque_info) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onRead(int _sock, void *_opaque_info) {
 	
 	performRecv(_sock);
 }
 
-void HttpServer::onWrite(int _sock, void *_opaque_info) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onWrite(int _sock, void *_opaque_info) {
 	
 	performSend(_sock);
 }
 
-void HttpServer::onAccept(int _sock, void *_opaque_info) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onAccept(int _sock, void *_opaque_info) {
 	
 	performAccept(_sock);
 }
 
-void HttpServer::killConnection(int _sock) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::killConnection(int _sock) {
 	
 	m_events_watcher->delSocket(_sock);
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+	auto it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end()) {
 		
 		return;
@@ -189,30 +200,34 @@ void HttpServer::killConnection(int _sock) {
 	m_reading_connections.erase( it );
 }
 
-void HttpServer::sendResponse(HttpConnectionPtr _conn, const HttpResponse &_resp) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::sendResponse(HttpConnectionPtr<ConnectionDataT> _conn, const HttpResponse &_resp) {
 	
 	m_resp_queue.push(std::make_pair(_conn, _resp));
 }
 
-void HttpServer::onSendResponse(int _sock, const HttpResponse &_resp) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onSendResponse(int _sock, const HttpResponse &_resp) {
 	
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+	auto it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end())
 		return;
 	
 	m_resp_queue.push(std::make_pair(it->second, _resp));
 }
 
-void HttpServer::onSendCustomResponse(int _sock, const std::string &_resp) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::onSendCustomResponse(int _sock, const std::string &_resp) {
 	
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.find(_sock);
+	auto it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end())
 		return;
 	
 	m_custom_resp_queue.push(std::make_pair(it->second, _resp));
 }
 
-void HttpServer::handleResponse (HttpConnectionPtr _conn) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::handleResponse (HttpConnectionPtr<ConnectionDataT> _conn) {
 	
 	_conn->waiting_last_handling = false;
 	
@@ -231,9 +246,10 @@ void HttpServer::handleResponse (HttpConnectionPtr _conn) {
 	handleWaitingRequests(_conn);
 }
 
-CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake) {
+template <class ConnectionDataT>
+CustomParserPtr HttpServer<ConnectionDataT>::getCustomParser(const std::string &_protocol, const HttpRequestPtr &_req, std::string &_handshake) {
 	
-	std::map<std::string,  CustomProtocolInfo>::iterator it = m_customProtocols.find(_protocol);
+	auto it = m_customProtocols.find(_protocol);
 	
 	if (it == m_customProtocols.end())
 		return CustomParserPtr();
@@ -243,15 +259,16 @@ CustomParserPtr HttpServer::getCustomParser(const std::string &_protocol, const 
 	return it->second.parserBuilder(_req);
 }
 
-void HttpServer::cleanUpDeadConnections() {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::cleanUpDeadConnections() {
 	
 	uint64_t now = time(0);
 	
 	if (now - last_cleanup < 5)
 		return;
 	
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator it = m_reading_connections.begin();
-	hiaux::hashtable<int, HttpConnectionPtr>::iterator end = m_reading_connections.end();
+	auto it = m_reading_connections.begin();
+	auto end = m_reading_connections.end();
 	
 	while (it != end) {
 		
@@ -264,7 +281,8 @@ void HttpServer::cleanUpDeadConnections() {
 	}
 }
 
-void HttpServer::handleEvents() {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::handleEvents() {
 	
 	try {
 	
@@ -274,7 +292,7 @@ void HttpServer::handleEvents() {
 	
 			while (!m_resp_queue.empty()) {
 		
-				std::pair<HttpConnectionPtr, HttpResponse> resp_context = m_resp_queue.front();
+				std::pair<HttpConnectionPtr<ConnectionDataT>, HttpResponse> resp_context = m_resp_queue.front();
 				resp_context.first->addResponse(resp_context.second);
 				handleResponse(resp_context.first);
 				m_resp_queue.pop();
@@ -282,7 +300,7 @@ void HttpServer::handleEvents() {
 	
 			while (!m_custom_resp_queue.empty()) {
 				
-				std::pair<HttpConnectionPtr, std::string> resp_context = m_custom_resp_queue.front();
+				std::pair<HttpConnectionPtr<ConnectionDataT>, std::string> resp_context = m_custom_resp_queue.front();
 				resp_context.first->addCustomResponse(resp_context.second);
 				handleResponse(resp_context.first);
 				m_custom_resp_queue.pop();
@@ -297,9 +315,10 @@ void HttpServer::handleEvents() {
 	}
 }
 
-void HttpServer::runCustomHandler(HttpConnectionPtr _conn, CustomRequestPtr _req) {
+template <class ConnectionDataT>
+void HttpServer<ConnectionDataT>::runCustomHandler(HttpConnectionPtr<ConnectionDataT> _conn, CustomRequestPtr _req) {
 	
-	std::map<std::string, CustomProtocolInfo>::iterator it = m_customProtocols.find(_conn->custom_protocol_id);
+	auto it = m_customProtocols.find(_conn->custom_protocol_id);
 	
 	if (it == m_customProtocols.end()) {
 

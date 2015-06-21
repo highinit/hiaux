@@ -2,6 +2,9 @@
 
 extern int errno;
 
+
+namespace hiaux {
+
 CannotConnectEx::CannotConnectEx() {
 	
 }
@@ -132,5 +135,6 @@ void setSocketBlock(int _fd, bool _isblock) {
 	fcntl(_fd, F_SETFL, flags);
 }
 
+}
 
 

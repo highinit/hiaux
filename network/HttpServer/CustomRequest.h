@@ -3,6 +3,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+namespace hiaux {
+
 class CustomRequest {
 
 public:
@@ -11,5 +13,7 @@ public:
 };
 
 typedef boost::shared_ptr<CustomRequest> CustomRequestPtr;
+
+}
 
 #endif

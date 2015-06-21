@@ -6,6 +6,8 @@
 #include "hiaux/structs/hashtable.h"
 #include "hiaux/strings/string_utils.h"
 
+namespace hiaux {
+
 class HttpRequest {
 public:
 	std::string url;
@@ -23,5 +25,7 @@ public:
 };
 
 typedef boost::shared_ptr<HttpRequest> HttpRequestPtr;
+
+}
 
 #endif
