@@ -102,7 +102,7 @@ void HttpApi<ConnectionDataT>::addMethod(const std::string &_name,
 template <class ConnectionDataT>
 void HttpApi<ConnectionDataT>::addMethodSigned(const std::string &_name,
 					const std::vector<std::string> &_args_names,
-					boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq,
+					boost::function<void(hiaux::HttpConnectionPtr<ConnectionDataT>,std::map<std::string, std::string> &, std::string&)> _onreq,
 					uint64_t _max_ts_range) {
 	m_methods_args[_name] = _args_names;
 	m_methods_callbacks[_name] = _onreq;

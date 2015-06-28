@@ -53,7 +53,7 @@ public:
 	// checks sign = concat name . [{_arg_name}] . ts; fields: method_sign, ts 
 	void addMethodSigned(const std::string &_name,
 						const std::vector<std::string> &_args_names,
-						boost::function<void(std::map<std::string, std::string> &, std::string&)> _onreq,
+						boost::function<void(hiaux::HttpConnectionPtr<ConnectionDataT>, std::map<std::string, std::string> &, std::string&)> _onreq,
 						uint64_t _max_ts_range = 15);
 
 	void addMethodSignedAsync(const std::string &_name,
