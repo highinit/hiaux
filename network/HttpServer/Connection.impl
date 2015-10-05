@@ -282,6 +282,12 @@ void HttpConnection<ConnectionDataT>::performRecv() {
 	
 		if (request_finished) {
 	
+			/*for (auto it : m_cur_http_request->headers) {
+				std::cout << it.first << " : " << it.second << std::endl;
+			}
+			std::cout << m_cur_http_request->body << std::endl;
+			std::cout << "length: " << m_cur_http_request->body.size() << std::endl;
+			*/
 			http_requests.push(m_cur_http_request);
 			m_cur_http_request.reset(new HttpRequest);
 			request_finished = false;

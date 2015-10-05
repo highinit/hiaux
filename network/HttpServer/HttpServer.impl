@@ -58,7 +58,7 @@ void HttpServer<ConnectionDataT>::performAccept(int _sock_fd) {
 				boost::bind(&HttpServer::onSendCustomResponse, this, _1, _2),
 				boost::bind(&HttpServer::getCustomParser, this, _1, _2, _3)));
 
-		m_reading_connections.insert(std::pair<int, HttpConnectionPtr<ConnectionDataT>>(connection->sock, connection));
+		m_reading_connections.insert(std::pair<int, HttpConnectionPtr<ConnectionDataT> >(connection->sock, connection));
 			
 		m_events_watcher->addSocket(connection->sock, HI_READ, NULL);
 		accepted_socket = accept(_sock_fd, (struct sockaddr *) &cli_addr, (socklen_t*)&clilen);
@@ -209,6 +209,7 @@ void HttpServer<ConnectionDataT>::sendResponse(HttpConnectionPtr<ConnectionDataT
 template <class ConnectionDataT>
 void HttpServer<ConnectionDataT>::onSendResponse(int _sock, const HttpResponse &_resp) {
 	
+	auto&& lock = boost::make_lock_guard(m_sendq_mtx);
 	auto it = m_reading_connections.find(_sock);
 	if (it == m_reading_connections.end())
 		return;
@@ -289,7 +290,9 @@ void HttpServer<ConnectionDataT>::handleEvents() {
 		m_events_watcher->handleEvents();
 		
 		{
-	
+			
+			auto&& lock = boost::make_lock_guard(m_sendq_mtx);
+			
 			while (!m_resp_queue.empty()) {
 		
 				std::pair<HttpConnectionPtr<ConnectionDataT>, HttpResponse> resp_context = m_resp_queue.front();

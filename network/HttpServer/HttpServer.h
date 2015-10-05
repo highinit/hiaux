@@ -19,6 +19,9 @@
 
 #include <boost/noncopyable.hpp>
 
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
+
 // HIAUX_HTTP_SERVER_CONCURRENCY_OFF
 
 namespace hiaux {
@@ -50,11 +53,12 @@ class HttpServer : public boost::noncopyable {
 	
 //	bool m_is_running;
 	
-	hiaux::hashtable<int, HttpConnectionPtr<ConnectionDataT>> m_reading_connections;
+	hiaux::hashtable<int, HttpConnectionPtr<ConnectionDataT> > m_reading_connections;
 	//hiaux::hashtable<int, HttpConnectionPtr<ConnectionDataT>> m_writing_connections;
 	//hiaux::hashtable<int, HttpConnectionPtr<ConnectionDataT>> m_ready_to_write_connections;
 	
 //	hAutoLock resp_lock;
+	boost::mutex m_sendq_mtx;
 	std::queue< std::pair<HttpConnectionPtr<ConnectionDataT>, HttpResponse> > m_resp_queue;
 	std::queue< std::pair<HttpConnectionPtr<ConnectionDataT>, std::string> > m_custom_resp_queue;
 	

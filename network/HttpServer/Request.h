@@ -18,6 +18,8 @@ public:
 	std::map<std::string, std::string> cookies;
 	std::string body;
 	
+	//std::vector<> attachments;
+	
 	HttpRequest() { }
 	HttpRequest(const std::string &_url);
 	bool getField(const std::string &_key, std::string &_value);
