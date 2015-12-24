@@ -2,7 +2,7 @@
 
 "_NAME" : "hiaux_crypt",
 
-"_LINKFLAGS" : ["-lssl"],
+"_LINKFLAGS" : ["-lssl", "-lcrypto"],
 
 "_CPPFILES" : [ { "type": "Glob", "mask": "*.cpp" },
 		{ "type": "Glob", "mask": "*.c" } ]

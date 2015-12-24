@@ -634,3 +634,12 @@ std::string invertDomain(const std::string &_domain) {
 	return ret;
 }
 
+void replaceString(std::string &_str, const std::string &_what, const std::string &_to) {
+	
+	auto p = _str.find(_what);
+	while (p != std::string::npos) {
+		
+		_str.replace(p, _what.size(), _to);
+		p = _str.find(_what);
+	}
+}

@@ -49,6 +49,7 @@ static void empty_handler(int signal) {
 
 void Daemon::setDefaultSignalHandlers() {
 	
+	std::cout << "Daemon::setDefaultSignalHandlers\n";
 	struct sigaction	sa;
 	sa.sa_handler = sigchild_handler;
 	sigemptyset(&sa.sa_mask);
@@ -98,6 +99,7 @@ int Daemon::checkLockFile(const std::string &_filename) {
 
 void Daemon::startWatcher() {
 	
+	std::cout << "Daemon::startWatcher\n";
 	sigset_t sigset;
 	siginfo_t siginfo;
 	sigemptyset(&sigset);
@@ -105,7 +107,7 @@ void Daemon::startWatcher() {
 	sigaddset(&sigset, SIGQUIT);
 	sigaddset(&sigset, SIGINT);
 	sigaddset(&sigset, SIGTERM);
-    sigaddset(&sigset, SIGCHLD);
+	sigaddset(&sigset, SIGCHLD);
 	
 	sigprocmask(SIG_BLOCK, &sigset, NULL);
 	
@@ -122,10 +124,11 @@ void Daemon::startWatcher() {
 		need_start = false;
 		
 		if (child_pid == -1) {
-			
+			std::cout << "Daemon::startWatcher child_pid == -1\n";
 		} else if (child_pid == 0) { // child
 			
 			startWorker();
+			std::cout << "Daemon::startWatcher exiting in child after startWorker()\n";
 			exit(0);
 			
 		} else { // parent
@@ -147,11 +150,13 @@ void Daemon::startWatcher() {
 						need_start = true;
 				}
 				
-				if (!need_start)
+				if (!need_start) {
 					exit(0);
+				}
 				
 			} else {
 				
+				std::cout << "Daemon::startWatcher got signal, exiting parent\n";
 				kill(child_pid, SIGKILL);
 				exit(0);
 			}
@@ -163,7 +168,6 @@ void Daemon::startWorker() {
 	
 	try {
 		
-		setDefaultSignalHandlers();
 		doStart();
 		//join();
 	
@@ -216,7 +220,9 @@ void Daemon::daemonize(const std::string &_pidfile, const std::string &_logfile)
 		fallDown("Daemon::daemonize: can't fork");
 	else if (pid != 0) /* parent */
 		exit(0);
-
+	
+	//setDefaultSignalHandlers();
+	
 	//std::cout << "Daemon::daemonize: Ensure future opens won't allocate controlling TTYs ok\n";
 
 	// Change the current working directory to the root so we won't prevent file systems from being unmounted.
@@ -328,10 +334,12 @@ void Daemon::start(const std::string &_config_name, int argc, char** argv) {
 	
 		std::cout << "Daemon::start config: " << config_path << std::endl;
 	
-		if (!interactive)
+		if (!interactive) {
+			
 			daemonize(m_config["pidfile"], m_config["log"]);
-	
-		startWatcher();
+			startWatcher();
+		} else
+			startWorker();
 	}
 	else if (command == STOP) {
 		

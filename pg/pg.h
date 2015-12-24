@@ -46,6 +46,15 @@ public:
 	
 	PGresult* query(const std::string &_q);
 	
+	std::string escapeString(const std::string &_str) {
+		
+		char *str = PQescapeLiteral(m_conn, _str.c_str(), _str.size());
+		
+		std::string ret(str);
+		PQfreemem(str);
+		return ret;
+	}
+	
 	virtual ~PG();
 };
 

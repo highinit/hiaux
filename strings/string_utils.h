@@ -93,4 +93,6 @@ void changeFilenameExt(std::string &_s, const std::string &_ext);
 
 std::string invertDomain(const std::string &_domain);
 
+void replaceString(std::string &_str, const std::string &_what, const std::string &_to);
+
 #endif	/* STRING_UTILS_H */
