@@ -8,8 +8,7 @@
 
 "_LINKFLAGS": ["-lcurl", "-lprotobuf"],
 
-"_DEPS" : ["../../threads/",
-			"../../strings/",
+"_DEPS" : ["../../strings/",
 			"../../events/",
 			"../../crypt/",
 			"../../thirdparty/http-parser/"]
