@@ -23,7 +23,9 @@ void Daemon::parseConfig(const std::string &_config_file) {
 	}
 }
 
-Daemon::Daemon() {
+Daemon::Daemon():
+m_cmd_opts("Allowed options"),
+interactive(false) {
 	
 	m_required_params.push_back("log");
 	m_required_params.push_back("pidfile");
@@ -271,68 +273,70 @@ int Daemon::doStop() {
 	return system( (std::string("kill ") + pidstr).c_str() );
 }
 
-void Daemon::start(const std::string &_config_name, int argc, char** argv) {
+void Daemon::addCmdArguments() {
 	
 	namespace po = boost::program_options;
-	po::options_description desc("Allowed options");
 	
-	std::string config_path;
-	bool interactive = false;
-	
-	Command command = START;
-	
-	desc.add_options()
+	m_cmd_opts.add_options()
 	("help,h", "Show help")
 	("interactive,i", "Interactive mode. Not daemon")
 	("stop,s", "Stop service")
 	("restart,r", "Restart service")
-	("config,c", po::value<std::string>(&config_path), "Specify config file");
+	("config,c", po::value<std::string>(&m_config_path), "Specify config file");
+}
+
+void Daemon::start(const std::string &_config_name, int argc, char** argv) {
+
+	namespace po = boost::program_options;
+
+	Command command = START;
+	
+	addCmdArguments();
 	
 	try {
 	
-		po::variables_map vm;
-		po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
-	    po::store(parsed, vm);
-	    po::notify(vm);
+		po::parsed_options parsed = po::command_line_parser(argc, argv).options(m_cmd_opts).allow_unregistered().run();
+	    po::store(parsed, m_cmd_vm);
+	    po::notify(m_cmd_vm);
 		
-		if (vm.count("help")) {
+		if (m_cmd_vm.count("help")) {
 			
-			std::cout << desc << std::endl;
+			std::cout << m_cmd_opts << std::endl;
 			exit(0);
 		}
 		
-		if (vm.count("config")) {
+		if (m_cmd_vm.count("config")) {
 			
 		}
 		
-		if (vm.count("stop")) {
+		if (m_cmd_vm.count("stop")) {
 			
 			command = STOP;
 		}
 		
-		if (vm.count("restart")) {
+		if (m_cmd_vm.count("restart")) {
 			
 			command = RESTART;
 		}
 		
-		if (vm.count("interactive")) {
+		if (m_cmd_vm.count("interactive")) {
 			
 			interactive = true;
 		}
 	
 	} catch (...) {
 		
-		std::cout << desc << std::endl;
+		std::cout << m_cmd_opts << std::endl;
 	}
 	
-	if (config_path == "")
-		config_path = _config_name;
+	if (m_config_path == "")
+		m_config_path = _config_name;
 	
-	loadConfig(config_path);
+	loadConfig(m_config_path);
 	
 	if (command == START) {
 	
-		std::cout << "Daemon::start config: " << config_path << std::endl;
+		std::cout << "Daemon::start config: " << m_config_path << std::endl;
 	
 		if (!interactive) {
 			

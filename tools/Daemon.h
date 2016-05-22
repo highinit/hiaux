@@ -45,6 +45,9 @@ class Daemon {
 	
 protected:
 	
+	typedef boost::program_options::variables_map variables_map;
+	variables_map m_cmd_vm;
+	
 	enum Command {
 		START,
 		STOP,
@@ -58,12 +61,18 @@ protected:
 	std::vector<std::string> m_optional_params;
 
 	ConfigParams m_config;
+	
+	boost::program_options::options_description m_cmd_opts;
+
+	std::string m_config_path;
+	bool interactive;
 
 	void fallDown(std::string _s);
 	void onFinished();
 
 	void setDefaultSignalHandlers();
 
+	virtual void addCmdArguments();
 	virtual void setParamsList(std::vector<std::string> &_required_params, std::vector<std::string> &_optional_params) = 0;
 	virtual void doStart() = 0;
 	
